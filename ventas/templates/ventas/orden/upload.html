@@ -1,0 +1,100 @@
+{% extends 'nucleo/base.html'%}
+{%block title%}Cargar Orden de Venta{%endblock%}
+{%load static%}
+{%block head%}
+<link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/pickers/pickadate/pickadate.css'%}">
+<link rel="stylesheet" type="text/css" href="{%static 'nucleo/css/plugins/forms/pickers/form-pickadate.css'%}">
+{%endblock%}
+{%block content%}
+<style>
+.errorlist{
+    color:red;
+    list-style:none;
+    padding-left:0;
+}
+</style>
+<!-- BEGIN: Content-->
+    <div class="app-content content ">
+        <div class="content-overlay"></div>
+        <div class="header-navbar-shadow"></div>
+        <div class="content-wrapper container-fluid p-0">
+            <div class="content-header row">
+                <div class="content-header-left col-md-9 col-12 mb-2">
+                    <div class="row breadcrumbs-top">
+                        <div class="col-12">
+                            <h2 class="content-header-title float-start mb-0">Ventas</h2>
+                            <div class="breadcrumb-wrapper">
+                                <ol class="breadcrumb">
+                                    <li class="breadcrumb-item"><a href="{% url 'ventas:orden:lista' %}">Ordenes de Venta</a>
+                                    </li>
+                                    <li class="breadcrumb-item active">Cargar
+                                    </li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="content-body">
+                <!-- Dashboard -->
+                <div class="card">
+                    <div class="card-body">
+                        <div class="card-text">
+                        <form class="form form-horizontal" method="post" enctype="multipart/form-data">{% csrf_token %}
+                                <div class="row">
+                                    <div class="col-12" id="app">
+                                    {%if form.non_field_errors%}
+                                        <ul class="errorlist">
+                                            <li>{{form.non_field_errors}}</li>
+                                        </ul>
+                                    {%endif%}
+                        <ul class="nav nav-tabs" role="tablist">
+            <li class="nav-item">
+              <a class="nav-link active" id="homeIcon-tab" data-bs-toggle="tab" href="#homeIcon" aria-controls="home" role="tab" aria-selected="true"><i class="fas fa-file-excel"></i></i> Cargar Excel</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" id="profileIcon-tab" data-bs-toggle="tab" href="#profileIcon" aria-controls="profile" role="tab" aria-selected="false"><i class="fas fa-book"></i> Jump Seller</a>
+          </ul>
+          <div class="tab-content">
+            <div class="tab-pane active" id="homeIcon" aria-labelledby="homeIcon-tab" role="tabpanel">
+                <div class="mb-1 row">
+                    <div class="col-sm-3">Archivo</div>
+                    <div class="col-sm-6"><div class="form-check form-check-inline">
+                        <input class="form-control" type="file" name="archivo">
+                    </div>
+                
+                </div>
+            </div>
+            </div>
+            <div class="tab-pane" id="profileIcon" aria-labelledby="profileIcon-tab" role="tabpanel">
+                <div class="mb-1 row">
+                    <div class="col-sm-3">Código Jump Seller</div>
+                    <div class="col-sm-6"><div class="form-check form-check-inline">
+                        <input class="form-control" type="number" name="jump">
+                    </div>
+            
+                </div>
+            </div>
+            </div>
+            
+          </div>
+                            
+                                        
+                                        
+                                    <div class="col-sm-12 mt-2">
+                                        <button type="submit" class="btn btn-primary me-1 waves-effect waves-float waves-light">Cargar</button>
+                                    </div>
+                                
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <!--/ Dashboard -->
+            </div>
+        </div>
+    </div>
+    <!-- END: Content-->
+{%endblock%}
+{%block scripts%}
+
+{%endblock%}

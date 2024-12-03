@@ -1,0 +1,223 @@
+{% extends 'nucleo/base.html'%}
+{%block title%}Actualizar Lote{%endblock%}
+{%load static%}
+{%block head%}
+<link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/pickers/pickadate/pickadate.css'%}">
+<link rel="stylesheet" type="text/css" href="{%static 'nucleo/css/plugins/forms/pickers/form-pickadate.css'%}">
+{%endblock%}
+{%block content%}
+<style>
+.errorlist{
+    color:red;
+    list-style:none;
+    padding-left:0;
+}
+</style>
+<!-- BEGIN: Content-->
+    <div class="app-content content ">
+        <div class="content-overlay"></div>
+        <div class="header-navbar-shadow"></div>
+        <div class="content-wrapper container-fluid p-0">
+            <div class="content-header row">
+                <div class="content-header-left col-md-9 col-12 mb-2">
+                    <div class="row breadcrumbs-top">
+                        <div class="col-12">
+                            <h2 class="content-header-title float-start mb-0">Producción</h2>
+                            <div class="breadcrumb-wrapper">
+                                <ol class="breadcrumb">
+                                    <li class="breadcrumb-item"><a href="{% url 'produccion:lote:lista' %}">Lotes</a>
+                                    </li>
+                                    <li class="breadcrumb-item active">Actualizar Estado
+                                    </li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="content-body">
+                <!-- Dashboard -->
+                <div class="card">
+
+                    <div class="card-body">
+                        <div class="card-text">
+                            <form class="form form-horizontal" id="formulario" method="post" enctype="multipart/form-data">{% csrf_token %}
+                                <div class="row">
+                                    <div class="col-12" id="app">
+                                    <h4 class="mb-1">Información</h4>
+                                    <input type="hidden" value="{{object.producto.unidades}}" class="form-control" name="unidad" placeholder="Productos por caja"/>
+                                    <div class="row mb-1">
+                                        <div class="col-sm-3">Proximo Estado:</div>
+                                        <input name="estado_id" value="{{estado.id}}" type="hidden"/>
+                                        <input name="nombre" value="{{estado.nombre}}" type="hidden"/>
+                                        <div class="col-sm-6"><input disabled type="text" class="form-control" value="{{estado.nombre}}"/></div>
+                                    </div>
+                                    {%if estado.nombre == 'Separación' %}
+                                        <h3>Debes repatir {$ (meta - total).toFixed(2) $} Kilogramos</h3>
+                                        <hr>
+                                        <div v-for="producto in productos">
+                                            <h5>{$producto.nombre$}</h5>
+                                            <input type="hidden" name="id_producto[]" :value="producto.id"/>
+                                            
+                                            <div class="row mb-1">
+                                                <div class="col-sm-3">Cajas<span style="color.red;">*</span></div>
+                                                <div class="col-sm-6"><input @keyup="actualizarTotal($event)" v-model="producto.uec" required type="number" step="1" class="form-control" min="0"/>
+                                                <small>Unidades Elaboradas</small>
+                                                </div>
+                                            </div>
+                                            <div class="row mb-1">
+                                                <div class="col-sm-3">Unidades <span style="color.red;">*</span></div>
+                                                <input type="hidden" name="unidadese[]" v-model="producto.ue"/>
+                                                <div class="col-sm-6"><input @keyup="actualizarTotal($event)" v-model="producto.u" required type="number" step="1" class="form-control" min="0"/>
+                                                <small>Unidades Elaboradas</small>
+                                                </div>
+                                            </div>
+                                            <div class="row mb-1">
+                                                <div class="col-sm-3">Unidades Calidad<span style="color.red;">*</span></div>
+                                                <div class="col-sm-6"><input @keyup="actualizarTotal($event)" v-model="producto.uc" name="unidadesc[]" required type="number" step="1" class="form-control" min="0"/>
+                                                <small>La cantidad de unidades destinadas para calidad.</small>
+                                                </div>
+                                            </div>
+                                            <div class="row mb-1">
+                                                <div class="col-sm-3">Unidades Fuera de Formato<span style="color.red;">*</span></div>
+                                                <div class="col-sm-6"><input @keyup="actualizarTotal($event)" v-model="producto.uff" name="unidadesff[]" required type="number" step="1" class="form-control" min="0"/>
+                                                <small>La cantidad de unidades fuera de formato.</small>
+                                                </div>
+                                            </div>
+                                            <div class="row mb-1">
+                                                <div class="col-sm-3">Unidades No Consumibles<span style="color.red;">*</span></div>
+                                                <div class="col-sm-6"><input @keyup="actualizarTotal($event)" v-model="producto.unc" name="unidadesnc[]" required type="number" step="1" class="form-control" min="0"/>
+                                                <small>La cantidad de unidades que resultaron ser no consumibles.</small>
+                                                </div>
+                                            </div>
+                                            <hr>
+                                        </div>
+                                    {% endif %}
+                                    {%if estado.peso%}
+                                    <div class="row mb-1">
+                                        <div class="col-sm-3">Peso <span style="color.red;">*</span></div>
+                                        {% load mathfilters %}
+                                        {%load filtros%}
+                                        
+                                        <div class="col-sm-6"><input name="peso" required type="number" step="any" class="form-control" min="0.0001" :max="'{{object.cantidadactual|mul:1.03}}'.replace(',','.')" value="0"/>
+                                        <small>El peso del producto o masa en esta etapa. En la etapa anterior tenias <strong style="color:green">{{pesoa}}</strong> kilogramos.</small>
+                                        </div>
+                                    </div>
+                                    {%endif%}
+                                    {%if estado.uc%}
+                                    <div class="row mb-1">
+                                        <div class="col-sm-3">Unidades Calidad<span style="color.red;">*</span></div>
+                                        <div class="col-sm-6"><input name="unidadesC" required type="number" {%if object.grupoproducto is not None%}step="any"{%endif%} class="form-control" min="0" value="0"/>
+                                        <small>La cantidad de unidades destinadas para calidad.</small>
+                                        </div>
+                                    </div>
+                                    {%endif%}
+                                    {%if estado.uff%}
+                                    <div class="row mb-1">
+                                        <div class="col-sm-3">Unidades Fuera de Formato<span style="color.red;">*</span></div>
+                                        <div class="col-sm-6"><input name="unidadesFF" required type="number" {%if object.grupoproducto is not None%}step="any"{%endif%} class="form-control" min="0" value="0"/>
+                                        <small>La cantidad de unidades fuera de formato.</small>
+                                        </div>
+                                    </div>
+                                    {%endif%}
+                                    {%if estado.unc%}
+                                    <div class="row mb-1">
+                                        <div class="col-sm-3">Unidades No Consumibles<span style="color.red;">*</span></div>
+                                        <div class="col-sm-6"><input name="unidadesNC" required type="number" {%if object.grupoproducto is not None%}step="any"{%endif%} class="form-control" min="0" value="0"/>
+                                        <small>La cantidad de unidades que resultaron ser no consumibles.</small>
+                                        </div>
+                                    </div>
+                                    {%endif%}
+                                    <div class="row mb-1">
+                                        <div class="col-sm-3">Observación</div>
+                                        <div class="col-sm-6"><textarea class="form-control" name="observacion"></textarea>
+                                            <small>Si deseas describir que sucedió en esta etapa.</small>
+                                        </div>
+                                    </div>
+                                    {%if estado.estadoinsumo_set.all|length > 0%}
+                                    <h3>Insumos Generados</h3>
+                                    {%for insumo in estado.estadoinsumo_set.all%}
+                                    <div class="row mb-1">
+                                        <div class="col-sm-3"><input type="hidden" name="insumo_id[]" value="{{insumo.insumo.id}}"/>{{insumo.insumo.nombre}}</div>
+                                        <div class="col-sm-6">
+                                            <div class="input-group">
+                                                <input class="form-control" type="number" name="insumo_cantidad[]" step="any" min="0" required/>
+                                                <button class="btn btn-outline-primary waves-effect" id="button-addon2" type="button">{{insumo.insumo.unidad}}</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {%endfor%}
+                                    {%endif%}
+                                    {%if estado.nombre == 'Separación' %}
+                                    <h3>Información</h3>
+                                    <hr>
+                                    {%endif%}
+
+                            {%if estado.nombre == 'Empaque Final'%}
+                            
+                            <h4 class="mt-1">Imprimir Etiquetas</h4>
+                                <button @click="imprimir" type="button" class="btn btn-primary">Imprimir Etiquetas</button>
+                            <h4 class="mt-1">Finalizar</h4>
+                            {%endif%}
+                            {%if estado.nombre != 'Separación' %}
+                            <div class="col-sm-12 mt-1"><button id="finalizar" {%if form.nombre.value == 'Empacado'%}:disabled="listo"{%endif%} type="submit" class="btn btn-primary me-1 waves-effect waves-float waves-light">Siguiente</button> </div>
+                            {%else%}
+                            <div class="col-sm-12 mt-1"><button :disabled="aceptar" type="submit" class="btn btn-primary">Siguiente</button></div>
+                            {%endif%}
+                        </form>
+                            
+                        </div>
+                    </div>
+                </div>
+                <!--/ Dashboard -->
+            </div>
+        </div>
+    </div>
+    <!-- END: Content-->
+{%endblock%}
+{%block scripts%}
+<script>
+    let vue = Vue.createApp({
+        data(){
+            return{
+                listo:true,
+                productos : [{%for producto in object.obtenerProductos%}{'id':parseInt({{producto.id}}),'u':0,'uec':0,'ue':0,'uc':0,'uff':0,'unc':0,'nombre':'{{producto}}','ucaja':parseInt('{{producto.unidades}}'),'presentacion':'{{producto.presentacion}}','unidad':'{{producto.unidad}}'},{%endfor%}],
+                total: 0,
+                holgura: 0.03,
+                meta: parseFloat('{{object.cantidadactual}}'.replace(',','.')),
+            }
+        },
+        computed:{
+            aceptar(){
+                if (this.total > 0){
+                    return false;
+                }
+                return true;
+            },
+        },
+        methods:{
+           actualizarTotal(event){
+                unidades = {'kg':1,'gr':0.001,'lt':1,'ml':0.001,'cc':0.001};
+                this.total = 0;
+                for (producto of this.productos){
+                    unidad = unidades[producto.unidad]
+                    cantidad = unidad * producto.presentacion;
+                    producto.u = (producto.u !=0) ? Math.abs(producto.u) : producto.u;
+                    producto.uec = (producto.uec !=0) ? Math.abs(producto.uec) : producto.uec;
+                    producto.uc = (producto.uc !=0) ? Math.abs(producto.uc) : producto.uc;
+                    producto.uff = (producto.uff !=0) ? Math.abs(producto.uff) : producto.uff;
+                    producto.unc = (producto.unc !=0) ? Math.abs(producto.unc) : producto.unc;
+                    this.total+= (producto.uec*cantidad*producto.ucaja+producto.u*cantidad + producto.uc*cantidad + producto.uff*cantidad + producto.unc*cantidad);
+                    producto.ue = producto.uec*producto.ucaja + producto.u;
+                }
+            },
+            imprimir(){
+                location.href = location.href+"?unidad=1";
+                this.listo = false;
+            }
+        },
+        delimiters: ['{$', '$}'],
+    }).mount('#app');
+</script>
+
+{%endblock%}

@@ -1,0 +1,30 @@
+el ponderado es solo el del inventario en sistema
+
+las areas del negocio por subcategoria
+
+agregar el nombre del lechero
+
+insumos opcionales
+
+las pautas pueden producir insumos como la ricota
+
+el queso ahumado
+
+dos tipos de merma -> despunte y unidades bajo peso
+
+saber de que lote salieron
+
+fifo
+
+
+despuntes y unidades bajo peso tambien son insumo para hacer otro producto
+
+agregar el estado corte y envasado
+
+
+Productos retenidos -> un estado más para los lotes
+
+
+agregar proveedores de leches a las pautas + de 1
+
+terminar el costeo de productos

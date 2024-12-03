@@ -1,0 +1,305 @@
+{% extends 'nucleo/base.html' %}
+
+{% block title %}Dashboard Avanzado de Lácteos{% endblock %}
+
+{% block content %}
+{% load static %}
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
+
+<!-- BEGIN: Content -->
+<div class="app-content content">
+    <div class="content-overlay"></div>
+    <div class="header-navbar-shadow"></div>
+
+    <div class="content-wrapper container-fluid p-0">
+        <!-- Header Section -->
+        <div class="content-header row">
+            <div class="content-header-left col-md-9 col-12 mb-2">
+                <div class="row breadcrumbs-top">
+                    <div class="col-12">
+                        <h2 class="content-header-title float-start mb-0">Inicio</h2>
+                        <div class="breadcrumb-wrapper">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item"><a href="{% url 'home' %}">Inicio</a></li>
+                                <li class="breadcrumb-item active">Dashboard</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filtros de Fecha y Estado -->
+        <div class="container mb-6">
+            <form method="GET">
+                <div class="row align-items-center">
+                    <!-- Filtro de Fecha de Inicio -->
+                    <div class="col-md-3 mb-3">
+                        <label for="fecha_inicio" class="form-label">Fecha de Inicio</label>
+                        <input type="date" id="fecha_inicio" name="fecha_inicio" class="form-control" value="{{ fecha_inicio }}">
+                    </div>
+                    
+                    <!-- Filtro de Fecha de Fin -->
+                    <div class="col-md-3 mb-3">
+                        <label for="fecha_fin" class="form-label">Fecha de Fin</label>
+                        <input type="date" id="fecha_fin" name="fecha_fin" class="form-control" value="{{ fecha_fin }}">
+                    </div>
+            
+                    <!-- Filtro de Estado -->
+                    <div class="col-md-3 mb-3">
+                        <label for="estado" class="form-label">Estado</label>
+                        <select id="estado" name="estado" class="form-select">
+                            <option value="">Todos</option>
+                            {% for estado_value, estado_label in estados %}
+                                <option value="{{ estado_value }}" {% if estado_value == estado %}selected{% endif %}>{{ estado_label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+            
+                    <!-- Botones de Filtro y PDF -->
+                    <div class="col-md-3 text-center">
+                        <button type="submit" class="btn btn-primary btn-lg">Aplicar Filtros</button>
+                        <a href="{% url 'generate_pdf' %}" class="btn btn-secondary btn-lg ms-2">Generador de PDF</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <h1 class="mb-4">Dashboard de Órdenes de Compra</h1>
+
+        <!-- Gráficos en cards -->
+        <div class="row">
+            <!-- Card para Órdenes de Compra -->
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h3 class="card-title">Órdenes de Compra</h3>
+                        <canvas id="ordenCompraChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card para Insumos y su Valor Neto -->
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h3 class="card-title">Insumos y su Valor Neto</h3>
+                        <canvas id="insumosChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card para Distribución de Precios de Productos Vendidos -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h3 class="card-title text-center">Distribución de Precios de Productos Vendidos</h3>
+                        <canvas id="productosChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- END: Content -->
+
+<!-- Script para los Gráficos -->
+<script>
+// Datos pasados desde Django para las órdenes de compra
+var labels = {{ labels|safe }};
+var data = {{ data|safe }};
+
+// Configuración del gráfico de órdenes de compra
+var ctx = document.getElementById('ordenCompraChart').getContext('2d');
+var ordenCompraChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: labels,
+        datasets: [{
+            label: 'Total Neto por Fecha',
+            data: data,
+            backgroundColor: 'rgba(54, 162, 235, 0.7)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 2,
+            hoverBackgroundColor: 'rgba(54, 162, 235, 1)',
+            hoverBorderColor: 'rgba(54, 162, 235, 1)',
+            hoverBorderWidth: 3
+        }]
+    },
+    options: {
+        responsive: true,
+        animation: {
+            duration: 1000,
+            easing: 'easeInOutQuart'
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: function(value) { return 'Q ' + value.toFixed(2); }
+                }
+            },
+            x: {
+                ticks: {
+                    autoSkip: true,
+                    maxRotation: 45,
+                    minRotation: 45
+                }
+            }
+        },
+        plugins: {
+            legend: {
+                position: 'top',
+                labels: {
+                    font: {
+                        size: 14,
+                    }
+                }
+            },
+            tooltip: {
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                titleColor: '#fff',
+                bodyColor: '#fff'
+            },
+            zoom: {
+                pan: {
+                    enabled: true,
+                    mode: 'xy',
+                    speed: 10,
+                    threshold: 10
+                },
+                zoom: {
+                    enabled: true,
+                    mode: 'xy',
+                    speed: 0.1,
+                    sensitivity: 3
+                }
+            }
+        }
+    }
+});
+
+// Configuración del gráfico de insumos y su valor neto
+var insumosCtx = document.getElementById('insumosChart').getContext('2d');
+var insumosChart = new Chart(insumosCtx, {
+    type: 'line',
+    data: {
+        labels: {{ insumos_labels|safe }},
+        datasets: [{
+            label: 'Valor Neto por Insumo',
+            data: {{ insumos_values|safe }},
+            borderColor: 'rgba(255, 99, 132, 1)',
+            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+            fill: true,
+            tension: 0.3,
+            pointBackgroundColor: 'rgba(255, 99, 132, 1)',
+            pointRadius: 5,
+            pointHoverRadius: 7
+        }]
+    },
+    options: {
+        responsive: true,
+        animation: {
+            duration: 1000,
+            easing: 'easeInOutQuart'
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: function(value) { return 'Q ' + value.toFixed(2); }
+                }
+            }
+        },
+        plugins: {
+            tooltip: {
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                titleColor: '#fff',
+                bodyColor: '#fff'
+            },
+            zoom: {
+                pan: {
+                    enabled: true,
+                    mode: 'xy',
+                    speed: 10,
+                    threshold: 10
+                },
+                zoom: {
+                    enabled: true,
+                    mode: 'xy',
+                    speed: 0.1,
+                    sensitivity: 3
+                }
+            }
+        }
+    }
+});
+
+// Configuración del gráfico de distribución de precios de productos vendidos
+var productosCtx = document.getElementById('productosChart').getContext('2d');
+var productosChart = new Chart(productosCtx, {
+    type: 'bar',
+    data: {
+        labels: {{ productos_labels|safe }},
+        datasets: [{
+            label: 'Total Precio de Productos',
+            data: {{ productos_values|safe }},
+            backgroundColor: 'rgba(54, 162, 235, 0.6)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: function(value) { return 'Q ' + value.toFixed(2); }
+                }
+            }
+        }
+    }
+});
+</script>
+
+<!-- Estilos Responsivos -->
+<style>
+    @media (max-width: 768px) {
+        .content-wrapper {
+            padding: 10px;
+        }
+
+        .card-body {
+            padding: 1rem;
+        }
+
+        .form-control, .form-select {
+            font-size: 0.9rem;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+        }
+    }
+
+    .card {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+    }
+
+    .card-title {
+        font-weight: 700;
+    }
+
+    .btn-lg {
+        padding: 12px 20px;
+        font-size: 1.1rem;
+    }
+</style>
+
+{% endblock %}

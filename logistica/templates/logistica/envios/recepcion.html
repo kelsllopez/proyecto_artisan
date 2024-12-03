@@ -1,0 +1,147 @@
+{% extends 'nucleo/base.html' %}
+{%block title%}Logística{%endblock%}
+{%load static%}
+{%block head%}
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/tables/datatable/dataTables.bootstrap5.min.css'%}">
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/tables/datatable/responsive.bootstrap4.min.css'%}">
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/tables/datatable/buttons.bootstrap5.min.css'%}">
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/tables/datatable/rowGroup.bootstrap4.min.css'%}">
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/pickers/flatpickr/flatpickr.min.css'%}">
+{%endblock%}
+{%block content%}
+<!-- BEGIN: Content-->
+    <div class="app-content content ">
+        <div class="content-overlay"></div>
+        <div class="header-navbar-shadow"></div>
+        <div class="content-wrapper container-fluid p-0">
+            <div class="content-header row">
+                <div class="content-header-left col-md-9 col-12 mb-2">
+                    <div class="row breadcrumbs-top">
+                        <div class="col-12">
+                            <h2 class="content-header-title float-start mb-0">Logística</h2>
+                            <div class="breadcrumb-wrapper">
+                                <ol class="breadcrumb">
+                                    <li class="breadcrumb-item"><a href="{% url 'logistica:envios:lista' %}">Envios</a>
+                                    </li>
+                                    <li class="breadcrumb-item active">Recepcionar
+                                    </li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="content-header-right text-md-end col-md-3 col-12 d-md-block d-none">
+
+                    <div class="mb-1 breadcrumb-right">
+                        {%if 'logistica.envio.listar' in perms %}
+                            <a class="" href="{% url 'logistica:envios:lista' %}"><button class="btn btn-primary">Envios</button></a>
+                        {%endif%}
+                    </div>
+                </div>
+            </div>
+                <section id="basic-datatable">
+                    <div class="row">
+                            <div class="col-12">
+                                <div class="card">
+                                    <table id="envios" class="datatables-basic table text-center">
+                                        <thead>
+                                            <tr>
+                                                <th>N° Envio</th>
+                                                <th>Lugar Origen</th>
+                                                <th>Lugar Destino</th>
+                                                <th>Fecha de Envio</th>
+                                                <th>Medio de Transporte</th>
+                                                {%if 'logistica.envio.detalle' in perms or 'logistica.envio.actualizar' in perms or 'logistica.envio.eliminar' in perms%}
+                                                <th>Opciones</th>
+                                                {%endif%}
+                                            </tr>
+                                        </thead>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                </section>
+                <!--/ Dashboard -->
+
+            </div>
+        </div>
+    </div>
+{%endblock%}
+
+{%block scripts%}
+<!-- BEGIN: Page Vendor JS-->
+<script src="{% static 'nucleo/vendors/js/tables/datatable/jquery.dataTables.min.js'%}"></script>
+<script src="{% static 'nucleo/vendors/js/tables/datatable/dataTables.bootstrap5.min.js'%}"></script>
+<script src="{% static 'nucleo/vendors/js/tables/datatable/dataTables.responsive.min.js'%}"></script>
+<script src="{% static 'nucleo/vendors/js/tables/datatable/responsive.bootstrap4.js'%}"></script>
+<script src="{% static 'nucleo/vendors/js/pickers/flatpickr/flatpickr.min.js'%}"></script>
+<!-- END: Page Vendor JS-->
+<script>
+$( function() {
+   let tabla = $('#envios').DataTable( {
+        responsive: true,
+        autoWidth: false,
+        destroy: false,
+        deferRender: false,
+        pageLength: 10,
+        serverSide: true,
+        rowReorder: true,
+        order: [[1,'desc']],
+        dom: '<"card-header border-bottom p-1"<"head-label"><"dt-action-buttons text-end"B>><"d-flex justify-content-between align-items-center mx-0 row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>t<"d-flex justify-content-between mx-0 row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
+        ajax: '{%url "api-envio-recepcionar" %}?format=datatables',
+        language: {
+            "lengthMenu": "Mostrar _MENU_ envios por página",
+            "zeroRecords": "Lo Sentimos, por el momento no hay envios para recepcionar.",
+            "info": "Mostrando página _PAGE_ de _PAGES_",
+            "infoEmpty": "No hay envios",
+            "infoFiltered": "(filtrados de un total de _MAX_ envios)",
+            "loadingRecords": "Cargando...",
+            "processing":     "Procesando...",
+            "search":         "Buscar:",
+            "paginate": {
+                "first":      "Primera",
+                "last":       "Ultima",
+                "next":       "Siguiente",
+                "previous":   "Anterior"
+            },
+        },
+        columns: [
+            {data : 'id'},
+            {data: 'lugar_o.nombre'},
+            {data: 'lugar_d.nombre'},
+            {data : 'fecha_envio',render:function(data,type,row){
+                return data.split(' ')[0];
+            }},
+            {data: 'medio_transporte'},
+            {%if 'logistica.envio.detalle' in perms or 'logistica.envio.actualizar' in perms or 'logistica.envio.eliminar' in perms%}
+            {mData: 'id',searchable: false,
+            mRender: (data,type,row)=>{
+                let botones ="";
+                {%if 'logistica.envio.detalle' in perms%}
+                botones+= `<a style="margin-right:20px;" href="{%url 'logistica:envios:detalle' 1 %}"><button data-bs-tooltip="tooltip" data-bs-placement="top" title="Detalle Envio" type="button" class="btn btn-icon btn-info waves-effect"><i data-feather="book"></i></button></a>`.replace('1',data);
+                {%endif%}
+                {%if 'logistica.envio.actualizar' in perms %} 
+               
+                botones+= `<a style="margin-right:20px;" href="{%url 'logistica:envios:recepcionar' 1 %}"><button data-bs-tooltip="tooltip" data-bs-placement="top" title="Recepcionar" type="button" class="btn btn-icon btn-success waves-effect"><i class="fas fa-box-open"></i></button></a>`.replace('1',data);
+                {%endif%}
+                return botones;
+            }}
+            {%endif%}
+        ],
+        "drawCallback": function(){
+            feather.replace();
+            activarTooltip();
+        },
+        "initComplete": function () {
+            feather.replace();
+            activarTooltip();
+        },
+    } );
+tabla.on('responsive-display',function(){
+    feather.replace();
+});
+$('div.head-label').html('<h6 class="mb-0">Lotes</h6>');
+});
+</script>
+{%endblock%}
+

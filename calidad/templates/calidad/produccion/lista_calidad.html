@@ -1,0 +1,171 @@
+{% extends 'nucleo/base.html' %}
+
+{% block title %}Producción de Calidad{% endblock %}
+{% load static %}
+
+{% block head %}
+    <link rel="stylesheet" type="text/css" href="{% static 'nucleo/vendors/css/tables/datatable/dataTables.bootstrap5.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'nucleo/vendors/css/tables/datatable/responsive.bootstrap4.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'nucleo/vendors/css/tables/datatable/buttons.bootstrap5.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'nucleo/vendors/css/tables/datatable/rowGroup.bootstrap4.min.css' %}">
+{% endblock %}
+
+{% block content %}
+<!-- BEGIN: Content -->
+<div class="app-content content">
+    <div class="content-overlay"></div>
+    <div class="header-navbar-shadow"></div>
+    <div class="content-wrapper container-fluid p-0">
+        <div class="content-header row">
+            <div class="content-header-left col-md-9 col-12 mb-2">
+                <div class="row breadcrumbs-top">
+                    <div class="col-12">
+                        <h2 class="content-header-title float-start mb-0">Producción</h2>
+                        <div class="breadcrumb-wrapper">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item">Producción</li>
+                                <li class="breadcrumb-item active">Lista</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Card para la Tabla de Producción -->
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title">Lista de Producción</h4>
+                <p class="card-subtitle">Aquí se muestra la lista de producciones registradas.</p>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="produccion-table" class="table mx-auto text-center">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Pauta</th>
+                                <th>ph</th>
+                                <th>textura</th>
+                                <th>sabor </th>
+                                <th>color </th>
+                                <th>mermakg </th>
+                                <th>estado </th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for produccion in producciones %}
+                                <tr>
+                                    <td>{{ produccion.id }}</td>
+                                    <td>{{ produccion.plantilla_pauta }}</td>
+    
+                                    <td>
+                                        {% with produccion_id=produccion.id %}
+                                            {% for calidad in calidad_producciones %}
+                                                {% if calidad.pauta_produccion.id == produccion_id %}
+                                                    {{ calidad.ph }}
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endwith %}
+                                    </td>
+    
+                                    <td>
+                                        {% with produccion_id=produccion.id %}
+                                            {% for calidad in calidad_producciones %}
+                                                {% if calidad.pauta_produccion.id == produccion_id %}
+                                                    {{ calidad.textura }}
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endwith %}
+                                    </td>
+                                    <td>
+                                        {% with produccion_id=produccion.id %}
+                                            {% for calidad in calidad_producciones %}
+                                                {% if calidad.pauta_produccion.id == produccion_id %}
+                                                    {{ calidad.sabor }}
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endwith %}
+                                    </td>                                    <td>
+                                        {% with produccion_id=produccion.id %}
+                                            {% for calidad in calidad_producciones %}
+                                                {% if calidad.pauta_produccion.id == produccion_id %}
+                                                    {{ calidad.color }}
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endwith %}
+                                    </td>
+  
+                                    <td>
+                                        {% with produccion_id=produccion.id %}
+                                            {% for calidad in calidad_producciones %}
+                                                {% if calidad.pauta_produccion.id == produccion_id %}
+                                                    {{ calidad.mermakg }}
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endwith %}
+                                    </td>                                    
+                                    <td>
+                                        {% with produccion_id=produccion.id %}
+                                            {% for calidad in calidad_producciones %}
+                                                {% if calidad.pauta_produccion.id == produccion_id %}
+                                                    {% if calidad.estado_aprobacion == "Desaprobado" %}
+                                                        <div class="estado-celda estado-desaprobado">{{ calidad.estado_aprobacion }}</div>
+                                                    {% elif calidad.estado_aprobacion == "Pendiente" %}
+                                                        <div class="estado-celda estado-pendiente">{{ calidad.estado_aprobacion }}</div>
+                                                    {% elif calidad.estado_aprobacion == "Aprobado" %}
+                                                        <div class="estado-celda estado-aprobado">{{ calidad.estado_aprobacion }}</div>
+                                                    {% endif %}
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endwith %}
+                                    </td>
+                                    <td>
+                                        <!-- Acciones -->
+                                        <a href="{% url 'calidad:elaboraciones:agregar' produccion.id %}" class="btn btn-icon btn-info waves-effect mr-2">
+                                            <i data-feather="plus-circle"></i>
+                                        </a>
+                                        <a href="{% url 'calidad:elaboraciones:detalle' produccion.id %}" class="btn btn-icon btn-warning waves-effect mr-2">
+                                            <i data-feather="book"></i>
+                                        </a>
+                                        <a href="{% url 'calidad:elaboraciones:modificar' produccion.id %}" class="btn btn-icon btn-success waves-effect">
+                                            <i data-feather="settings"></i>
+                                        </a>
+                                    </td>
+                                    
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- Fin de la Card -->
+        
+    </div>
+</div>
+<!-- END: Content -->
+<!-- END: Content -->
+{% endblock %}
+
+{% block scripts %}
+
+    <script src="{% static 'nucleo/vendors/js/tables/datatable/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'nucleo/vendors/js/tables/datatable/dataTables.bootstrap5.min.js' %}"></script>
+    <script src="{% static 'nucleo/vendors/js/tables/datatable/dataTables.responsive.min.js' %}"></script>
+    <script src="{% static 'nucleo/vendors/js/tables/datatable/responsive.bootstrap4.min.js' %}"></script>
+    <script>
+                feather.replace();
+
+        $(document).ready(function() {
+            $('#produccion-table').DataTable({
+                responsive: true,
+                language: {
+                    url: "//cdn.datatables.net/plug-ins/1.10.21/i18n/Spanish.json"
+                }
+            });
+        });
+    </script>
+{% endblock %}

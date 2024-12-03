@@ -1,0 +1,193 @@
+{% extends 'nucleo/base.html'%}
+{%block title%}Asignar Orden de Venta{%endblock%}
+{%load static%}
+{%block head%}
+<link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/pickers/pickadate/pickadate.css'%}">
+<link rel="stylesheet" type="text/css" href="{%static 'nucleo/css/plugins/forms/pickers/form-pickadate.css'%}">
+{%endblock%}
+{%block content%}
+<style>
+.errorlist{
+    color:red;
+    list-style:none;
+    padding-left:0;
+}
+.menu-suggest{
+    position: absolute;
+    background:white;
+    width:96%;
+    padding: 0.571rem 1rem;
+    left:2%;
+    right:0;
+    list-style: none;
+    border-bottom: 1px solid #d8d6de;
+    border-left: 1px solid #d8d6de;
+    border-right:1px solid #d8d6de;
+    z-index:999;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+</style>
+<!-- BEGIN: Content-->
+    <div class="app-content content ">
+        <div class="content-overlay"></div>
+        <div class="header-navbar-shadow"></div>
+        <div class="content-wrapper container-fluid p-0">
+            <div class="content-header row">
+                <div class="content-header-left col-md-9 col-12 mb-2">
+                    <div class="row breadcrumbs-top">
+                        <div class="col-12">
+                            <h2 class="content-header-title float-start mb-0">Ventas</h2>
+                            <div class="breadcrumb-wrapper">
+                                <ol class="breadcrumb">
+                                    <li class="breadcrumb-item"><a href="{% url 'ventas:orden:lista' %}">Ordenes de Venta</a>
+                                    </li>
+                                    <li class="breadcrumb-item">Asignar
+                                    </li>
+                                    <li class="breadcrumb-item active">Orden de Venta #{{object.id}}
+                                    </li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="content-body">
+                <!-- Dashboard -->
+                <div class="card" id="app">
+                    <div class="card-body">
+                        <div class="card-text">
+                            <form class="form form-horizontal" method="post" enctype="multipart/form-data">{% csrf_token %}
+                                <div class="row">
+                                    <div class="col-12" id="app">
+                                    {%if form.non_field_errors%}
+                                    <div class="alert alert-danger" role="alert">
+                                        <div class="alert-body">{{form.non_field_errors}}</div>
+                                    </div>
+                                    {%endif%}
+                                    <div class="mb-1 row">
+                                        <div class="col-sm-3">Cliente:</div>
+                                        <div class="col-sm-6"><input class="form-control" type="input" disabled value="{{object.cliente.nombre}}"/></div>
+                                    </div>
+                                    <div class="mb-1 row">
+                                        <div class="col-sm-3">Local:</div>
+                                        <div class="col-sm-6"><input class="form-control" type="input" disabled value="{{object.local.local}}"/></div>
+                                    </div>
+                                    {%for field in form %}
+                                        
+                                       
+                                        
+                                        <div class="mb-1 row">
+                                        <div class="col-sm-3">{{field.label_tag}} {%if field.field.required %}<span style="color:red">*</span>{%endif%}</div>
+
+                                        <div class="col-sm-6 position-relative">{{field}}
+                                        {% if field.help_text %}
+                                        <small class="">{{field.help_text|safe}}</small>
+                                        {%endif%}
+                                        {%if field.errors %}
+                                        <div class="invalid-feedback" style="display:block;">{{field.errors.as_text}}</div>
+                                        {%endif%}
+                                        </div>
+                                        </div>
+                                        {%if field.id_for_label == 'id_personas'%}
+                                        <div class="mb-1 row">
+                                        <div class="col-sm-3">Rutas:</div>
+                                        <div class="col-sm-6">
+                                            <select required class="form-select" name="ruta">
+                                                <option v-if="rutas.length == 0" value="">-- Sin Rutas Disponibles --</option>
+                                                <option :value="ruta.id" v-for="ruta in rutas">{$ ruta.nombre $}</option>
+                                            </select>
+                                        </div>
+                                        </div>
+                                        {%endif%}
+
+                                    {%endfor%}
+                                    
+                                    {% if 'ventas.archivo.listar' in perms%}
+                                    {% if object.archivoordendeventa_set.all|length > 0 %}
+                                        <div id="archivos" class="mb-2">
+                                            <h3 class="mt-1">Archivos Adjuntos</h3>
+                                            <div class="table-responsive">
+                                                <table class="table table-bordered">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Archivo</th>
+                                                            {%if 'ventas.archivo.eliminar' in perms %}<th>Opciones</th>{%endif%}
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                    {%for r in object.archivoordendeventa_set.all%}
+                                                        <tr>
+                                                            <td><a target="_blank" href="{{r.archivo.url}}">{{r.nombre}}</a></td>
+                                                            {%if 'ventas.archivo.eliminar' in perms %}
+                                                            <td><button type="button" class="btn btn-danger" @click="eliminarArchivo($event,{{r.id}})">Eliminar</button></td>
+                                                            {%endif%}
+                                                        </tr>
+                                                    {%endfor%}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    {%endif%}
+                                    {%endif%}
+                                    
+                                    
+                                    <div class="col-sm-12 mt-2">
+                                        <button type="submit" class="btn btn-primary me-1 waves-effect waves-float waves-light">Asignar OV a Ruta</button>
+                                    </div>
+                                
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <!--/ Dashboard -->
+            </div>
+        </div>
+    </div>
+    <!-- END: Content-->
+{%endblock%}
+{%block scripts%}
+<script src="{%static 'nucleo/vendors/js/pickers/pickadate/picker.js'%}"></script>
+<script src="{%static 'nucleo/vendors/js/extensions/sweetalert2.all.min.js'%}"></script>
+<script src="{%static 'nucleo/vendors/js/pickers/pickadate/picker.date.js'%}"></script>
+<script>
+let vue = Vue.createApp({
+    data(){
+        return {
+            rutas: [],
+        }
+    },
+    methods:{
+        obtenerRutas(event){
+            let id_persona = event.target.value;
+            if (id_persona != ''){
+                let url = '{% url "ruta-list" %}' + `?usuario=${id_persona}&abierto`;
+                axios.get(url).then(response=>{
+                    this.rutas = response.data.results;
+                });
+            }else{
+                this.rutas = []
+            }
+        }
+    },
+    delimiters: ['{$', '$}'],
+    mounted(){
+    },
+}).mount('#app');
+</script>
+<script>
+$(window).scroll(function() {
+    var winScrollTop = $(window).scrollTop();
+    var winHeight = $(window).height();
+    var floaterHeight = $('#botons').outerHeight(true);
+    var fromBottom = $(window).height() * 0.50;
+    var top = winScrollTop + winHeight - floaterHeight - fromBottom;
+	$('#botons').css({'top': top + 'px'});
+});
+</script>
+<script>
+ $(document).ready(function () {
+     $('select').selectize();
+  });
+</scrip>
+{%endblock%}

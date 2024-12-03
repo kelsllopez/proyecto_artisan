@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html class="loading" lang="es" data-textdirection="ltr">
+<!-- BEGIN: Head-->
+{%load static%}
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=0,minimal-ui">
+    <meta name="description" content="Plataforma de admnistración Artisan">
+    <meta name="keywords" content="Artisan, Quesos, Lacteos, Helados">
+    <meta name="author" content="Artisan">
+    <title>Artisan | {%block title %}{%endblock%}</title>
+    <link rel="apple-touch-icon" href="{% static 'nucleo/images/logo/icono.ico' %}">
+    <link rel="shortcut icon" type="image/x-icon" href="{% static 'nucleo/images/logo/icono.ico' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500;1,600" rel="stylesheet">
+
+    <!-- BEGIN: Vendor CSS-->
+    <link rel="stylesheet" type="text/css" href="{% static 'nucleo/vendors/css/vendors.min.css' %}">
+    <!-- END: Vendor CSS-->
+
+    <!-- BEGIN: Theme CSS-->
+    <link rel="stylesheet" type="text/css" href="{% static 'nucleo/css/bootstrap.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'nucleo/css/bootstrap-extended.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'nucleo/css/colors.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'nucleo/css/components.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'nucleo/css/themes/dark-layout.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'nucleo/css/themes/bordered-layout.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'nucleo/css/themes/semi-dark-layout.css' %}">
+
+    <!-- BEGIN: Page CSS-->
+    <link rel="stylesheet" type="text/css" href="{% static 'nucleo/css/core/menu/menu-types/vertical-menu.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'nucleo/css/plugins/forms/form-validation.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'nucleo/css/pages/page-auth.css' %}">
+    <!-- END: Page CSS-->
+    <!-- BEGIN: Custom CSS-->
+    {% comment %} <link rel="stylesheet" type="text/css" href="{% static 'nucleo/css/style.css' %}"> {% endcomment %}
+    <!-- END: Custom CSS-->
+
+</head>
+<!-- END: Head-->
+
+<!-- BEGIN: Body-->
+
+<body class="vertical-layout vertical-menu-modern blank-page navbar-floating footer-static  " data-open="click" data-menu="vertical-menu-modern" data-col="blank-page">
+    <!-- BEGIN: Content-->
+    <div class="app-content content ">
+        <div class="content-overlay"></div>
+        <div class="header-navbar-shadow"></div>
+        <div class="content-wrapper">
+            <div class="content-header row">
+            </div>
+            <div class="content-body">
+                <div class="auth-wrapper auth-v2">
+                    <div class="auth-inner row m-0">
+                        <!-- Brand logo--><a class="brand-logo" href="#">
+                            <img width="75px" src="{% static 'nucleo/img/logo.png' %}">
+                        </a>
+                        <!-- /Brand logo-->
+                        <!-- Left Text-->
+                        <div class="d-none d-lg-flex col-lg-8 align-items-center p-5">
+                            <div class="w-100 d-lg-flex align-items-center justify-content-center px-5"><img class="img-fluid" src="{% static 'nucleo/images/pages/login-v2.svg' %}" alt="Login V2" /></div>
+                        </div>
+                        <!-- /Left Text-->
+                        {%block content%}{%endblock%}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- END: Content-->
+</body>
+<!-- END: Body-->
+{%block scripts%}{%endblock%}
+</html>

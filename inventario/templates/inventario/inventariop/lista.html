@@ -1,0 +1,139 @@
+{% extends 'nucleo/base.html'%}
+{%block title%}Inventario Productos{%endblock%}
+{%load static%}
+{%block head%}
+<link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/tables/datatable/dataTables.bootstrap5.min.css'%}">
+<link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/tables/datatable/responsive.bootstrap4.min.css'%}">
+<link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/tables/datatable/buttons.bootstrap5.min.css'%}">
+<link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/tables/datatable/rowGroup.bootstrap4.min.css'%}">
+{%endblock%}
+{%block content%}
+<style>
+.errorlist{
+    color:red;
+    list-style:none;
+    padding-left:0;
+}
+.colorear tbody td:nth-child(6){
+    background:#d4edda;
+
+
+}
+.colorear thead th:nth-child(6){
+    background:#d4edda!important;
+}
+</style>
+<!-- BEGIN: Content-->
+    <div class="app-content content ">
+        <div class="content-overlay"></div>
+        <div class="header-navbar-shadow"></div>
+        <div class="content-wrapper container-fluid p-0">
+            <div class="content-header row">
+                <div class="content-header-left col-md-9 col-12 mb-2">
+                    <div class="row breadcrumbs-top">
+                        <div class="col-12">
+                            <h2 class="content-header-title float-start mb-0">Bodegas</h2>
+                            <div class="breadcrumb-wrapper">
+                                <ol class="breadcrumb">
+                                    <li class="breadcrumb-item"><a href="#">Bodegas</a>
+                                    </li>
+                                    <li class="breadcrumb-item"><a href="#">{{lugarNombre}}</a>
+                                    </li>
+                                    <li class="breadcrumb-item"><a href="#">Inventario Productos</a>
+                                    </li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="content-body">
+                <!-- Dashboard -->
+                <div class="card">
+
+                    <div class="card-body" id="app">
+                        <div class="card-text">
+                            <h3>Stock de productos en Inventario {{lugarNombre}}</h3>
+                                <table id="productos" class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Producto</th>
+                                            <th>Último Movimiento</th>
+                                            <th>Total en Maduración</th>
+                                            <th>Total en Bodegas</th>
+                                            <th>Total en Transito</th>
+                                            <th>Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {%for i in inventario%}
+                                            <tr>
+                                                <td>{%if lugarnombre in perms and 'inventario.inventariop.actualizar' in perms %}<a href="{%url "inventario:producto-actualizar" lugarNombre i.id %}" class="btn btn-small btn-icon btn-primary"><i class="far fa-edit"></i></a> {%endif%}{{i.producto.nombre}} ({{i.producto.presentacion}} {{i.producto.unidad}})</td>
+                                                <td>{{i.actualizado}}</td>
+                                                <td>{{i.maduracion}}</td>
+                                                <td>{{i.cantidad}}</td>
+                                                <td>{{i.transito}}</td>
+                                                <td>{{i.total}}</td>
+                                            </tr>
+                                        {%endfor%}
+                                    </tbody>
+                                </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+                <!--/ Dashboard -->
+            </div>
+        </div>
+    <!-- END: Content-->
+{%endblock%}
+{%block scripts%}
+<!-- BEGIN: Page Vendor JS-->
+<script src="{% static 'nucleo/vendors/js/tables/datatable/jquery.dataTables.min.js'%}"></script>
+<script src="{% static 'nucleo/vendors/js/tables/datatable/dataTables.bootstrap5.min.js'%}"></script>
+<script src="{% static 'nucleo/vendors/js/tables/datatable/dataTables.responsive.min.js'%}"></script>
+<script src="{% static 'nucleo/vendors/js/tables/datatable/responsive.bootstrap4.js'%}"></script>
+<script src="{% static 'nucleo/vendors/js/pickers/flatpickr/flatpickr.min.js'%}"></script>
+<!-- END: Page Vendor JS-->
+<script>
+    $( function() {
+        let tabla = $('#productos').DataTable( {
+             responsive: true,
+             autoWidth: true,
+             destroy: true,
+             pageLength: 10,
+             rowReorder: true,
+             order: [[0,'desc']],
+             dom: '<"card-header border-bottom p-1"<"head-label"><"dt-action-buttons text-end"B>><"d-flex justify-content-between align-items-center mx-0 row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>t<"d-flex justify-content-between mx-0 row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
+             language: {
+                 "lengthMenu": "Mostrar _MENU_ productos por página",
+                 "zeroRecords": "Lo sentimos, actualmente no hay productos",
+                 "info": "Mostrando página _PAGE_ de _PAGES_",
+                 "infoEmpty": "No hay productos",
+                 "infoFiltered": "(filtrados de un total de _MAX_ productos)",
+                 "loadingRecords": "Cargando...",
+                 "processing":     "Procesando...",
+                 "search":         "Buscar:",
+                 "paginate": {
+                     "first":      "Primera",
+                     "last":       "Ultima",
+                     "next":       "Siguiente",
+                     "previous":   "Anterior"
+                 },
+             },
+             "drawCallback": function(){
+                 feather.replace();
+                 activarTooltip();
+             },
+             "initComplete": function () {
+                 feather.replace();
+                 activarTooltip();
+             },
+         } );
+     tabla.on('responsive-display',function(){
+         feather.replace();
+     });
+     $('div.head-label').html('<h6 class="mb-0">Estados</h6>');
+     });
+</script>
+{%endblock%}

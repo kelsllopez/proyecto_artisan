@@ -1,0 +1,88 @@
+{% extends 'nucleo/base.html'%}
+{%block title%}Clientes{%endblock%}
+{%load static%}
+{%block head%}
+<link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/pickers/pickadate/pickadate.css'%}">
+<link rel="stylesheet" type="text/css" href="{%static 'nucleo/css/plugins/forms/pickers/form-pickadate.css'%}">
+{%endblock%}
+{%block content%}
+<style>
+.errorlist{
+    color:red;
+    list-style:none;
+    padding-left:0;
+}
+
+</style>
+<!-- BEGIN: Content-->
+    <div class="app-content content ">
+        <div class="content-overlay"></div>
+        <div class="header-navbar-shadow"></div>
+        <div class="content-wrapper container-fluid p-0">
+            <div class="content-header row">
+                <div class="content-header-left col-md-9 col-12 mb-2">
+                    <div class="row breadcrumbs-top">
+                        <div class="col-12">
+                            <h2 class="content-header-title float-start mb-0">Administrador</h2>
+                            <div class="breadcrumb-wrapper">
+                                <ol class="breadcrumb">
+                                   <li class="breadcrumb-item"><a href="{% url 'administrador:cliente:lista' %}">Clientes</a>
+                                    </li>
+                                    <li class="breadcrumb-item"><a href="#">Acuerdos Comerciales</a>
+                                    </li>
+                                    <li class="breadcrumb-item active">Modificar
+                                    </li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="content-body">
+                <!-- Dashboard -->
+                <div class="card">
+                    <div class="card-body">
+                        <div class="card-text">
+                            <form class="form form-horizontal" method="post" enctype="multipart/form-data">{% csrf_token %}
+                                <input type="hidden" name="cliente" id="cliente_id" value="{{cliente.id}}"/>
+                                <div class="row">
+                                    <div class="col-12" id="app">
+                                    <div class="table-responsive">
+                                    <h3>{{cliente.nombre}}</h3>
+                                    <p>Los acuerdos comerciales para <b>{{cliente.nombre}}</b> son los siguientes:</p>
+                                        <table class="table table-bordered table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Categoría</th>
+                                                    <th>Porcentaje</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {%for rama in ramas%}
+                                                <tr>
+                                                    <input type="hidden" value="{{rama.id}}" name="identificadores[]"/>
+                                                    <td>{{rama.nombre}} ({{rama.productos.count}} {%if rama.productos.count > 1%}productos{%else%}producto{%endif%})</td>
+                                                    <td><div class="input-group mb-2">
+                                                        <input type="number" class="form-control" step="0.1" value="{{rama.porcentaje}}" name="porcentajes[]"/>
+                                                        <span class="input-group-text bg-primary text-white" id="basic-addon2">%</span>
+                                                    </div></td>
+                                                </tr>
+                                                {%endfor%}
+                                            </tbody>
+                                        </table>
+                                    <small>Si deseas eliminar un acuerdo, simplemente introduce 0 en su porcentaje.</small>
+                                    </div>
+                                    <div class="col-sm-12 mt-2">
+                                        <button type="submit" class="btn btn-primary me-1 waves-effect waves-float waves-light">Modificar Acuerdos</button>
+                                    </div>
+                                
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <!--/ Dashboard -->
+            </div>
+        </div>
+    </div>
+    <!-- END: Content-->
+{%endblock%}

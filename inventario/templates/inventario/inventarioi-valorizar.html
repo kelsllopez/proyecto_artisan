@@ -1,0 +1,131 @@
+{% extends 'nucleo/base.html' %}
+{%block title%}Bodegas{%endblock%}
+{%load static%}
+{%block head%}
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/tables/datatable/dataTables.bootstrap5.min.css'%}">
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/tables/datatable/responsive.bootstrap4.min.css'%}">
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/tables/datatable/buttons.bootstrap5.min.css'%}">
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/tables/datatable/rowGroup.bootstrap4.min.css'%}">
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/pickers/flatpickr/flatpickr.min.css'%}">
+{%endblock%}
+{%block content%}
+<!-- BEGIN: Content-->
+    <div class="app-content content ">
+        <div class="content-overlay"></div>
+        <div class="header-navbar-shadow"></div>
+        <div class="content-wrapper container-fluid p-0">
+            <div class="content-header row">
+                <div class="content-header-left col-md-9 col-12 mb-2">
+                    <div class="row breadcrumbs-top">
+                        <div class="col-12">
+                            <h2 class="content-header-title float-start mb-0">Bodegas</h2>
+                            <div class="breadcrumb-wrapper">
+                                <ol class="breadcrumb">
+                                    <li class="breadcrumb-item"><a href="#">Bodegas</a>
+                                    </li>
+                                    <li class="breadcrumb-item"><a href="{% url 'inventario:insumo' lugarNombre %}">{{lugarNombre}}</a>
+                                    </li>
+                                     <li class="breadcrumb-item active"><a href="#">Inventario Insumos</a>
+                                    </li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="content-header-right text-md-end col-md-3 col-12 d-md-block d-none">
+                    <div class="mb-1 breadcrumb-right">
+                        {% if lugarNombre != 'Global' %}
+                            <a class="" href="{% url 'inventario:insumo' lugarNombre %}"><button class="btn btn-primary">Inventario</button></a>
+                        {%endif%}
+                    </div>
+                </div>
+            </div>
+             <div class="content-body">
+                
+                    <div class="row">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h4 class="card-title">Valorización {{lugarNombre}}</h4>
+                                    </div>
+                                    <div class="card-body">
+                                        <table id="bodegas" class="table table-bordered">
+                                            <thead>
+                                                <tr>
+                                                    <th>Insumo</th>
+                                                    <th>En Inventario</th>
+                                                    {%if lugarNombre == 'Global'%}
+                                                    <th>En Transito</th>
+                                                    {%endif%}
+                                                    <th>Precio por unidad</th>
+                                                    <th>Total</th>
+                                                </tr>
+                                            </thead>
+                                            {%load filtros %}
+                                            
+                                            <tbody>
+                                                {% for i in inventario %}
+                                                    <tr>
+                                                        <td>{{i.inventario.nombre}}</td>
+                                                        <td>{{i.inventario.cantidad|moneda}} {{i.inventario.unidad}}s</td>
+                                                        {%if lugarNombre == 'Global'%}
+                                                        <td>{{i.inventario.transito|moneda}} {{i.inventario.unidad}}s</td>
+                                                        {%endif%}
+                                                        {%load mathfilters%}
+                                                        <td>$ {{i.preciou|monedafix}}</td>
+                                                        <td>$ {{i.preciou|mul:i.inventario.cantidad|monedafix}}</td>
+                                                    </tr>
+                                                {%endfor%}
+                                                    <tr>
+                                                        {%if lugarNombre == 'Global'%}
+                                                        <td>Total</td>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <td></td>
+                                                        {%else%}
+                                                        <td>Total</td>
+                                                        <td></td>
+                                                        <td></td>
+                                                        {%endif%}
+                                                        <td class="bg-primary text-white font-weight-bold" colspan="1">$ {{precio|monedafix}}</td>
+                                                    </tr>
+                                            </tbody>
+                                        </table>
+                                        </div>
+                                    
+                                </div>
+                            </div>
+                        </div>
+               
+                <!--/ Dashboard -->
+            </div>
+            </div>
+        </div>
+    </div>
+{%endblock%}
+{%block scripts%}
+<script>
+    $('#bodegas').DataTable({
+    responsive: true,
+    autoWidth: true,
+    ordering:false,
+    pageLength: 25,
+    language: {
+        "lengthMenu": "Mostrar _MENU_ Insumos por página",
+        "zeroRecords": "Lo sentimos, no hay insumos.",
+        "info": "Mostrando página _PAGE_ de _PAGES_",
+        "infoEmpty": "No hay insumos",
+        "infoFiltered": "(filtrados de un total de _MAX_ Insumos)",
+        "loadingRecords": "Cargando...",
+        "processing":     "Procesando...",
+        "search":         "Buscar:",
+        "paginate": {
+            "first":      "Primera",
+            "last":       "Ultima",
+            "next":       "Siguiente",
+            "previous":   "Anterior"
+        },
+    },
+    });
+</script>
+{%endblock%}

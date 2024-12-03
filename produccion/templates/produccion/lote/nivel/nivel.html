@@ -1,0 +1,313 @@
+{% extends 'nucleo/base.html' %}
+{% block title %}Maduración{% endblock %}
+{% load static %}
+{% block head %}
+<link rel="stylesheet" type="text/css" href="{% static 'nucleo/vendors/css/pickers/pickadate/pickadate.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'nucleo/css/plugins/forms/pickers/form-pickadate.css' %}">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script> <!-- Agregar plugin para zoom -->
+<!-- Incluir jQuery y jQuery UI -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
+{% endblock %}
+
+{% block content %}
+<div class="app-content content">
+    <div class="content-overlay"></div>
+    <div class="header-navbar-shadow"></div>
+    <div class="content-wrapper container-fluid p-0">
+        <div class="content-header row">
+            <div class="content-header-left col-md-9 col-12 mb-2">
+                <div class="row breadcrumbs-top">
+                    <div class="col-12">
+                        <h2 class="content-header-title float-start mb-0">Producción</h2>
+                        <div class="breadcrumb-wrapper">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item"><a href="{% url 'produccion:lote:lista' %}">Lotes</a></li>
+                                <li class="breadcrumb-item active">Maduración</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MENU -->
+        {% include 'produccion/common/menu.html' %}
+        <!-- FIN MENU -->
+
+<!-- Filtro de Pauta -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header">
+        <h5 class="card-title mb-0">Filtros de Producción</h5>
+    </div>
+    <div class="card-body">
+        <form method="get" action="" class="d-flex justify-content-center align-items-center gap-3">
+            <!-- Filtro de Fecha Inicio -->
+            <div class="form-group mb-2">
+                <label for="fecha_inicio" class="sr-only">Fecha de inicio:</label>
+                <input type="date" id="fecha_inicio" name="fecha_inicio" class="form-control" style="width: 150px;" value="{{ request.GET.fecha_inicio }}">
+            </div>
+    
+            <!-- Filtro de Fecha Fin -->
+            <div class="form-group mb-2">
+                <label for="fecha_fin" class="sr-only">Fecha final:</label>
+                <input type="date" id="fecha_fin" name="fecha_fin" class="form-control" style="width: 150px;" value="{{ request.GET.fecha_fin }}">
+            </div>
+    
+            <!-- Filtro de Pauta -->
+            <!-- Filtro de Pauta -->
+             
+            <div class="form-group mb-2">
+                <select name="pauta" id="pauta-select" class="form-control" style="width: 250px;">
+                    <option value="">Seleccione Todos</option>
+                    {% for pauta in pautas_nombres %}
+                        <option value="{{ pauta }}" {% if pauta == request.GET.pauta %}selected{% endif %}>{{ pauta }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+    
+            <!-- Botón de Filtro -->
+            <div class="form-group mb-2">
+                <button id="btnFiltrar" class="btn btn-primary" style="width: 100px;">Filtrar</button>
+            </div>
+            <!-- Botón de Generar PDF -->
+            <div class="form-group mb-2">
+                <a href="{% url 'produccion:lote:generar_pdf' %}?fecha_inicio={{ request.GET.fecha_inicio }}&fecha_fin={{ request.GET.fecha_fin }}&pauta={{ request.GET.pauta }}" class="btn btn-success" style="width: 100px;">
+                    <i class="fas fa-download"></i> PDF
+                </a>
+            </div>
+        </form>
+    
+
+    </div>
+    
+    </div>
+</div>
+   
+
+
+        <!-- Cuadraditos para conteo de los gráficos -->
+        <div class="row mb-4">
+            <!-- Cuadradito para Lotes Hechos (PIP) -->
+            <div class="col-md-3">
+                <div class="card shadow-3d text-center rounded-lg">
+                    <div class="card-body">
+                        <p id="conteoLotesPip" class="h4">Cargando...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cuadradito para Cantidad Total (PIP) -->
+            <div class="col-md-3">
+                <div class="card shadow-3d text-center rounded-lg">
+                    <div class="card-body">
+                        <p id="conteoCantidadPip" class="h4">Cargando...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cuadradito para Lotes Hechos (Línea) -->
+            <div class="col-md-3">
+                <div class="card shadow-3d text-center rounded-lg">
+                    <div class="card-body">
+                        <p id="conteoLotesLinea" class="h4">Cargando...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cuadradito para Cantidad Total (Línea) -->
+            <div class="col-md-3">
+                <div class="card shadow-3d text-center rounded-lg">
+                    <div class="card-body">
+                        <p id="conteoCantidadLinea" class="h4">Cargando...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráficos en tarjetas (cards) -->
+        <div class="row">
+            <!-- Card para Lotes Hechos (PIP) -->
+            <div class="col-md-6">
+                <div class="card shadow-lg mb-4 rounded-lg">
+                    <div class="card-header bg-primary text-white rounded-t-lg">
+                        <h5 class="card-title">Lotes Hechos (PIP)</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="graficoLotesPip"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card para Cantidad Total (PIP) -->
+            <div class="col-md-6">
+                <div class="card shadow-lg mb-4 rounded-lg">
+                    <div class="card-header bg-danger text-white rounded-t-lg">
+                        <h5 class="card-title">Cantidad Total Fabricada (PIP)</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="graficoCantidadPip"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Card para Lotes Hechos (Línea) -->
+            <div class="col-md-6">
+                <div class="card shadow-lg mb-4 rounded-lg">
+                    <div class="card-header bg-success text-white rounded-t-lg">
+                        <h5 class="card-title">Lotes Hechos (Línea)</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="graficoLotesLinea"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card para Cantidad Total (Línea) -->
+            <div class="col-md-6">
+                <div class="card shadow-lg mb-4 rounded-lg">
+                    <div class="card-header bg-warning text-white rounded-t-lg">
+                        <h5 class="card-title">Cantidad Total Fabricada (Línea)</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="graficoCantidadLinea"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            var ctxLotesPip = document.getElementById('graficoLotesPip').getContext('2d');
+            var ctxCantidadPip = document.getElementById('graficoCantidadPip').getContext('2d');
+            var ctxLotesLinea = document.getElementById('graficoLotesLinea').getContext('2d');
+            var ctxCantidadLinea = document.getElementById('graficoCantidadLinea').getContext('2d');
+
+            // PIP
+            var datosLotesPip = {{ grafico_lotes_pip|safe }};
+            var etiquetasLotesPip = datosLotesPip.map(item => item.fecha);
+            var datosLotesCountPip = datosLotesPip.map(item => item.lotes_hechos);
+            var graficoLotesPip = new Chart(ctxLotesPip, {
+                type: 'bar',
+                data: {
+                    labels: etiquetasLotesPip,
+                    datasets: [{
+                        label: 'Lotes Hechos (PIP)',
+                        data: datosLotesCountPip,
+                        backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 2
+                    }]
+                }
+            });
+
+            var totalLotesPip = datosLotesCountPip.reduce((a, b) => a + b, 0);
+            document.getElementById('conteoLotesPip').textContent = 'Total Lotes Hechos PIP: ' + totalLotesPip;
+
+            var datosCantidadPip = {{ grafico_cantidad_pip|safe }};
+            var datosCantidadTotalPip = datosCantidadPip.map(item => item.cantidad_total);
+            var graficoCantidadPip = new Chart(ctxCantidadPip, {
+                type: 'line',
+                data: {
+                    labels: etiquetasLotesPip,
+                    datasets: [{
+                        label: 'Cantidad Total Fabricada (PIP)',
+                        data: datosCantidadTotalPip,
+                        fill: false,
+                        borderColor: 'rgba(153, 102, 255, 1)',
+                        tension: 0.4,
+                        borderWidth: 3
+                    }]
+                }
+            });
+
+            var totalCantidadPip = datosCantidadTotalPip.reduce((a, b) => a + b, 0);
+            document.getElementById('conteoCantidadPip').textContent = 'Cantidad Total Fabricada PIP : ' + totalCantidadPip;
+
+            // Línea
+            var datosLotesLinea = {{ grafico_lotes_linea|safe }};
+            var etiquetasLotesLinea = datosLotesLinea.map(item => item.fecha);
+            var datosLotesCountLinea = datosLotesLinea.map(item => item.lotes_hechos);
+            var graficoLotesLinea = new Chart(ctxLotesLinea, {
+                type: 'bar',
+                data: {
+                    labels: etiquetasLotesLinea,
+                    datasets: [{
+                        label: 'Lotes Hechos (Línea)',
+                        data: datosLotesCountLinea,
+                        backgroundColor: 'rgba(153, 102, 255, 0.6)',
+                        borderColor: 'rgba(153, 102, 255, 1)',
+                        borderWidth: 2
+                    }]
+                }
+            });
+
+            var totalLotesLinea = datosLotesCountLinea.reduce((a, b) => a + b, 0);
+            document.getElementById('conteoLotesLinea').textContent = 'Total Lotes Hechos Linea: ' + totalLotesLinea;
+
+            var datosCantidadLinea = {{ grafico_cantidad_linea|safe }};
+            var datosCantidadTotalLinea = datosCantidadLinea.map(item => item.cantidad_total);
+            var graficoCantidadLinea = new Chart(ctxCantidadLinea, {
+                type: 'line',
+                data: {
+                    labels: etiquetasLotesLinea,
+                    datasets: [{
+                        label: 'Cantidad Total Fabricada (Línea)',
+                        data: datosCantidadTotalLinea,
+                        fill: false,
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        tension: 0.4,
+                        borderWidth: 3
+                    }]
+                }
+            });
+
+            var totalCantidadLinea = datosCantidadTotalLinea.reduce((a, b) => a + b, 0);
+            document.getElementById('conteoCantidadLinea').textContent = 'Cantidad Total Fabricada Linea: ' + totalCantidadLinea;
+        </script>
+<script>
+    $(document).ready(function() {
+        // Función para cargar los datos dinámicamente con AJAX
+        function cargarDatos() {
+            // Obtener los valores de los filtros
+            var fechaInicio = $('#fecha_inicio').val();
+            var fechaFin = $('#fecha_fin').val();
+
+            // Construir los parámetros para la solicitud AJAX
+            var params = {
+                'filtro_tiempo': 'rango',
+            };
+
+            // Si se seleccionó una fecha de inicio y/o final, añadirlas a los parámetros
+            if (fechaInicio) {
+                params['fecha_inicio'] = fechaInicio;
+            }
+            if (fechaFin) {
+                params['fecha_fin'] = fechaFin;
+            }
+
+            // Realizar la solicitud AJAX
+            
+        }
+
+
+        
+
+        // Cargar los datos al iniciar
+        cargarDatos();
+
+        // Recargar los datos cuando cambian los filtros
+        $('#fecha_inicio, #fecha_fin').change(function() {
+            cargarDatos();
+        });
+    });
+</script>
+
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html class="loading" lang="en" data-textdirection="ltr">
+<!-- BEGIN: Head-->
+{%load static%}
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=0,minimal-ui">
+    <meta name="description" content="Plataforma de admnistración Artisan">
+    <meta name="keywords" content="Artisan, Quesos, Lacteos, Helados">
+    <meta name="author" content="Artisan">
+    <title>Artisan | {%block title %}{%endblock%}</title>
+    <link rel="apple-touch-icon" href="{% static 'registration/images/logo/icono.ico' %}">
+    <link rel="shortcut icon" type="image/x-icon" href="{% static 'registration/images/logo/icono.ico' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500;1,600" rel="stylesheet">
+    <!-- BEGIN: Vendor CSS-->
+    <link rel="stylesheet" type="text/css" href="{% static 'nucleo/vendors/css/vendors.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'nucleo/vendors/css/extensions/toastr.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/tables/datatable/dataTables.bootstrap5.min.css'%}">
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/tables/datatable/responsive.bootstrap5.min.css'%}">
+    <!-- END: Vendor CSS-->
+
+    {%block head%}
+    
+    {%endblock%}
+
+    <!-- BEGIN: Theme CSS-->
+    <link rel="stylesheet" type="text/css" href="{% static 'nucleo/css/bootstrap.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'nucleo/css/bootstrap-extended.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'nucleo/css/colors.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'nucleo/css/components.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'nucleo/css/themes/dark-layout.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'nucleo/css/themes/bordered-layout.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'nucleo/css/themes/semi-dark-layout.css' %}">
+
+    <!-- BEGIN: Page CSS-->
+    <link rel="stylesheet" type="text/css" href="{% static 'nucleo/css/core/menu/menu-types/vertical-menu.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'nucleo/css/plugins/extensions/ext-component-toastr.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'nucleo/css/plugins/selectize.bootstrap3.min.css' %}">
+    <!-- END: Page CSS-->
+
+    <!-- BEGIN: Custom CSS-->
+    <!--<link rel="stylesheet" type="text/css" href="{% static 'nucleo/css/style.css' %}">-->
+    <!-- END: Custom CSS-->
+
+    <!-- font awesome -->
+    <script src="{% static 'nucleo/js/scripts/fontawesome.js' %}"></script>
+
+</head>
+<style>
+th, td { white-space: nowrap; }
+</style>
+<!-- END: Head-->
+
+<!-- BEGIN: Body-->
+        <!-- Mostrar mensajes -->
+        {% if messages %}
+            <div class="alert alert-success">
+                {% for message in messages %}
+                    <p>{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+<body class="vertical-layout vertical-menu-modern  navbar-floating footer-static  " data-open="click" data-menu="vertical-menu-modern" data-col="">
+
+    <!-- BEGIN: Header-->
+    <nav class="header-navbar navbar navbar-expand-lg align-items-center floating-nav navbar-light navbar-shadow">
+        <div class="navbar-container d-flex content">
+            <div class="bookmark-wrapper d-flex align-items-center">
+                <ul class="nav navbar-nav d-xl-none">
+                    <li class="nav-item"><a class="nav-link menu-toggle" href="#"><i class="ficon" data-feather="menu"></i></a></li>
+                </ul>
+            </div>
+            <ul class="nav navbar-nav align-items-center ms-auto">
+                <li class="nav-item d-none d-lg-block"><a class="nav-link nav-link-style"><i class="ficon" data-feather="moon"></i></a></li>
+               
+                <li class="nav-item dropdown dropdown-notification me-25"><a class="nav-link" href="#" data-bs-toggle="dropdown"><i class="ficon" data-feather="bell"></i><span class="badge rounded-pill bg-primary badge-up">0</span></a>
+                    <ul class="dropdown-menu dropdown-menu-media dropdown-menu-end">
+                        <li class="dropdown-menu-header">
+                            <div class="dropdown-header d-flex">
+                                <h4 class="notification-title mb-0 me-auto">Notificaciones</h4>
+                                <div class="badge rounded-pill badge-light-primary">--</div>
+                            </div>
+                        </li>
+                    </ul>
+                </li>
+                        
+                        
+                <li class="nav-item dropdown dropdown-user"><a class="nav-link dropdown-toggle dropdown-user-link" id="dropdown-user" href="#" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <div class="user-nav d-sm-flex d-none"><span class="user-name fw-bolder">{{request.user.first_name}}</span><span class="user-status">{{request.user.perfil.lugar.nombre}}</span></div>
+                        <span class="avatar">
+                        {%if request.user.perfil.avatar %}
+                        <img class="round" src="{{request.user.perfil.avatar.url}}" alt="avatar" height="40" width="40">
+                        {%else%}
+                        <img class="round" src="{% static 'nucleo/img/logo.png'%}" alt="avatar" height="40" width="40">{%endif%}
+                        <span class="avatar-status-online"></span></span>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdown-user"><a class="dropdown-item" href="{% url 'perfil:perfil' %}"><i class="me-50" data-feather="user"></i> Perfil</a><a class="dropdown-item" href="{%url 'logout'%}"><i class="me-50" data-feather="power"></i> Salir</a>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <ul class="main-search-list-defaultlist d-none">
+        <li class="d-flex align-items-center"><a href="#">
+                <h6 class="section-label mt-75 mb-0">Files</h6>
+            </a></li>
+        <li class="auto-suggestion"><a class="d-flex align-items-center justify-content-between w-100" href="app-file-manager.html">
+                <div class="d-flex">
+                    <div class="me-75"><img src="{% static 'nucleo/images/icons/xls.png'%}" alt="png" height="32"></div>
+                    <div class="search-data">
+                        <p class="search-data-title mb-0">Two new item submitted</p><small class="text-muted">Marketing Manager</small>
+                    </div>
+                </div><small class="search-data-size me-50 text-muted">&apos;17kb</small>
+            </a></li>
+        <li class="auto-suggestion"><a class="d-flex align-items-center justify-content-between w-100" href="app-file-manager.html">
+                <div class="d-flex">
+                    <div class="me-75"><img src="{% static 'nucleo/images/icons/jpg.png'%}" alt="png" height="32"></div>
+                    <div class="search-data">
+                        <p class="search-data-title mb-0">52 JPG file Generated</p><small class="text-muted">FontEnd Developer</small>
+                    </div>
+                </div><small class="search-data-size me-50 text-muted">&apos;11kb</small>
+            </a></li>
+        <li class="auto-suggestion"><a class="d-flex align-items-center justify-content-between w-100" href="app-file-manager.html">
+                <div class="d-flex">
+                    <div class="me-75"><img src="{% static 'nucleo/images/icons/pdf.png'%}" alt="png" height="32"></div>
+                    <div class="search-data">
+                        <p class="search-data-title mb-0">25 PDF File Uploaded</p><small class="text-muted">Digital Marketing Manager</small>
+                    </div>
+                </div><small class="search-data-size me-50 text-muted">&apos;150kb</small>
+            </a></li>
+        <li class="auto-suggestion"><a class="d-flex align-items-center justify-content-between w-100" href="app-file-manager.html">
+                <div class="d-flex">
+                    <div class="me-75"><img src="{% static 'nucleo/images/icons/doc.png'%}" alt="png" height="32"></div>
+                    <div class="search-data">
+                        <p class="search-data-title mb-0">Anna_Strong.doc</p><small class="text-muted">Web Designer</small>
+                    </div>
+                </div><small class="search-data-size me-50 text-muted">&apos;256kb</small>
+            </a></li>
+        <li class="d-flex align-items-center"><a href="#">
+                <h6 class="section-label mt-75 mb-0">Members</h6>
+            </a></li>
+        <li class="auto-suggestion"><a class="d-flex align-items-center justify-content-between py-50 w-100" href="app-user-view.html">
+                <div class="d-flex align-items-center">
+                    <div class="avatar me-75"><img src="{% static 'nucleo/images/portrait/small/avatar-s-8.jpg'%}" alt="png" height="32"></div>
+                    <div class="search-data">
+                        <p class="search-data-title mb-0">John Doe</p><small class="text-muted">UI designer</small>
+                    </div>
+                </div>
+            </a></li>
+        <li class="auto-suggestion"><a class="d-flex align-items-center justify-content-between py-50 w-100" href="app-user-view.html">
+                <div class="d-flex align-items-center">
+                    <div class="avatar me-75"><img src="{% static 'nucleo/images/portrait/small/avatar-s-1.jpg'%}" alt="png" height="32"></div>
+                    <div class="search-data">
+                        <p class="search-data-title mb-0">Michal Clark</p><small class="text-muted">FontEnd Developer</small>
+                    </div>
+                </div>
+            </a></li>
+        <li class="auto-suggestion"><a class="d-flex align-items-center justify-content-between py-50 w-100" href="app-user-view.html">
+                <div class="d-flex align-items-center">
+                    <div class="avatar me-75"><img src="{% static 'nucleo/images/portrait/small/avatar-s-14.jpg'%}" alt="png" height="32"></div>
+                    <div class="search-data">
+                        <p class="search-data-title mb-0">Milena Gibson</p><small class="text-muted">Digital Marketing Manager</small>
+                    </div>
+                </div>
+            </a></li>
+        <li class="auto-suggestion"><a class="d-flex align-items-center justify-content-between py-50 w-100" href="app-user-view.html">
+                <div class="d-flex align-items-center">
+                    <div class="avatar me-75"><img src="{% static 'nucleo/images/portrait/small/avatar-s-6.jpg'%}" alt="png" height="32"></div>
+                    <div class="search-data">
+                        <p class="search-data-title mb-0">Anna Strong</p><small class="text-muted">Web Designer</small>
+                    </div>
+                </div>
+            </a></li>
+    </ul>
+    <!-- END: Header-->
+
+
+    <!-- BEGIN: Main Menu-->
+    <div class="main-menu menu-fixed menu-light menu-accordion menu-shadow" data-scroll-to-active="true">
+        <div class="navbar-header">
+            <ul class="nav navbar-nav flex-row">
+                <li class="nav-item me-auto"><a class="navbar-brand" href="{% url 'home'%}"><span class="brand-logo">
+                            <img width="50px" src="{% static 'nucleo/img/logo.png' %}"></span>
+                        <h2 class="brand-text">Artisan</h2>
+                    </a></li>
+                <li class="nav-item nav-toggle"><a class="nav-link modern-nav-toggle pe-0" data-bs-toggle="collapse"><i class="d-block d-xl-none text-primary toggle-icon font-medium-4" data-feather="x"></i><i class="d-none d-xl-block collapse-toggle-icon font-medium-4  text-primary" data-feather="disc" data-ticon="disc"></i></a></li>
+            </ul>
+        </div>
+        <div class="shadow-bottom"></div>
+        <div class="main-menu-content">
+            <ul class="navigation navigation-main" id="main-menu-navigation" data-menu="menu-navigation">
+                <li class="{% if request.path == '/' %}active{%endif%} nav-item mt-2"><a class="d-flex align-items-center" href="{%url 'home' %}"><i data-feather="home"></i><span class="menu-title text-truncate">Inicio</span></a>
+                </li>
+                <!-- ADQUISICIONES -->
+                {%if 'ordendecompra.listar' in perms or 'inventario.inventarioi.listar' in perms or 'solicitudes.listar' in perms%}
+                <li class="navigation-header"><span>Adquisiciones</span><i data-feather="more-horizontal"></i></li>
+                {%endif%}
+                {%if 'ordendecompra.listar' in perms%}
+                <li class="nav-item {%if 'ordendecompra' in request.path %}active{%endif%}"><a class="d-flex align-items-center" href="{% url 'ordendecompra:lista' %}"><i data-feather="book"></i><span class="menu-title text-truncate">Ordenes de compra</span></a></li>
+                {%endif%}
+                {%if 'inventario.inventarioi.listar' in perms%}
+                <li class="nav-item"><a class="d-flex align-items-center"><i data-feather="archive"></i><span class="menu-title text-truncate">Inventario Insumos</span></a>
+                    <ul>
+                    {% for bodega in bodegasnav %}
+                        {% if bodega.permisoi in perms%}
+                        <li class="{%if 'inventario' in request.path and bodega.lugar in request.path and 'insumos' in request.path %}active{%endif%}"><a class="d-flex align-items-center" href="{% url 'inventario:insumo' bodega.lugar %}"><i data-feather="circle"></i><span class="menu-item text-truncate">{{bodega.lugar}}</span></a></li>
+                        {%endif%}
+                    {%endfor%}
+                    {%if 'inventario.inventarioi.global'%}
+                    <li class="{%if 'inventario/insumos' in request.path %}active{%endif%}"><a href="{% url 'inventario:insumo-global' %}"><i data-feather="circle"></i><span class="menu-item text-truncate">Global</span></a></li>
+                    {%endif%}
+                    </ul>
+                </li>
+                {%endif%}
+                {%if 'solicitudes.listar' in perms%}
+                <li class="nav-item {%if 'solicitudes' in request.path %}active{%endif%}"><a class="d-flex align-items-center" href="{% url 'solicitudes:lista' %}"><i class="fas fa-hand-holding"></i><span class="menu-title text-truncate">Solicitudes</span></a></li>
+                {%endif%}
+                <!-- PRODUCCIÓN -->
+                {% if 'produccion.pauta.listar' in perms %}
+                <li class="navigation-header"><span>Producción</span><i data-feather="more-horizontal"></i></li>
+                {%endif%}
+                 {%if 'produccion.pauta.listar' in perms%}
+                <li class="nav-item {%if 'produccion' in request.path %}active{%endif%}"><a class="d-flex align-items-center" href="{% url 'produccion:lote:lista' %}"><i data-feather="book-open"></i><span class="menu-title text-truncate">Producción Real</span></a></li>
+                {%endif%}
+                {%if 'inventario.inventariop.listar' in perms%}
+                <li class="nav-item"><a class="d-flex align-items-center"><i data-feather="briefcase"></i><span class="menu-title text-truncate">Inventario Productos</span></a>
+                    <ul>
+                        {% for bodega in bodegasnav %}
+                            {% if bodega.permisop in perms%}
+                            <li class="{%if 'inventario' in request.path and bodega.lugar in request.path and 'productos' in request.path %}active{%endif%}"><a class="d-flex align-items-center" href="{% url 'inventario:producto' bodega.lugar %}"><i data-feather="circle"></i><span class="menu-item text-truncate">{{bodega.lugar}}</span></a></li>
+                            {%endif%}
+                        {%endfor%}
+                        {%if 'inventario.inventariop.global'%}
+                        <li class="{%if 'inventario/productos' in request.path %}active{%endif%}"><a href="{% url 'inventario:producto-global' %}"><i data-feather="circle"></i><span class="menu-item text-truncate">Global</span></a></li>
+                        {%endif%}
+                    </ul>
+                </li>
+                {%endif%}
+                <!-- LOGISTICA -->
+                {% if 'logistica.envio.listar' in perms or 'logistica.pallet.listar' in perms or 'logistica.ruta.listar' in perms %}
+                <li class="navigation-header"><span>Logística</span><i data-feather="more-horizontal"></i></li>
+                {%endif%}
+                {%if 'logistica.envio.listar' in perms%}
+                <li class="nav-item {%if 'logistica' in request.path and 'envios' in request.path %}active{%endif%}"><a class="d-flex align-items-center" href="{% url 'logistica:envios:lista' %}"><i data-feather="truck"></i><span class="menu-title text-truncate">Envios</span></a></li>
+                {%endif%}
+                {%if 'logistica.ruta.listar' in perms%}
+                <li class="nav-item {%if 'logistica' in request.path and 'rutas' in request.path %}active{%endif%}"><a class="d-flex align-items-center" href="{% url 'logistica:rutas:lista' %}"><i class="fas fa-route"></i><span class="menu-title text-truncate">Rutas</span></a></li>
+                {%endif%}
+                {%if 'logistica.pallet.listar' in perms%}
+                <li class="nav-item {%if 'logistica' in request.path and 'pallets' in request.path %}active{%endif%}"><a class="d-flex align-items-center" href="{% url 'logistica:pallet:lista' %}"><i data-feather="layers"></i><span class="menu-title text-truncate">Pallets</span></a></li>
+                {%endif%}
+                
+                
+
+                <!-- VENTAS -->
+                {% if 'ventas.listap.listar' in perms or 'ventas.orden.listar' in perms%}
+                <li class="navigation-header"><span>Ventas</span><i data-feather="more-horizontal"></i></li>
+                {%endif%}
+                {%if 'ventas.orden.listar' in perms%}
+                <li class="nav-item {%if 'ventas/ordenes' in request.path%}active{%endif%}"><a class="d-flex align-items-center" href="{% url 'ventas:orden:lista' %}"><i data-feather="bookmark"></i><span class="menu-title text-truncate">Ordenes de Venta</span></a></li>
+                {%endif%}
+                {%if 'ventas.listap.listar' in perms%}
+                <li class="nav-item {%if 'ventas/listas' in request.path%}active{%endif%}"><a class="d-flex align-items-center" href="{% url 'ventas:listap:lista' %}"><i data-feather="list"></i><span class="menu-title text-truncate">Listas de precios</span></a></li>
+                {%endif%}
+
+                <!-- COSTEO -->
+                {% if 'costeo.listar' in perms %}
+                <li class="navigation-header"><span>Costeo</span><i data-feather="more-horizontal"></i></li>
+                <li class="nav-item {% if 'costeo/productos/listar' in request.path %}active{% endif %}">
+                    <a class="d-flex align-items-center" href="{% url 'costeo:listar' %}">
+                        <i class="fas fa-dollar-sign"></i>
+                        <span class="menu-title text-truncate">Productos</span>
+                    </a>
+                </li>
+                {% endif %}
+                {% if 'costeo.margen' in perms %}
+
+                <li class="nav-item {% if 'costeo/margen' in request.path %}active{% endif %}">
+                    <a class="d-flex align-items-center" href="{% url 'costeo:margen' %}">
+                        <i class="fas fa-chart-line"></i>
+                        <span class="menu-title text-truncate">Margen</span>
+                    </a>
+                </li>
+                {% endif %}
+
+
+                <!-- CALIDAD -->
+                {%if 'calidad.utensiliolimpieza.listar' in perms or 'calidad.registrolimpiezaequipo.listar' in perms or 'calidad.grupos.listar' in perms or 'calidad.produccion.lista' in perms%}
+                <li class="navigation-header"><span>Calidad</span><i data-feather="more-horizontal"></i></li>
+                {%endif%}
+                {%if 'calidad.grupos.listar' in perms%}
+                <li class="nav-item {%if 'calidad/grupos' in request.path %}active{%endif%}"><a class="d-flex align-items-center" href="{% url 'calidad:grupo:lista' %}"><i class="fas fa-layer-group"></i><span class="menu-title text-truncate">Grupos</span></a></li>
+                {%endif%}
+                {%if 'calidad.registrolimpiezaequipo.listar' in perms%}
+                <li class="nav-item {%if 'limpiezaequipo' in request.path %}active{%endif%}"><a class="d-flex align-items-center" href="{% url 'calidad:limpiezaequipo:lista' %}"><i data-feather="trello"></i><span class="menu-title text-truncate">Registro Equipos</span></a></li>
+                {%endif%}
+                {%if 'calidad.utensiliolimpieza.listar' in perms%}
+                <li class="nav-item {%if 'utensiliolimpieza' in request.path %}active{%endif%}"><a class="d-flex align-items-center" href="{% url 'calidad:utensiliolimpieza:lista' %}"><i data-feather="tool"></i><span class="menu-title text-truncate">Artículos de limpieza</span></a></li>
+                {%endif%}
+                {%if 'calidad.elaboraciones.lista' in perms%}
+                <li class="nav-item {%if 'elaboraciones' in request.path %}active{%endif%}"><a class="d-flex align-items-center" href="{% url 'calidad:elaboraciones:lista' %}"><i data-feather="book-open"></i><span class="menu-title text-truncate">Calidad Produccion</span></a></li>
+                {%endif%}
+
+                <!-- HISTORIAL -->
+                {%if 'inventario.historial.listar' in perms%}
+                <li class="navigation-header"><span>Historial Inventario</span><i data-feather="more-horizontal"></i></li>
+                {%endif%}
+                {%if 'inventario.historial.listar' in perms%}
+                <li class="nav-item {%if 'historial' in request.path %}active{%endif%}"><a class="d-flex align-items-center" href="{% url 'historial:lista' %}"><i data-feather="save"></i><span class="menu-title text-truncate">Historial</span></a></li>
+                {%endif%}
+                <!-- ADMINISTRACIÓN -->
+                {% if request.user.panelAdministrativo %}
+                <li class="navigation-header"><span>Administracion</span><i data-feather="more-horizontal"></i></li>
+                {%endif%}
+                {%if 'proveedores.listar' in perms %}
+                <li class="nav-item {%if 'proveedor' in request.path %}active{%endif%}"><a class="d-flex align-items-center" href="{% url 'administrador:proveedor:lista' %}"><i data-feather="users"></i><span class="menu-title text-truncate">Proveedores</span></a></li>
+                {%endif%}
+                {% if 'nucleo.insumo.listar' in perms %}
+                <li class="nav-item {%if 'insumo' in request.path and not 'inventario' in request.path %}active{%endif%}">
+                    <a class="d-flex align-items-center" href="{% url 'administrador:insumo:lista' %}">
+                        <i data-feather="archive"></i>
+                        <span class="menu-title text-truncate">Insumos</span>
+                    </a>
+                </li>
+                {% endif %}
+                {%if 'inventario.bodega.listar' in perms %}
+                <li class="nav-item {%if 'bodega' in request.path %}active{%endif%}"><a class="d-flex align-items-center" href="{% url 'administrador:bodega:lista' %}"><i data-feather="database"></i><span class="menu-title text-truncate">Bodegas</span></a></li>
+                {%endif%}
+                {%if 'equipo.listar' in perms %}
+                <li class="nav-item {%if '/administrador/equipos' in request.path %}active{%endif%}"><a class="d-flex align-items-center" href="{% url 'administrador:equipo:lista' %}"><i data-feather="trello"></i><span class="menu-title text-truncate">Equipos</span></a></li>
+                {%endif%}
+                {%if 'clientes.cliente.listar' in perms%}
+                <li class="{%if 'cliente' in request.path %}active{%endif%} nav-item"><a class="d-flex align-items-center" href="{% url 'administrador:cliente:lista' %}"><i data-feather="smile"></i><span class="menu-title text-truncate">Clientes</span></a></li>
+                {%endif%}
+                {%if 'nucleo.producto.listar' in perms%}
+                <li class="nav-item"><a class="d-flex align-items-center" href="{% url 'administrador:producto:lista' %}"><i data-feather="gift"></i><span class="menu-title text-truncate">Productos</span></a>
+                 <ul>
+                    {% if 'nucleo.producto.listar' in perms%}
+                        <li class="{%if 'productos/' in request.path and 'administrador' in request.path and 'grupos' not in request.path %}active{%endif%} nav-item"><a class="d-flex align-items-center" href="{% url 'administrador:producto:lista' %}"><i data-feather="circle"></i><span class="menu-title text-truncate">Productos</span></a>
+                    {%endif%}
+                    {% if 'nucleo.rama.listar' in perms%}
+                    <li class="{%if 'areas' in request.path %}active{%endif%}"><a class="d-flex align-items-center" href="{% url 'administrador:area:lista' %}"><i data-feather="circle"></i><span class="menu-item text-truncate">Áreas</span></a></li>
+                    {%endif%}
+                        
+                    </ul>
+                </li>
+                {%endif%}
+                {%if 'pauta.listar' in perms%}
+                <li class="{%if 'administrador/pauta' in request.path%}active{%endif%} nav-item"><a class="d-flex align-items-center" href="{% url 'administrador:pauta:lista' %}"><i data-feather="book-open"></i><span class="menu-title text-truncate">Pautas</span></a></li>
+                {%endif%}
+                {%if 'usuarios.lista' in perms %}
+                <li class="{%if 'usuario' in request.path%}active{%endif%} nav-item"><a class="d-flex align-items-center" href="{% url 'administrador:usuario:lista' %}"><i data-feather="user-plus"></i><span class="menu-title text-truncate">Usuarios</span></a></li>
+                {%endif%}   
+
+                {%if 'estados.listar' in perms %}
+                <li class="{%if 'estado' in request.path%}active{%endif%} nav-item"><a class="d-flex align-items-center" href="{% url 'administrador:estados:lista_estado' %}"><i data-feather="pie-chart"></i><span class="menu-title text-truncate">PVA</span></a></li>
+                {%endif%}
+            </ul>
+        </div>
+    </div>
+    <!-- END: Main Menu-->
+{%block content%}{%endblock%}
+<div class="sidenav-overlay"></div>
+    <div class="drag-target"></div>
+
+    <!-- BEGIN: Footer-->
+    <footer class="footer footer-static footer-light">
+        <p class="clearfix mb-0"><span class="float-md-start d-block d-md-inline-block mt-25"><a class="ms-25" href="#" target="_blank">Artisan </a><span class="d-none d-sm-inline-block"> &copy; 2021, Todos los derechos reservados</span></span><span class="float-md-end d-none d-md-block">Hecho con <i data-feather="heart"></i></span></p>
+    </footer>
+    <button class="btn btn-primary btn-icon scroll-top" type="button"><i data-feather="arrow-up"></i></button>
+    <!-- END: Footer-->
+
+    <!-- axios y vuejs -->
+    <script src="{% static 'nucleo/js/vue.js'%}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <!-- BEGIN: Vendor JS-->
+    <script src="{% static 'nucleo/vendors/js/vendors.min.js'%}"></script>
+    <!-- BEGIN Vendor JS-->
+
+
+    <!-- BEGIN: Theme JS-->
+    <script src="{% static 'nucleo/js/core/app-menu.js'%}"></script>
+    <script src="{% static 'nucleo/js/core/app.js'%}"></script>
+    <script src="{% static 'nucleo/vendors/js/extensions/toastr.min.js'%}"></script>
+    <script src="{% static 'nucleo/vendors/js/tables/datatable/jquery.dataTables.min.js'%}"></script>
+    <script src="{% static 'nucleo/vendors/js/tables/datatable/dataTables.bootstrap5.min.js'%}"></script>
+    <script src="{% static 'nucleo/vendors/js/tables/datatable/dataTables.responsive.min.js'%}"></script>
+    <script src="{% static 'nucleo/vendors/js/tables/datatable/responsive.bootstrap4.js'%}"></script>
+    <script src="{% static 'nucleo/js/scripts/selectize.js'%}"></script>
+
+    <!-- END: Theme JS-->
+
+    <script>
+    let formatter = new Intl.NumberFormat('es-CL', {
+        style: 'currency',
+        currency: 'CLP',
+        minimumFractionDigits: 0,
+    });
+    function procesarScan(valor){
+        info = valor.split(' ');
+        return info
+    }
+
+    </script>
+
+    {%block scripts%}
+
+    {%endblock%}
+
+    <script>
+        $(window).on('load', function() {
+            if (feather) {
+                feather.replace({
+                    width: 14,
+                    height: 14
+                });
+            }
+        })
+    </script>
+
+    <script>
+        {%if 'tipo_mensaje' in request.GET and 'mensaje' in request.GET%}
+        let tipo = "{{request.GET.tipo_mensaje}}";
+        let mensaje = "{{request.GET.mensaje}}";
+        if(tipo == 'error'){
+            toastr.error(mensaje,"Error de Permiso");
+        }else if(tipo == 'info'){
+            toastr.info(mensaje,"Información");
+        }
+        {%elif 'mensaje' in request.GET%}
+                toastr.info("{{request.GET.mensaje}}","Informacion");
+        {%endif%}
+    </script>
+
+    <script>
+        function activarTooltip(){
+            $('[data-bs-tooltip="tooltip"]').tooltip();
+        }
+        function capitalize(word) {
+            return word[0].toUpperCase() + word.slice(1).toLowerCase();
+        }
+    </script>
+
+</body>
+<!-- END: Body-->
+
+</html>

@@ -1,0 +1,126 @@
+{% extends 'nucleo/base.html' %}
+{%block title%}Perfil{%endblock%}
+{%block content%}
+<style>
+.errorlist{
+    color:red;
+    list-style:none;
+    padding-left:0;
+}
+input[type='checkbox']{
+    margin:0 4px 0 8px;
+}
+</style>
+<!-- BEGIN: Content-->
+    <div class="app-content content ">
+        <div class="content-overlay"></div>
+        <div class="header-navbar-shadow"></div>
+        <div class="content-wrapper container-fluid p-0">
+            <div class="content-header row">
+                <div class="content-header-left col-md-9 col-12 mb-2">
+                    <div class="row breadcrumbs-top">
+                        <div class="col-12">
+                            <h2 class="content-header-title float-start mb-0">Perfil</h2>
+                            <div class="breadcrumb-wrapper">
+                                <ol class="breadcrumb">
+                                    <li class="breadcrumb-item active">Actualizar
+                                    </li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="content-body">
+                <!-- Dashboard -->
+                <div class="card" id="app">
+                    <div class="card-body">
+                        <div class="card-text">
+                            <form id="formulario" class="form form-horizontal" method="post" enctype="multipart/form-data">{% csrf_token %}
+                                <div class="row">
+                                    <div class="col-12" id="app">
+                                    {%for field in form %}
+                                        
+                                        <div class="mb-1 row">
+                                        <div class="col-sm-3">{{field.label_tag}} {%if field.field.required %}<span style="color:red">*</span>{%endif%}</div>
+                                        {%if field.id_for_label == 'id_pin'%}
+                                        <div class="col-sm-6 position-relative"><input type="number" v-model="pin" name="pin" class="form-control" @keydown="hola" @keyup="checkPin" max="9999" maxlength="4" required="" id="id_pin">
+                                        <span class="small">El PIN debe tener un total de 4 números. estado: <span style="color:green;font-weight:bold" v-if="estado">Correcto</span> <span style="color:red;font-weight:bold" v-else>Incorrecto</span></span>
+                                        {%else%}
+                                        <div class="col-sm-6 position-relative">{{field}}
+                                        {% if field.help_text %}
+                                        <small class="">{{field.help_text|safe}}</small>
+                                        {%endif%}
+                                        {%endif%}
+                                        {%if field.errors %}
+                                        <div class="invalid-feedback" style="display:block;">{{field.errors.as_text}}</div>
+                                        
+                                        {%endif%}
+                                        </div>
+                                        </div>
+                                    {%endfor%}
+                                    <div class="mb-1 row">
+                                        <div class="col-sm-3"><label for="id_pin">Lugar de Trabajo:</label></div>
+                                        <div class="col-sm-6 position-relative"><input class="form-control" disabled value="{{request.user.perfil.lugar.nombre}}"/>
+                                        <small>Si el lugar de trabajo es incorrecto, contactar con un <b>supervisor</b>.</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-12">
+                                        <button @click="enviar" class="btn btn-primary me-1 waves-effect waves-float waves-light">Actualizar Perfil</button>
+                                        <a target="_blank" href="{%url 'perfil:qr'%}"><button type="button" class="btn btn-info waves-effect waves-float waves-light">Codigo Qr</button></a>
+                                    </div>
+                                
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <!--/ Dashboard -->
+            </div>
+        </div>
+    </div>
+    <!-- END: Content-->
+{%endblock%}
+
+{%block scripts%}
+<script>
+let vue = Vue.createApp({
+    data(){
+        return {
+            pin: "{{object.pin}}",
+            estado: false
+        }
+    },
+    methods:{
+        hola(e){
+            if (e.key == 'e' || e.key == 'E'){
+                e.preventDefault();
+            }
+            if (e.target.value.length > 3){
+                if (e.key != 'Backspace'){
+                    e.preventDefault();
+                } 
+            }
+        },
+        checkPin(){
+            if (String(this.pin).length == 4){
+                this.estado = true;
+                return true;
+            }else{
+                this.estado = false;
+                return false;
+            }
+        },
+        enviar(){
+            let form = document.getElementById('formulario');
+            if (this.checkPin()){
+                form.submit();
+            }else{
+                alert("El PIN debe tener un largo de 4 números.");
+            }
+        },
+
+    },
+    mounted(){ this.checkPin();}
+}).mount('#app');
+</script>
+{%endblock%}

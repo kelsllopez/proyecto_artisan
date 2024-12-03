@@ -1,0 +1,89 @@
+{%extends 'registration/base.html' %}
+
+{%block title%}Ingresar{%endblock%}
+
+{%block content%}
+<!-- Login-->
+<div class="d-flex col-lg-4 align-items-center auth-bg px-2 p-lg-5">
+    <div class="col-12 col-sm-8 col-md-6 col-lg-12 px-xl-2 mx-auto">
+        <h2 class="card-title fw-bold mb-1">Bienvenido a Artisan👋</h2>
+        <p class="card-text mb-2">{{usuario}}</p>
+        <form id="app" class="auth-login-form mt-2" action="" method="post">{% csrf_token %}
+            {% if form.non_field_errors %}
+                <p style="color:red">Usuario o contraseña incorrectos, prueba de nuevo.</p>
+            {% endif %}
+            <div class="mb-1">
+                <label class="form-label" for="pin_id">PIN</label>
+                <input v-model="pin" class="form-control" id="id_pin" type="text" name="pin" required placeholder="Ingresa tu Pin" aria-describedby="pin_id" autofocus="" tabindex="1" />
+                 {%if invalido%}
+                     <div class="invalid-feedback" style="display:block;"><ul><li>La PIN ingresada es incorrecta.</li></ul></div>
+                 {%endif%}
+                 {%if form.pin.errors %}
+                    <div class="invalid-feedback" style="display:block;">{{form.pin.errors}}</div>
+                {%endif%}
+            </div>
+            <div class="col-12">
+                <div class="row text-center">
+                    <div class="col-4"><button @click="agregar" type="button" class="btn btn-primary">1</button></div>
+                    <div class="col-4"><button @click="agregar" type="button" class="btn btn-primary">2</button></div>
+                    <div class="col-4"><button @click="agregar" type="button" class="btn btn-primary">3</button></div>
+                </div>
+                <div class="row mt-1 text-center">
+                    <div class="col-4"><button @click="agregar" type="button" class="btn btn-primary">4</button></div>
+                    <div class="col-4"><button @click="agregar" type="button" class="btn btn-primary">5</button></div>
+                    <div class="col-4"><button @click="agregar" type="button" class="btn btn-primary">6</button></div>
+                </div>
+                 <div class="row mt-1 text-center">
+                    <div class="col-4"><button @click="agregar" type="button" class="btn btn-primary">7</button></div>
+                    <div class="col-4"><button @click="agregar" type="button" class="btn btn-primary">8</button></div>
+                    <div class="col-4"><button @click="agregar" type="button" class="btn btn-primary">9</button></div>
+                </div>
+                <div class="row mt-1 text-center">
+                    <div class="col-4"><button @click="agregar" type="button" class="btn btn-primary">0</button></div>
+                    <div class="col-4"><button @click="borrar" type="button" class="btn btn-primary"><i data-feather='arrow-left'></i></button></div>
+                    <div class="col-4"><button @click="eliminar" type="button" class="btn btn-primary"><i data-feather='trash'></i></button></div>
+                </div>
+            </div>
+            <button class="btn mt-2 btn-primary w-100" tabindex="4">Ingresar</button>
+        </form>
+    </div>
+</div>
+{%endblock%}
+{%block scripts%}
+<script src="https://unpkg.com/vue@next"></script>
+<!-- /Login-->
+{%load static%}
+<script src="{% static 'nucleo/vendors/js/vendors.min.js'%}"></script>
+<script>
+    $(window).on('load', function() {
+        if (feather) {
+            feather.replace({
+                width: 14,
+                height: 14
+            });
+        }
+    });
+</script>
+<script>
+let vue = Vue.createApp({
+    data(){
+        return {
+            pin: "",
+        }
+    },
+    methods:{
+        agregar(e){
+            if (this.pin.length <= 3){
+                this.pin += e.target.innerHTML;
+            }
+        },
+        borrar(e){
+            this.pin = this.pin.substring(0, this.pin.length - 1);
+        },
+        eliminar(e){
+            this.pin = "";
+        }
+    }
+}).mount('#app');
+</script>
+{%endblock%}

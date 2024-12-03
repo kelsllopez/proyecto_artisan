@@ -1,0 +1,191 @@
+{% extends 'nucleo/base.html'%}
+{%block title%}Detalle Pauta de elaboración # {{object.id}}{%endblock%}
+{%load static%}
+{%block head%}
+<link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/pickers/pickadate/pickadate.css'%}">
+<link rel="stylesheet" type="text/css" href="{%static 'nucleo/css/plugins/forms/pickers/form-pickadate.css'%}">
+{%endblock%}
+{%block content%}
+<style>
+.errorlist{
+    color:red;
+    list-style:none;
+    padding-left:0;
+}
+</style>
+<!-- BEGIN: Content-->
+    <div class="app-content content ">
+        <div class="content-overlay"></div>
+        <div class="header-navbar-shadow"></div>
+        <div class="content-wrapper container-fluid p-0">
+            <div class="content-header row">
+                <div class="content-header-left col-md-9 col-12 mb-2">
+                    <div class="row breadcrumbs-top">
+                        <div class="col-12">
+                            <h2 class="content-header-title float-start mb-0">Producción</h2>
+                            <div class="breadcrumb-wrapper">
+                                <ol class="breadcrumb">
+                                    <li class="breadcrumb-item"><a href="{% url 'produccion:lote:lista' %}">Pautas</a>
+                                    </li>
+                                    <li class="breadcrumb-item active">Detalle
+                                    </li>
+                                    <li class="breadcrumb-item active">{{object.id}}
+                                    </li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="content-body">
+                <!-- Dashboard -->
+                <div class="card">
+
+                    <div class="card-body">
+                        <div class="card-text">
+                            <h3>Información</h3>
+                            <hr>
+                            <table class="table table-responsive table-striped table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Información</th>
+                                        <th>Dato</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Nombre Pauta</td>
+                                        <td>{{object.plantilla_pauta.nombre}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Estado</td>
+                                        <td>{{object.estado}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Fecha de elaboración</td>
+                                        <td>{{object.fecha|date:"d M Y"}}</td>
+                                    </tr>
+                                    {%if object.cdp%}
+                                    <tr>
+                                        {%load filtros%}
+                                        <td>Costo de Producción Directo</td>
+                                        <td>$ {{object.cdp|monedafix}}</td>
+                                    </tr>
+                                    {%endif%}
+                                    {%load mathfilters%}
+                                    {%if object.cdp != 0 and object.masa_final != None and object.masa_final > 0%}
+                                    <tr>
+                                        <td>Costo por KG</td>
+                                        <td>${{object.cdp|div:object.masa_final|monedafix}}</td>
+                                    </tr>
+                                    {%else%}
+                                    <tr>
+                                        <td>Costo por KG</td>
+                                        <td>No hay datos sobre la cantidad elaborada de masa.</td>
+                                    </tr>
+                                    {%endif%}
+                                    <tr>
+                                        <td>Masa Final</td>
+                                        <td>{{object.masa_final}} Kilogramos</td>
+                                    </tr>
+                                    
+                                    <tr>
+                                        <td>Planta</td>
+                                        <td>{{object.lugar.nombre}}</td>
+                                    </tr>
+                                </tbody>
+                                <thead>
+                                    <tr>
+                                        <th>Ingrediente</th>
+                                        <th>Cantidad</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {%for ingrediente in object.ingredienteproduccion_set.all%}
+                                    <tr>
+                                        <td>{{ingrediente.plantilla_ingrediente.insumo.nombre}}</td>
+                                        <td>{{ingrediente.cantidad}} ({{ingrediente.unidad}}s)</td>
+                                    </tr>
+                                    {%endfor%}
+                                </tbody>
+                            </table>
+                            <h3 class="mt-1">Etapas</h3>
+                            <hr>
+                            <table class="table table-striped">
+                            {%for etapa in object.plantilla_pauta.etapa_set.all%}
+                                <thead>
+                                    <tr>
+                                        <th>{{etapa.nombre}}</th>
+                                        {%for parametro in parametros%}
+                                        <th>{{parametro.nombre}}</th>
+                                        {%endfor%}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {%for instruccion in etapa.instruccion_set.all%}
+                                    <tr>
+                                        <td>{{instruccion.descripcion}}</td>
+                                        {%load filtrosproduccion%}
+                                        {%for parametro in parametros%}
+                                            {{instruccion.instruccionproduccion_set|obtenercolumna:object.id|filtrarcolumna:parametro.id|safe}}
+                                        {%endfor%}
+                                    </tr>
+                                    {%endfor%}
+                                </tbody>
+                            {%endfor%}
+                            </table>
+                            {%if object.insumoprocesoproduccion_set.all|length > 0%}
+                            <h3 class="mt-1">Subproductos</h3>
+                            <hr>
+                            <table class="table table-striped table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Insumo</th>
+                                        <th>Cantidad</th>
+                                        <th>Cantidad Utilizada</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {%for insumo in object.insumoprocesoproduccion_set.all %}
+                                    <tr>
+                                        <td>{{insumo.plantilla_ip.insumo.nombre}}</td>
+                                        <td>{{insumo.cantidad}} {{insumo.plantilla_ip.insumo.unidad}}s</td>
+                                        <td>{{insumo.cantidadu}} {{insumo.plantilla_ip.insumo.unidad}}s</td>
+                                    </tr>
+                                    {%endfor%}
+                                </tbody>
+                            </table>
+                            {%endif%}
+                            {%if object.lote_set.all|length > 0%}
+                            <h3 class="mt-1">Lotes</h3>
+                            <hr>
+                            <table class="table table-striped table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Producto</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                {%for lote in object.lote_set.all%}
+                                    {%if lote.producto is not None%}
+                                    <tr>
+                                        <td><a target="_blank" href="{%url 'produccion:lote:detalle' lote.pk %}">{{lote.numero}}</a></td>
+                                        <td>{{lote.producto}}</td>
+                                        <td>{{lote.estado.nombre}}</td>
+                                    </tr>
+                                    {%endif%}
+                                {%endfor%}
+                                </tbody>
+                            </table>
+                            {%endif%}
+                        </div>
+                    </div>
+                </div>
+                <!--/ Dashboard -->
+            </div>
+        </div>
+    </div>
+    <!-- END: Content-->
+{%endblock%}

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orden de Compra N° {{orden.numero}}</title>
+</head>
+<style>
+
+@page {
+        size: a4 portrait;
+        margin-top: 20px;
+        margin-left: 60px;
+        margin-right: 60px;
+        @frame footer_frame {           /* Another static Frame */
+            -pdf-frame-content: footer_content;
+            top:750pt;
+            margin-top: 20px;
+        margin-left: 60px;
+        margin-right: 60px;
+        }
+    }
+table {
+    border-collapse: collapse;
+}
+body{
+    
+}
+.header{
+    padding-top:0px;
+    font-size:14px;
+}
+*{
+    box-sizing: border-box;
+    font-family: 'FreeSans',sans-serif;
+}
+.logo{
+    width:70px;
+}
+.razon{
+    margin:0;
+    padding:0;
+}
+.header tr td p{
+    margin: 0; -pdf-keep-with-next: true;
+    padding:0;
+    line-height:18px;
+}
+.separador-header{
+    margin-top:0px;
+}
+.contenido{
+    border:1px solid black;
+    font-size:16px;
+    border-collapse:collapse;
+    -pdf-keep-with-next: true;
+}
+.contenido td{
+    -pdf-keep-with-next: true;
+    padding-bottom:0px;
+    padding-top:6px;
+    margin-bottom:0;
+    padding-left:2px;
+}
+.ordendecompra{
+    font-size:18px;
+    font-weight:700;
+}
+.insumos{
+    border:1px solid black;
+    font-size:14px;
+    border-collapse:collapse;
+    border-spacing: 5px;
+    text-align:center;
+}
+.insumos td{
+    padding-top:6px;
+
+}
+</style>
+<body>
+    <table class="header" border="0" CELLPADDING="0",CELLSPACING="0">
+        <tr>
+            <td width="12%"><img class="logo" src="{{logo}}"/><br><br></td>
+            <td><p style="font-weight:bold">RAZÓN SOCIAL: {{empresa.razon_social|upper}}</p>
+            <p>RUT:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{empresa.rut}}</p>
+            <p>DIRECCIÓN: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{empresa.direccion}}</p>
+            <p>COMUNA:    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{empresa.comuna}}</p>
+            <p>CONTACTO:  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{empresa.contacto}}</p>
+            <p>GIRO:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{empresa.giro}}</p>
+            </td>
+        </tr>
+    </table>
+    <hr class="separador-header">
+        
+    </div>
+    <div class="contenido">
+        
+    </div>
+    </div>
+    <span class="ordendecompra">Orden de Compra N° {{orden.numero}}. Solicita {{orden.solicita}}</span> 
+
+    <table class="contenido" style="width:100%;" CELLPADDING="0">
+    <tbody>
+        <tr>
+        <td width="30%">Fecha de Emisión:</td>
+        <td width="70%">{{orden.fecha}}</td>
+        </tr>
+        <tr>
+        <td>Proveedor:</td>
+        <td>{{orden.proveedor.empresa_nombre}}</td>
+        </tr>
+        <tr>
+        <td>Estado:</td>
+        <td>{{orden.estado|default:" "}}</td>
+        <tr>
+        <td>Condiciones:</td>
+        <td>{{orden.condiciones|default:" "}}</td>
+        </tr>
+    </table>
+    <br><br>
+    <table class="insumos" style="width:100%;" CELLSPACING="0" CELLPADDING="0">
+        <tbody>
+            <tr>
+                <td style="padding-left:2px;font-weight:700;" width="58%">Insumo</td>
+                <td style="padding-left:2px;font-weight:700;" width="11%">Cantidad</td>
+                <td style="padding-left:2px;font-weight:700;" width="14%">Precio</td>
+                <td style="padding-left:2px;font-weight:700;" width="17%">Valor Neto</td>
+            </tr>
+                {% for ordeninsumo in orden.ordendecomprainsumo_set.all %}
+            <tr>
+                {%load mathfilters%}
+                <td>{{ordeninsumo.insumo.insumo.nombre|upper}} ({{ordeninsumo.insumo.insumo.unidad|upper}}{%if ordeninsumo.insumo.insumo.unidad == 'Unidad'%}ES{%else%}S{%endif%})</td>
+                <td>{{ordeninsumo.cantidad|mul:ordeninsumo.insumo.formato}}</td>
+                {%load filtros %}
+                <td>${{ordeninsumo.neto|div:ordeninsumo.insumo.formato|monedafix}}</td>
+                <td>${{ordeninsumo.total|monedafix}}</td>
+            </tr>
+            {%endfor%}
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Neto</td>
+                <td>${{orden.totalNeto|monedafix}}</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>IVA</td>
+                <td>${{orden.iva|monedafix}}</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td style="background-color:#e9e9e9;font-weight:700;">Total</td>
+                <td style="background-color:#e9e9e9;font-weight:700;">${{orden.total|monedafix}}</td>
+            </tr>
+        </tbody>
+    </table>
+    {%if dolar > 0%}
+    <p>El valor del dólar utilizado es de ${{dolar}} al día {{orden.fecha.day}} de {{orden.fecha.month}} del {{orden.fecha.year}}</p>
+    {%endif%}
+    {%if eur > 0%}
+    <p>El valor del euro utilizado es de ${{eur}} al día {{orden.fecha.day}} de {{orden.fecha.month}} del {{orden.fecha.year}}</p>
+    {%endif%}
+    {%if orden.pagada == True%}
+    <p style="font-weight:bold;font-size:15px;">Esta orden de compra se encuentra cancelada con fecha {{orden.updated}}</p>
+    {%endif%}
+    <p style="font-weight:bold;font-size:16px;">Por favor adjuntar esta orden de compra con la factura. <span style="color:red">De lo contrario sera rechazado.</span></p>
+    <br><br>
+</div>
+<div id="footer_content">
+            <table>
+        <tr>
+            <td width="71%"></td>
+            <td><hr></td>
+        </tr>
+        <tr>
+            <td></td><td></td>
+        </tr>
+        <tr>
+            <td width="71%"></td><td style="text-align:center;padding-top:4px;font-size:14px;">FIRMA</td>
+        </tr>
+    </table>
+    <br>
+    <hr>
+    <div style="text-align:right;">Página <pdf:pagenumber>
+    de <pdf:pagecount>
+    </div>
+</body>
+</html>
+

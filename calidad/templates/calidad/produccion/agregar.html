@@ -1,0 +1,294 @@
+{% extends 'nucleo/base.html' %}
+
+{% block title %}Detalle de Producción{% endblock %}
+{% load static %}
+
+{% block head %}
+    <link rel="stylesheet" type="text/css" href="{% static 'nucleo/vendors/css/tables/datatable/dataTables.bootstrap5.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'nucleo/vendors/css/tables/datatable/responsive.bootstrap4.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'nucleo/vendors/css/tables/datatable/buttons.bootstrap5.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'nucleo/vendors/css/tables/datatable/rowGroup.bootstrap4.min.css' %}">
+    <style>
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            background-color: #fff;
+        }
+
+        .card-header {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #ddd;
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #000; /* Cambiar el color del texto en el encabezado a negro */
+        }
+
+        .card-body {
+            padding: 20px;
+            color: #000; /* Cambiar el color del texto en el cuerpo a negro */
+        }
+
+        .row {
+            margin-bottom: 15px;
+        }
+
+        .row p {
+            margin-bottom: 10px;
+            font-size: 1rem;
+            color: #000; /* Color del texto a negro en los párrafos */
+        }
+
+        .row p strong {
+            color: #007bff; /* Mantener el color azul para los títulos dentro de los párrafos */
+        }
+
+        .breadcrumb {
+            background-color: #f8f9fa;
+        }
+
+        .alert {
+            margin-bottom: 20px;
+        }
+
+        .section-header {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #000; /* Cambiar el color de los encabezados de las secciones a negro */
+            margin-bottom: 15px;
+        }
+
+        .section-content {
+            font-size: 1rem;
+            color: #000; /* Cambiar el color del contenido de las secciones a negro */
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <!-- Mostrar mensajes -->
+    {% if messages %}
+        <div class="alert alert-success">
+            {% for message in messages %}
+                <p>{{ message }}</p>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- BEGIN: Content -->
+    <div class="app-content content">
+        <div class="content-overlay"></div>
+        <div class="header-navbar-shadow"></div>
+        <div class="content-wrapper container-fluid p-0">
+            <div class="content-header row">
+                <div class="content-header-left col-md-9 col-12 mb-2">
+                    <div class="row breadcrumbs-top">
+                        <div class="col-12">
+                            <h2 class="content-header-title float-start mb-0">Detalle de Producción</h2>
+                            <div class="breadcrumb-wrapper">
+                                <ol class="breadcrumb">
+                                    <li class="breadcrumb-item"><a href="#">Producción</a></li>
+                                    <li class="breadcrumb-item active">Detalle</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-body">
+                <!-- Detalles de la Producción - Todo dentro de un solo Card -->
+                <div class="card">
+                    <div class="card-header">Detalle de Producción</div>
+                    <div class="card-body">
+                        <div class="row">
+                            <!-- Detalles de la Producción -->
+                            <div class="col-md-6">
+                                <p><strong>ID:</strong> {{ pauta_produccion.id }}</p>
+                                <p><strong>Fecha de fabricación:</strong> {{ pauta_produccion.fecha }}</p>
+                                <p><strong>Cantidad a elaborar:</strong> {{ pauta_produccion.cantidad }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Estado:</strong> {{ pauta_produccion.get_estado_display }}</p>
+                                <p><strong>Rendimiento:</strong> {{ pauta_produccion.rendimiento }}%</p>
+                                <p><strong>Costo Directo Producción:</strong> {{ pauta_produccion.cdp }}</p>
+                            </div>
+                        </div>
+
+                        <!-- Instrucciones de Producción -->
+                        {% if instrucciones %}
+                        <section id="instrucciones" class="mb-4">
+                            <h4 class="section-header">Instrucciones de Producción</h4>
+                            <table class="table table-bordered table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Instrucción</th>
+                                        <th>Valor</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for instruccion in instrucciones %}
+                                    <tr>
+                                        <td>{{ instruccion.plantilla_instruccion }}</td>
+                                        <td>{{ instruccion.valor }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </section>
+                        {% endif %}
+                        <!-- Calidad de Producción -->
+                        <div class="section-header">Calidad de Producción</div>
+                        {% if calidad_produccion %}
+                            <table class="table table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Campo</th>
+                                        <th>Valor</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>Observaciones:</strong></td>
+                                        <td>{{ calidad_produccion.observaciones }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>pH:</strong></td>
+                                        <td>{{ calidad_produccion.ph }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Textura:</strong></td>
+                                        <td>{{ calidad_produccion.textura }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Sabor:</strong></td>
+                                        <td>{{ calidad_produccion.sabor }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Color:</strong></td>
+                                        <td>{{ calidad_produccion.color }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Olor:</strong></td>
+                                        <td>{{ calidad_produccion.olor }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Aspecto:</strong></td>
+                                        <td>{{ calidad_produccion.aspecto }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        {% else %}
+                            <p>No se encontró información de calidad para esta producción.</p>
+                        {% endif %}
+
+                        <!-- PCC2 - Filtrado de Producto Final -->
+                        <div class="section-header">PCC2 - Filtrado de Producto Final</div>
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Campo</th>
+                                    <th>Valor</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Filtro Instalado:</strong></td>
+                                    <td>{{ calidad_produccion.filtro_instalado }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Filtro Integrado:</strong></td>
+                                    <td>{{ calidad_produccion.filtro_integrado }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- Envasado y Almacenamiento -->
+                        <div class="section-header">Envasado y Almacenamiento (entre 2°C - 8°C)</div>
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Campo</th>
+                                    <th>Valor</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Inicio Envasado:</strong></td>
+                                    <td>{{ calidad_produccion.inicio_envasado }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Termino Envasado:</strong></td>
+                                    <td>{{ calidad_produccion.fin_envasado }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Unidades Botellas (lt):</strong></td>
+                                    <td>{{ calidad_produccion.unidades_botellas_lt }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Unidades 360gr:</strong></td>
+                                    <td>{{ calidad_produccion.unidades_360gr }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Unidades 150gr:</strong></td>
+                                    <td>{{ calidad_produccion.unidades_150gr }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Merma (kg):</strong></td>
+                                    <td>{{ calidad_produccion.merma_kg }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- Responsables -->
+                        <div class="section-header">Responsables</div>
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Responsable</th>
+                                    <th>Nombre</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Responsable Elaboración:</strong></td>
+                                    <td>{{ calidad_produccion.elaboracion }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Responsable Envasado:</strong></td>
+                                    <td>{{ calidad_produccion.envasado }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Responsable Verificación:</strong></td>
+                                    <td>{{ calidad_produccion.verificacion }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- Observaciones Adicionales -->
+                        <div class="section-header">Observaciones Adicionales</div>
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Campo</th>
+                                    <th>Valor</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Observaciones:</strong></td>
+                                    <td>{{ calidad_produccion.observaciones }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Estado de Aprobación:</strong></td>
+                                    <td>{{ calidad_produccion.estado_aprobacion }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                    </div>
+                </div> <!-- Fin de la card -->
+            </div>
+        </div>
+    </div>
+{% endblock %}

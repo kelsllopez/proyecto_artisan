@@ -1,0 +1,103 @@
+{% extends 'nucleo/base.html'%}
+{%block title%}Inventario Productos{%endblock%}
+{%load static%}
+{%block head%}
+<link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/pickers/pickadate/pickadate.css'%}">
+<link rel="stylesheet" type="text/css" href="{%static 'nucleo/css/plugins/forms/pickers/form-pickadate.css'%}">
+{%endblock%}
+{%block content%}
+<style>
+.errorlist{
+    color:red;
+    list-style:none;
+    padding-left:0;
+}
+.colorear tbody td:nth-child(6){
+    background:#d4edda;
+
+
+}
+.colorear thead th:nth-child(6){
+    background:#d4edda!important;
+}
+</style>
+<!-- BEGIN: Content-->
+    <div class="app-content content ">
+        <div class="content-overlay"></div>
+        <div class="header-navbar-shadow"></div>
+        <div class="content-wrapper container-fluid p-0">
+            <div class="content-header row">
+                <div class="content-header-left col-md-9 col-12 mb-2">
+                    <div class="row breadcrumbs-top">
+                        <div class="col-12">
+                            <h2 class="content-header-title float-start mb-0">Bodegas</h2>
+                            <div class="breadcrumb-wrapper">
+                                <ol class="breadcrumb">
+                                    <li class="breadcrumb-item"><a href="#">Bodegas</a>
+                                    </li>
+                                    <li class="breadcrumb-item"><a href="#">{{lugarNombre}}</a>
+                                    </li>
+                                    <li class="breadcrumb-item"><a href="#">Inventario Productos</a>
+                                    </li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="content-body">
+                <!-- Dashboard -->
+                <div class="card">
+
+                    <div class="card-body" id="app">
+                        <div class="card-text">
+                            <h3>Stock de productos en Inventario {{lugarNombre}}</h3>
+                           <div class="accordion accordion-margin mb-1" id="accordionMargin" data-toggle-hover="true">
+                                {%for area in areas%}
+                                <div class="border mb-1">
+                                <a class="accordion-button" data-bs-toggle="collapse" href="#collapse{{area.id}}" role="button" aria-expanded="true" aria-controls="collapse{{area.id}}">
+                                    {{area.nombre}}
+                                </a>
+                            
+                            <div class="multi-collapse collapse mb-1" id="collapse{{area.id}}" style="">
+                                <div class="d-flex p-1">
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Producto</th>
+                                                <th>Último Movimiento</th>
+                                                <th>Total en Maduración</th>
+                                                <th>Total en Bodegas</th>
+                                                <th>Total en Transito</th>
+                                                <th>Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {%for i in inventario%}
+                                                {%if i.producto.rama.id == area.id%}
+                                                <tr>
+                                                    <td>{{i.producto.nombre}}</td>
+                                                    <td>{{i.actualizado}}</td>
+                                                    <td>{{i.maduracion}}</td>
+                                                    <td>{{i.cantidad}}</td>
+                                                    <td>{{i.transito}}</td>
+                                                    <td>{{i.total}}</td>
+                                                </tr>
+                                                {%endif%}
+                                            {%endfor%}
+                                        </tbody>
+                                    
+                                    </table>
+                                </div>
+                            </div></div>
+                                {%endfor%}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--/ Dashboard -->
+            </div>
+        </div>
+    </div>
+    <!-- END: Content-->
+{%endblock%}

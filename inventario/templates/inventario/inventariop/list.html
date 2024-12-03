@@ -1,0 +1,150 @@
+{% extends 'nucleo/base.html'%}
+{%block title%}Inventario Productos{%endblock%}
+{%load static%}
+{%block head%}
+<link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/pickers/pickadate/pickadate.css'%}">
+<link rel="stylesheet" type="text/css" href="{%static 'nucleo/css/plugins/forms/pickers/form-pickadate.css'%}">
+{%endblock%}
+{%block content%}
+<style>
+.errorlist{
+    color:red;
+    list-style:none;
+    padding-left:0;
+}
+.colorear tbody td:nth-child(6){
+    background:#d4edda;
+
+
+}
+.colorear thead th:nth-child(6){
+    background:#d4edda!important;
+}
+</style>
+<!-- BEGIN: Content-->
+    <div class="app-content content ">
+        <div class="content-overlay"></div>
+        <div class="header-navbar-shadow"></div>
+        <div class="content-wrapper container-fluid p-0">
+            <div class="content-header row">
+                <div class="content-header-left col-md-9 col-12 mb-2">
+                    <div class="row breadcrumbs-top">
+                        <div class="col-12">
+                            <h2 class="content-header-title float-start mb-0">Bodegas</h2>
+                            <div class="breadcrumb-wrapper">
+                                <ol class="breadcrumb">
+                                    <li class="breadcrumb-item"><a href="#">Bodegas</a>
+                                    </li>
+                                    <li class="breadcrumb-item"><a href="#">{{lugarNombre}}</a>
+                                    </li>
+                                    <li class="breadcrumb-item"><a href="#">Inventario Productos</a>
+                                    </li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="content-body">
+                <!-- Dashboard -->
+                <div class="card">
+
+                    <div class="card-body" id="app">
+                        <div class="card-text">
+                            <h3>Stock de productos en {{lugarNombre}}</h3>
+                            
+                           <div class="accordion accordion-margin" id="accordionMargin" data-toggle-hover="true">
+                                {%for area in areas%}
+                                <h4>{{area.nombre}}</h4>
+                                    {%for producto in area.productos.all%}
+                                        <div class="row border mb-1">
+                                        <a @click="buscarInventario({{area.id}},{{lugar}},'{{producto.codigo}}')" class="accordion-button" data-bs-toggle="collapse" href="#multiCollapse{{producto.id}}" role="button" aria-expanded="false" aria-controls="multiCollapseExample1">{{producto.nombre}}</a>
+                                        <div class="multi-collapse collapse mb-1" id="multiCollapse{{producto.id}}" style="">
+
+                                                    <div v-if="productos['{{producto.codigo}}'].mostrar" class="table-responsive p-1">
+                                                        <table class="table table-bordered colorear">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>Producto</th>
+                                                                    <th>Último Movimiento</th>
+                                                                    <th>Total en Maduración</th>
+                                                                    <th>Bodega {{lugarNombre}}</th>
+                                                                    <th>Total en Transito</th>
+                                                                    <th>Total</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr>
+                                                                    <td><button @click="actualizarProducto(productos['{{producto.codigo}}'].id)" class="btn btn-small btn-icon btn-primary"><i class="far fa-edit"></i></button> {$ productos['{{producto.codigo}}'].nombre $} ({$ productos['{{producto.codigo}}'].presentacion $} {$ productos['{{producto.codigo}}'].unidad $})</td>
+                                                                    <td>{$ procesarFecha(productos['{{producto.codigo}}'].updated) $}</td>
+                                                                    <td>{$ productos['{{producto.codigo}}'].maduracion $}</td>
+                                                                    <td>{$ productos['{{producto.codigo}}'].inventario $}</td>
+                                                                    <td>{$ productos['{{producto.codigo}}'].transito $}</td>
+                                                                    <td>{$ productos['{{producto.codigo}}'].total $}</td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>  
+                                            </div>
+                                        </div>
+                                        
+                                    {%endfor%}
+                                {%endfor%}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--/ Dashboard -->
+            </div>
+        </div>
+    </div>
+    <!-- END: Content-->
+{%endblock%}
+
+{%block scripts%}
+<script>
+let vue = Vue.createApp({
+    data(){
+        return {
+            "productos": { {%for area in areas%}{%for producto in area.productos.all%}
+                "{{producto.codigo}}":{"mostrar":false},
+            {%endfor%}{%endfor%} },
+        }
+    },
+    methods:{
+        buscarInventario(rama,lugar_id,producto){
+                    if (this.productos[producto].mostrar){
+                        return;
+                    }
+                    let url = '{%url "api-producto-por-rama" 1 2 %}'.split('/');
+                    url[3] = rama;
+                    url[4] = lugar_id;
+                    url = url.join('/');
+                    axios.get(url).then(response => {
+                        if (response.data.detail != "ok"){
+                            return alert("Ha ocurrido un problema en la obtención de inventario en {{lugarNombre}}.")
+                        }
+                        for (producto of response.data.productos){
+                            this.productos[producto.codigo] = producto;
+                            this.productos[producto.codigo].mostrar = true;
+                        }
+                    });
+            
+            
+        },
+        actualizarProducto(id){
+            let url = '{%url "inventario:producto-actualizar" "Santiago" 1 %}'.replace('Santiago','{{lugarNombre}}').replace('1',id);
+            window.open(url, '_blank');
+        },
+        procesarFecha(fecha){
+            hora = fecha.split('T')[1];
+            fecha = fecha.split('T')[0].split('-');
+            fecha = `${fecha[2]}-${fecha[1]}-${fecha[0]}`;
+            hora = hora.split('.')[0]
+            return fecha + " " + hora;
+        }
+    },
+    delimiters: ['{$', '$}'],
+}).mount('#app');
+</script>
+{%endblock%}

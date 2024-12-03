@@ -1,0 +1,105 @@
+{% extends 'nucleo/base.html' %}
+{% block title %}Maduración{% endblock %}
+{% load static %}
+
+{% block head %}
+<link rel="stylesheet" type="text/css" href="{% static 'nucleo/vendors/css/pickers/pickadate/pickadate.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'nucleo/css/plugins/forms/pickers/form-pickadate.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'nucleo/vendors/css/tables/datatable/datatables.min.css' %}">
+{% endblock %}
+
+{% block content %}
+<style>
+.errorlist {
+    color: red;
+    list-style: none;
+    padding-left: 0;
+}
+</style>
+<div class="app-content content">
+    <div class="content-overlay"></div>
+    <div class="header-navbar-shadow"></div>
+    <div class="content-wrapper container-fluid p-0">
+        <div class="content-header row">
+            <div class="content-header-left col-md-9 col-12 mb-2">
+                <div class="row breadcrumbs-top">
+                    <div class="col-12">
+                        <h2 class="content-header-title float-start mb-0">Producción</h2>
+                        <div class="breadcrumb-wrapper">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item"><a href="{% url 'produccion:lote:lista' %}">Lotes</a></li>
+                                <li class="breadcrumb-item active">Maduración</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% include 'produccion/common/menu.html' %}
+        <div class="content-body">
+            <div class="card">
+                <div class="card-body">
+                    <h3>Stock y Estado de Maduración por Tipo de Producto (unidades)</h3>
+                    <form method="GET" class="row">
+                        <div class="col-sm-auto">
+                            <input type="number" name="dias" class="form-control" placeholder="Días de maduración" required>
+                        </div>
+                        <div class="col-sm-auto">
+                            <button type="submit" class="btn btn-primary">Buscar</button>
+                        </div>
+                    </form>
+                    <table id="maduracion" class="table mx-auto text-center">
+                        <thead>
+                            <tr>
+                                <th>Nombre del Producto</th>
+                                <th>Código</th>
+                                <th>Cantidad</th>
+                                <th>Días en Maduración</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for producto in productos %}
+                            <tr>
+                                <td>{{ producto.nombre }}</td>
+                                <td>{{ producto.codigo }}</td>
+                                <td>{{ producto.stock_critico }}</td>
+                                <td>{{ producto.maduracion }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4">No se encontraron productos.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script src="{% static 'nucleo/vendors/js/tables/datatable/datatables.min.js' %}"></script>
+<script src="{% static 'nucleo/vendors/js/tables/datatable/datatables.bootstrap5.min.js' %}"></script>
+<script>
+$(document).ready(function() {
+    $('#maduracion').DataTable({
+        // Aquí puedes añadir opciones personalizadas si lo deseas
+        "language": {
+            "lengthMenu": "Mostrar _MENU_ registros por página",
+            "zeroRecords": "No se encontraron resultados",
+            "info": "Mostrando página _PAGE_ de _PAGES_",
+            "infoEmpty": "No hay registros disponibles",
+            "infoFiltered": "(filtrado de _MAX_ registros en total)",
+            "search": "Buscar:",
+            "paginate": {
+                "next": "Siguiente",
+                "previous": "Anterior"
+            }
+        }
+    });
+});
+</script>
+{% endblock %}
+
+{% endblock %}

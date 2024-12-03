@@ -1,0 +1,115 @@
+{%extends 'nucleo/base.html' %}
+{%block title%}Costeo Productos{%endblock%}
+{%load static%}
+{%block head%}
+<link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/pickers/pickadate/pickadate.css'%}">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" type="text/css" href="{%static 'nucleo/css/plugins/forms/pickers/form-pickadate.css'%}">
+{%endblock%}
+
+{%block content%}
+<!-- BEGIN: Content-->
+    <div class="app-content content ">
+        <div class="content-overlay"></div>
+        <div class="header-navbar-shadow"></div>
+        <div class="content-wrapper container-fluid p-0">
+            <div class="content-header row">
+                <div class="content-header-left col-md-9 col-12 mb-2">
+                    <div class="row breadcrumbs-top">
+                        <div class="col-12">
+                            <h2 class="content-header-title float-start mb-0">Costeo</h2>
+                            <div class="breadcrumb-wrapper">
+                                <ol class="breadcrumb">
+                                    <li class="breadcrumb-item"><a href="{% url 'produccion:lote:lista' %}">Productos</a>
+                                    </li>
+                                    <li class="breadcrumb-item active">Lista de Productos
+                                    </li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="content-body">
+                <!-- Dashboard -->
+                <div class="card">
+
+                    <div class="card-body">
+                        <div class="card-text">
+                            <h3>Productos</h3>
+                            <table id="productos" class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Producto</th>
+                                        <th>CDP Promedio</th>
+                                        <th>Margen Promedio</th>
+                                        <th>Opción</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for producto in productos%}
+                                    <tr>
+                                        <td>{{producto.nombre}} ({{producto.presentacion}} {{producto.unidad}})</td>
+                                        {%load filtros%}
+                                        <td>{{producto.obtenerCDP}}</td>
+                                        <td>{{producto.obtenerMargen}}</td>
+                                        <td><a style="margin-right:20px;" href="{%url 'costeo:detalle' producto.id %}"><button data-bs-tooltip="tooltip" data-bs-placement="top" title="Ver Detalle" type="button" class="btn btn-icon btn-info waves-effect"><i class="fas fa-book"></i></button></a></td>
+                                    </tr>
+                                    {%endfor%}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <!--/ Dashboard -->
+            </div>
+        </div>
+    </div>
+    <!-- END: Content-->
+{%endblock%}
+{%block scripts%}
+<script>
+$('#productos').DataTable( {
+    responsive: true,
+    autoWidth: true,
+    destroy: true,
+    pageLength: 10,
+    rowReorder: true,
+    language: {
+        "lengthMenu": "Mostrar _MENU_ productos por página",
+        "zeroRecords": "Lo Sentimos, por el momento no hay productos.",
+        "info": "Mostrando página _PAGE_ de _PAGES_",
+        "infoEmpty": "No hay productos",
+        "infoFiltered": "(filtrados de un total de _MAX_ productos)",
+        "loadingRecords": "Cargando...",
+        "processing":     "Procesando...",
+        "search":         "Buscar:",
+        "paginate": {
+            "first":      "Primera",
+            "last":       "Ultima",
+            "next":       "Siguiente",
+            "previous":   "Anterior"
+        },
+    },
+    columns: [
+        { title: "Producto" },
+        { title: "CDP Promedio" , render:function(data,type,row,meta){
+            return `$${parseFloat(String(data).replace(',','.')).toFixed(2)}`;
+        }},
+        { title: "Margen Promedio", render:function(data,type,row,meta){
+            return `$${parseFloat(String(data).replace(',','.')).toFixed(2)}`;
+        } },
+        { title: "Opción"}
+    ],
+    "drawCallback": function(){
+        feather.replace();
+        activarTooltip();
+    },
+    "initComplete": function () {
+        feather.replace();
+        activarTooltip();
+    },
+}
+);
+</script>
+{%endblock%}

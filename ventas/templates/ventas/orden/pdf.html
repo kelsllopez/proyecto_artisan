@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nota de venta N° {{orden.id}}</title>
+</head>
+<style>
+
+@page {
+        size: a4 portrait;
+        margin-top: 20px;
+        margin-left: 60px;
+        margin-right: 60px;
+        @frame footer_frame {           /* Another static Frame */
+            -pdf-frame-content: footer_content;
+            top:750pt;
+            margin-top: 20px;
+        margin-left: 60px;
+        margin-right: 60px;
+        }
+    }
+table {
+    border-collapse: collapse;
+}
+body{
+    
+}
+.header{
+    padding-top:0px;
+    font-size:14px;
+}
+*{
+    box-sizing: border-box;
+    font-family: 'FreeSans',sans-serif;
+}
+.logo{
+    width:70px;
+}
+.razon{
+    margin:0;
+    padding:0;
+}
+.header tr td p{
+    margin: 0; -pdf-keep-with-next: true;
+    padding:0;
+    line-height:18px;
+}
+.separador-header{
+    margin-top:0px;
+}
+.contenido{
+    border:1px solid black;
+    font-size:16px;
+    border-collapse:collapse;
+    -pdf-keep-with-next: true;
+}
+.contenido td{
+    -pdf-keep-with-next: true;
+    padding-bottom:0px;
+    padding-top:6px;
+    margin-bottom:0;
+    padding-left:2px;
+}
+.ordendecompra{
+    font-size:18px;
+    font-weight:700;
+}
+.insumos{
+    border:1px solid black;
+    font-size:14px;
+    border-collapse:collapse;
+    border-spacing: 5px;
+    text-align:center;
+}
+.insumos td{
+    padding-top:6px;
+
+}
+</style>
+<body>
+    <table class="header" border="0" CELLPADDING="0",CELLSPACING="0">
+        <tr>
+            <td width="12%"><img class="logo" src="{{logo}}"/><br><br></td>
+            <td><p style="font-weight:bold">Nombre: {{empresa.razon_social|upper}}</p>
+            <p>RUT:{{empresa.rut}}</p>
+            <p>CUENTA CORRIENTE: 490370201</p>
+            <p>BANCO: BANCO DE CHILE</p>
+            <p>CONTACTO: oc@quesosartisan.cl</p>
+            </td>
+        </tr>
+    </table>
+    <hr class="separador-header">
+        
+    </div>
+    <div class="contenido">
+        
+    </div>
+    </div>
+    <span class="ordendecompra">Orden de Venta N° {{orden.id}}</span> 
+
+    <table class="contenido" style="width:100%;" CELLPADDING="0">
+    <tbody>
+        <tr>
+        <td width="30%">Fecha de Emisión:</td>
+        <td width="70%">{{orden.fecha}}</td>
+        </tr>
+        <tr>
+        <td>Cliente:</td>
+        <td>{{orden.cliente.nombre}}</td>
+        </tr>
+        <tr>
+        <td>Rut:</td>
+        <td>{{orden.cliente.rut|default:" "}}</td>
+        </tr>
+        <tr>
+        <td>Dirección:</td>
+        <td>{{orden.local.direccion|default:" "}}</td>
+        </tr>
+        <tr>
+        <td>Estado:</td>
+        <td>{{orden.estado|default:" "}}</td>
+        </tr>
+    </table>
+    <br><br>
+    <table class="insumos" style="width:100%;" CELLSPACING="0" CELLPADDING="0">
+        <tbody>
+            <tr>
+                <td style="padding-left:2px;font-weight:700;" width="58%">Producto</td>
+                <td style="padding-left:2px;font-weight:700;" width="11%">Cantidad</td>
+                <td style="padding-left:2px;font-weight:700;" width="14%">Precio</td>
+                <td style="padding-left:2px;font-weight:700;" width="17%">Valor Neto</td>
+            </tr>
+                {% for producto in orden.ordendeventaproducto_set.all %}
+            <tr>
+                {%load mathfilters%}
+                <td>{{producto.producto.nombre|upper}} ({{producto.producto.presentacion}} {{producto.producto.unidad|upper}})</td>
+                <td>{{producto.cantidad}}</td>
+                {%load filtros%}
+                <td>${{producto.precio|monedafix}}</td>
+                <td>${{producto.precio|mul:producto.cantidad|monedafix}}</td>
+                
+            </tr>
+            {%endfor%}
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Neto</td>
+                <td>${{orden.totalNeto|monedafix}}</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>IVA</td>
+                <td>${{orden.iva|monedafix}}</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td style="background-color:#e9e9e9;font-weight:700;">Total</td>
+                <td style="background-color:#e9e9e9;font-weight:700;">${{orden.total|monedafix}}</td>
+            </tr>
+        </tbody>
+    </table>
+    <p style="font-weight:bold;font-size:16px;">Nota de venta valida por <strong>7 días</strong>.</p>
+    <br><br>
+</div>
+<div id="footer_content">
+    <hr>
+</div>
+</body>
+</html>
+

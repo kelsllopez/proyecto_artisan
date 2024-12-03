@@ -1,0 +1,167 @@
+{% extends 'nucleo/base.html'%}
+{%block title%}Añadir Producto{%endblock%}
+{%load static%}
+{%block head%}
+<link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/pickers/pickadate/pickadate.css'%}">
+<link rel="stylesheet" type="text/css" href="{%static 'nucleo/css/plugins/forms/pickers/form-pickadate.css'%}">
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+{%endblock%}
+{%block content%}
+<style>
+.errorlist{
+    color:red;
+    list-style:none;
+    padding-left:0;
+}
+</style>
+<!-- BEGIN: Content-->
+    <div class="app-content content ">
+        <div class="content-overlay"></div>
+        <div class="header-navbar-shadow"></div>
+        <div class="content-wrapper container-fluid p-0">
+            <div class="content-header row">
+                <div class="content-header-left col-md-9 col-12 mb-2">
+                    <div class="row breadcrumbs-top">
+                        <div class="col-12">
+                            <h2 class="content-header-title float-start mb-0">Administrador</h2>
+                            <div class="breadcrumb-wrapper">
+                                <ol class="breadcrumb">
+                                    <li class="breadcrumb-item"><a href="{% url 'administrador:producto:lista' %}">Grupo Productos</a>
+                                    </li>
+                                    <li class="breadcrumb-item active">Añadir
+                                    </li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="content-body">
+                <!-- Dashboard -->
+                <div class="card">
+
+                    <div class="card-body">
+                        <div class="card-text">
+                            <form class="form form-horizontal" id="app" method="post" enctype="multipart/form-data">{% csrf_token %}
+                                <div class="row">
+                                    <div class="col-12" id="app">
+                                    {%for field in form %}
+                                        <div class="mb-1 row">
+                                        <div class="col-sm-3">{{field.label_tag}} {%if field.field.required %}<span style="color:red">*</span>{%endif%}</div>
+                                       
+                                        <div class="col-sm-6 position-relative">{{field}}
+                                        {% if field.help_text %}
+                                        <small class="">{{field.help_text|safe}}</small>
+                                        {%endif%}
+                                        
+                                        {%if field.errors %}
+                                        <div class="invalid-feedback" style="display:block;">{{field.errors.as_text}}</div>
+                                        {%endif%}
+                                        </div>
+                                        </div>
+                                    {%endfor%}
+                                    <div class="col-sm-12">
+                                        <h3>Productos</h3>
+                                        <p>Selecciona los productos que perteneceran al grupo: <span style="font-weight:700">{$ nombre $}</span></p>
+                                        <table class="table table-bordered table-striped mb-2">
+                                            <thead>
+                                                <tr>
+                                                    <th>Producto</th>
+                                                    <th><button class="btn btn-primary" type="button" @click="agregarCampo('descriptor')">Agregar</button></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {%for p in object.productogrupoproducto_set.all%}
+                                                <tr>
+                                                    <td><select required class="producto" name="productos[]">
+                                                    {%for producto in productos%}
+                                                        <option {%if producto.pk == p.producto.pk%}selected{%endif%} value="{{producto.pk}}">{{producto.nombre}} ({{producto.presentacion}} {{producto.unidad}})</option>
+                                                    {%endfor%}
+                                                    </td>
+                                                    <td><button class="btn btn-danger" type="button" @click="eliminarCampo($event,index)">Eliminar</button></td>
+                                                </tr>
+                                                {%endfor%}
+                                                <tr v-for="(numero,index) in numeros">
+                                                    <td><select required class="producto" name="productos[]">
+                                                        {%for producto in productos%}
+                                                        <option value="{{producto.pk}}">{{producto.nombre}} ({{producto.presentacion}} {{producto.unidad}})</option>
+                                                        {%endfor%}
+                                                    </select></td>
+                                                    <td><button class="btn btn-danger" type="button" @click="eliminarCampo($event,index)">Eliminar</button></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="col-sm-12">
+                                        <button type="submit" class="btn btn-primary me-1 waves-effect waves-float waves-light">Actualizar</button>
+                                    </div>
+                                    
+                                
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <!--/ Dashboard -->
+            </div>
+        </div>
+    </div>
+    <!-- END: Content-->
+{%endblock%}
+{%block scripts%}
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+let vue = Vue.createApp({
+    data(){
+        return {
+            insumos:[],
+            numerose: [],
+            nombre: '{{object.nombre}}',
+            info: [],
+            seleccionados:[],
+            numeros:[],
+            insumose: [ {%for insumo in object.insumogrupoproducto_set.all %}{{insumo.insumo.id}},{%endfor%}],
+            url_base: '{%url "insumo-list" %}?format=json',
+        };
+    },
+    methods:{
+        obtenerInfo(){
+            url = '{%url "grupoproducto-detail" 1 %}'.replace(1,'{{object.pk}}')
+            axios.get(url).then(response=>{
+                this.info = response.data;
+            })
+        },
+        agregarCampo(descriptor){
+            if (descriptor == 'descriptor'){
+                this.numeros.push(1);
+            }else{
+                this.numerose.push(1);
+            }
+            setTimeout(()=>{
+                $('select').select2();
+            },500);
+            
+        },
+        eliminarCampo(event,index){
+            event.target.parentNode.parentNode.remove();
+        },
+        seleccionar(insumo,index){
+            console.log('hola');
+            if (insumo.id == this.insumose[index]){
+                return true;
+            }else{
+                return false;
+            }
+        },
+    },
+    mounted(){
+        this.obtenerInfo();  
+    },
+    delimiters: ['{$', '$}'],
+}).mount('#app');
+</script>
+<script>
+ $(document).ready(function () {
+     $('select').select2();
+  });
+</script>
+{%endblock scripts%}t

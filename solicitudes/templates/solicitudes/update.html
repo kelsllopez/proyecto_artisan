@@ -1,0 +1,190 @@
+{% extends 'nucleo/base.html'%}
+{%block title%}Solicitudes - Actualizar{%endblock%}
+{%load static%}
+{%block head%}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+{%endblock%}
+{%block content%}
+<style>
+.errorlist{
+    color:red;
+    list-style:none;
+    padding-left:0;
+}
+</style>
+<!-- BEGIN: Content-->
+    <div class="app-content content ">
+        <div class="content-overlay"></div>
+        <div class="header-navbar-shadow"></div>
+        <div class="content-wrapper container-fluid p-0">
+            <div class="content-header row">
+                <div class="content-header-left col-md-9 col-12 mb-2">
+                    <div class="row breadcrumbs-top">
+                        <div class="col-12">
+                            <h2 class="content-header-title float-start mb-0">Solicitudes</h2>
+                            <div class="breadcrumb-wrapper">
+                                <ol class="breadcrumb">
+                                    <li class="breadcrumb-item"><a href="{% url 'solicitudes:lista' %}">Actualizar</a>
+                                    </li>
+                                    <li class="breadcrumb-item active">Solicitud #{{object.pk}}
+                                    </li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="content-body">
+                <!-- Dashboard -->
+                <div class="card">
+
+                    <div class="card-body" id="app">
+                        <div class="card-text">
+                            <form id="formulario" class="form form-horizontal" method="post">{% csrf_token %}
+                                <div class="row">
+                                    <div class="col-12">
+                                    {%for field in form %}
+                                        {%if field.id_for_label != 'pickadate'%}
+                                        <div class="mb-1 row">
+                                        <div class="col-sm-3">{{field.label_tag}} {%if field.field.required %}<span style="color:red">*</span>{%endif%}</div>
+
+                                        <div class="col-sm-9 position-relative">{{field}}
+  
+                                        {%if field.errors %}
+                                        <div class="invalid-feedback" style="display:block;">{{field.errors.as_text}}</div>
+                                        {%endif%}
+                                        </div>
+                                        </div>
+                                        {%endif%}
+                                    {%endfor%}
+                                    </div>
+                                </div>
+                                <h3>Insumos</h3>
+                                <div v-if="insumos.length == 0">Cargando..</div>
+                                <div v-else class="table table-responsive">
+                                   <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Insumo</th>
+                                                <th>Cantidad</th>
+                                                <th>Comentario</th>
+                                                <th>Opcion</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="(numero,index) in numeros">
+                                                <td><select :data-index="index" onchange="vue.cambiarInsumo(event)" v-model="numero.insumo" class="form-select" name="insumo"><option v-for="insumo in insumos" :selected="numero.insumo == insumo.id" :value="insumo.id">{$insumo.nombre$} ({$insumo.unidad$})</option></td>
+                                                <td><input v-model="numero.cantidad" type="number" step="any" name="insumocantidad" class="form-control"></td>
+                                                <td><input v-model="numero.comentario" type="text" name="insumocomentario" class="form-control"></td>
+                                                <td><button type="button" @click="eliminarInsumo(numero)" class="btn btn-danger">Eliminar</button></td>
+                                            </tr>
+                                        </tbody>
+                                   </table>
+                                </div>
+                                
+                                <div class="col-sm-12 mt-1">
+                                    <button v-if="insumos.length > 0" @click="agregarInsumo()" class="btn btn-success" style="margin-right:20px;" type="button">Agregar Insumo</button>
+                                    <button type="button" @click="validarFormulario()" class="btn btn-primary me-1 waves-effect waves-float waves-light">Actualizar</button>
+                                </div>
+                                
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <!--/ Dashboard -->
+
+            </div>
+        </div>
+    </div>
+    <!-- END: Content-->
+{%endblock%}
+
+{%block scripts%}
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+let vue = Vue.createApp({
+    data() {
+            return {
+                insumos: [],
+                numeros: [{%for insumo in object.solicitudinsumos_set.all%}{'insumo':parseInt('{{insumo.insumo.id}}'),'cantidad':parseFloat('{{insumo.cantidad}}'.replace(',','.')),'comentario':'{{insumo.comentario}}'} ,{%endfor%}],
+                contador:0,
+                url_base: '{%url "insumo-list" %}?format=json',
+            };
+            },
+    methods:{
+        cambiarInsumo(event){
+            console.log(event.target.getAttribute('data-index'));
+            this.numeros[event.target.getAttribute('data-index')].insumo = event.target.value;
+
+        },
+        validarFormulario(){
+            check = false;
+            if(this.numeros.length == 0){
+                return alert("Debes agregar al menos un insumo a solicitar.");
+            }
+            for(numeros of this.numeros){
+                if (numeros.cantidad <=0){
+                    check = true;
+                }
+            }
+            if(check){
+                return alert("No puedes solicitar cantidad 0 de un insumo.");
+            }
+            let formulario = document.querySelector('#formulario');
+            if (formulario.reportValidity() == false){
+                return alert("Debes seleccionar al menos una persona a notificar.")
+            }else{
+                formulario.submit();
+            }
+        },
+        agregarInsumo(){
+            this.numeros.push({'insumo':0,'cantidad':0,'comentario':''})
+            setTimeout(()=>{
+                $('select').select2();
+            },500)
+        },
+        eliminarInsumo(index){
+            this.numeros = this.numeros.filter(numero=> numero != index);
+            setTimeout(()=>{
+                $('select').select2();
+            },1)
+        },
+        obtenerInsumos(url){
+            if (url == 'no'){
+                url = this.url_base;
+            }
+            url = url.replace('127.0.0.1','127.0.0.1:71')
+            axios
+            .get(url)
+            .then(response => {
+                this.insumos = this.insumos.concat(response.data.results);
+                for (insumo of this.insumos){
+                    if (insumo.unidad == 'Kilogramo'){
+                        insumo.unidades = ['kilogramo','gramo','miligramo']
+                    }else if(insumo.unidad == 'Litro'){
+                        insumo.unidades = ['litro','mililitro']
+                    }else if (insumo.unidad == 'Unidad'){
+                        insumo.unidades = ['unidad']
+                    }else{
+                        insumo.unidades = ['caja']
+                    }
+                    insumo.opcional = false;
+                    
+                }
+                let next = response.data.next
+                if (next != null){
+                    this.obtenerInsumos(next)
+                }
+            });
+        },
+
+    },
+    delimiters: ['{$', '$}'],
+    mounted(){
+        $('select').select2();
+        this.obtenerInsumos('no');
+
+    }
+}).mount('#app');
+</script>
+{%endblock%}

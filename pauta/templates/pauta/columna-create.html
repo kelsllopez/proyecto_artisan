@@ -1,0 +1,76 @@
+{% extends 'nucleo/base.html'%}
+{%block title%}Añadir Parametro{%endblock%}
+{%load static%}
+{%block head%}
+<link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/pickers/pickadate/pickadate.css'%}">
+<link rel="stylesheet" type="text/css" href="{%static 'nucleo/css/plugins/forms/pickers/form-pickadate.css'%}">
+{%endblock%}
+{%block content%}
+<style>
+.errorlist{
+    color:red;
+    list-style:none;
+    padding-left:0;
+}
+</style>
+<!-- BEGIN: Content-->
+    <div class="app-content content ">
+        <div class="content-overlay"></div>
+        <div class="header-navbar-shadow"></div>
+        <div class="content-wrapper container-fluid p-0">
+            <div class="content-header row">
+                <div class="content-header-left col-md-9 col-12 mb-2">
+                    <div class="row breadcrumbs-top">
+                        <div class="col-12">
+                            <h2 class="content-header-title float-start mb-0">Administrador</h2>
+                            <div class="breadcrumb-wrapper">
+                                <ol class="breadcrumb">
+                                    <li class="breadcrumb-item"><a href="{% url 'administrador:pauta:lista' %}">Pautas</a>
+                                    </li>
+                                    <li class="breadcrumb-item"><a href="{% url 'administrador:pauta:columna' %}">Parametros</a>
+                                    </li>
+                                    <li class="breadcrumb-item active">Crear
+                                    </li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="content-body">
+                <!-- Dashboard -->
+                <div class="card">
+
+                    <div class="card-body">
+                        <div class="card-text">
+                            <form class="form form-horizontal" method="post" enctype="multipart/form-data">{% csrf_token %}
+                                <div class="row">
+                                    <div class="col-12" id="app">
+                                    {%for field in form %}
+                                        <div class="mb-1 row">
+                                        <div class="col-sm-3">{{field.label_tag}} {%if field.field.required %}<span style="color:red">*</span>{%endif%}</div>
+
+                                        <div class="col-sm-6 position-relative">{{field}}
+                                        {% if field.help_text %}
+                                        <small class="">{{field.help_text|safe}}</small>
+                                        {%endif%}
+                                        {%if field.errors %}
+                                        <div class="invalid-feedback" style="display:block;">{{field.errors.as_text}}</div>
+                                        {%endif%}
+                                        </div>
+                                        </div>
+                                    {%endfor%}
+                                    <div class="col-sm-12">
+                                            <button type="submit" class="btn btn-primary me-1 waves-effect waves-float waves-light">Añadir</button>
+                                        </div>
+                                
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <!--/ Dashboard -->
+            </div>
+        </div>
+    </div>
+    <!-- END: Content-->
+{%endblock%}

@@ -1,0 +1,372 @@
+{% extends 'nucleo/base.html' %}
+{%block title%}Logística{%endblock%}
+{%load static%}
+{%block head%}
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/tables/datatable/dataTables.bootstrap5.min.css'%}">
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/tables/datatable/responsive.bootstrap4.min.css'%}">
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/tables/datatable/buttons.bootstrap5.min.css'%}">
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/tables/datatable/rowGroup.bootstrap4.min.css'%}">
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/pickers/flatpickr/flatpickr.min.css'%}">
+{%endblock%}
+{%block content%}
+<!-- BEGIN: Content-->
+    <div class="app-content content ">
+        <div class="content-overlay"></div>
+        <div class="header-navbar-shadow"></div>
+        <div class="content-wrapper container-fluid p-0">
+            <div class="content-header row">
+                <div class="content-header-left col-md-9 col-12 mb-2">
+                    <div class="row breadcrumbs-top">
+                        <div class="col-12">
+                            <h2 class="content-header-title float-start mb-0">Logística</h2>
+                            <div class="breadcrumb-wrapper">
+                                <ol class="breadcrumb">
+                                    <li class="breadcrumb-item"><a href="#">Envios</a>
+                                    </li>
+                                    <li class="breadcrumb-item active">Lista
+                                    </li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="content-header-right text-md-end col-md-3 col-12 d-md-block d-none">
+
+                    <div class="mb-1 breadcrumb-right">
+                        {%if 'logistica.envio.recepcionar' in perms %}
+                            <a class="" href="{% url 'logistica:envios:recepcion' %}"><button class="btn btn-primary">Recepcionar</button></a>
+                        {%endif%}
+                        {%if 'logistica.envio.crear' in perms %}
+                            <a class="" href="{% url 'logistica:envios:crear' %}"><button class="btn btn-primary">Agregar Envio</button></a>
+                        {%endif%}
+                    </div>
+                </div>
+            </div>
+            <div id="app">
+                <div class="modal fade text-start"id="default" tabindex="-1" aria-labelledby="myModalLabel1" aria-hidden="true">
+                    <div class="modal-dialog modal-xl">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h4 class="modal-title" id="myModalLabel1">Envio #{$id$}</h4>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Información</th>
+                                            <th>Dato</th>
+                                        </tr>
+                                    </thead>
+                                        <tbody>
+                                            <tr>
+                                                <th>Fecha de Envio</th>
+                                                <td>{$ fecha_envio $}</td>
+                                            </tr>
+                                             <tr>
+                                                <th>Medio de Transporte</th>
+                                                <td>{$ medio_transporte $}</td>
+                                            </tr>
+                                             <tr>
+                                                <th>Número de Documento</th>
+                                                <td>{$ numero_documento $}</td>
+                                            </tr>
+                                            <tr v-if="encargado_envio != null">
+                                                <th>Encargado Envio</th>
+                                                <td>{$ encargado_envio $}</td>
+                                            </tr>
+                                            <tr v-if="encargado_recepcion != null">
+                                                <th>Encargado Recepcion</th>
+                                                <td>{$ encargado_recepcion $}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <h3 v-if="Object.keys(resumen).length > 0" class="mt-2">Resumen Envio</h3>
+                                    <div v-if="Object.keys(resumen).length > 0" class="table-responsive">
+                                        <table class="table table-bordered">
+                                            <thead v-if="Object.keys(resumen.lotes).length > 0">
+                                                <tr>
+                                                    <th>Producto</th>
+                                                    <th>Cajas</th>
+                                                    <th>Unidades</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody v-if="Object.keys(resumen.lotes).length > 0">
+                                                <tr v-for="r in resumen.lotes">
+                                                    <td>{$ r.producto$} ({$ r.presentacion $} {$r.unidad$})</td>
+                                                    <td>{$ r.cajas $}</td>
+                                                    <td>{$ r.cantidad $}</td>
+                                                </tr>
+                                            </tbody>
+                                            <thead v-if="Object.keys(resumen.insumos).length > 0">
+                                                <tr>
+                                                    <th>Insumo</th>
+                                                    <th>Bultos</th>
+                                                    <th>Unidades</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody v-if="Object.keys(resumen.insumos).length > 0">
+                                                <tr v-for="i in resumen.insumos">
+                                                    <td>{$ i.nombre $} ({$i.unidad$})</td>
+                                                    <td>{$ i.bultos $}</td>
+                                                    <td>{$ i.cantidad $}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    {%if 'logistica.envio.detalle' in perms %}
+                                        <button style="margin-left:10px;" @click="verDetalle" class="btn btn-secondary">Ver Detalle</button>
+                                    {%endif%}
+                                    {%if 'logistica.envio.etiquetas' in perms %}
+                                        <button style="margin-left:10px;" @click="verEtiquetas" class="btn btn-info">Ver Etiquetas</button>
+                                    {%endif%}
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cerrar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+                <!-- Modal -->
+                <section id="basic-datatable">
+                    <div class="row">
+                            <div class="col-12">
+                                <div class="card">
+                                    <table id="envios" class="datatables-basic table text-center">
+                                        <thead>
+                                            <tr>
+                                                <th>N° Envio</th>
+                                                <th>Lugar Origen</th>
+                                                <th>Lugar Destino</th>
+                                                <th>Fecha de Envio</th>
+                                                <th>Medio de Transporte</th>
+                                                <th>Estado</th>
+                                                {%if 'logistica.envio.detalle' in perms or 'logistica.envio.actualizar' in perms or 'logistica.envio.eliminar' in perms%}
+                                                <th>Opciones</th>
+                                                {%endif%}
+                                            </tr>
+                                        </thead>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                </section>
+                <!--/ Dashboard -->
+
+            </div>
+        </div>
+    </div>
+{%endblock%}
+
+{%block scripts%}
+<!-- BEGIN: Page Vendor JS-->
+<script src="{% static 'nucleo/vendors/js/tables/datatable/jquery.dataTables.min.js'%}"></script>
+<script src="{% static 'nucleo/vendors/js/tables/datatable/dataTables.bootstrap5.min.js'%}"></script>
+<script src="{% static 'nucleo/vendors/js/tables/datatable/dataTables.responsive.min.js'%}"></script>
+<script src="{% static 'nucleo/vendors/js/tables/datatable/responsive.bootstrap4.js'%}"></script>
+<script src="{% static 'nucleo/vendors/js/pickers/flatpickr/flatpickr.min.js'%}"></script>
+<!-- END: Page Vendor JS-->
+<script>
+let nombreTabla = 'envios';
+$( function() {
+    let tabla = $(`#${nombreTabla}`).DataTable( {
+        responsive: true,
+        autoWidth: false,
+        destroy: false,
+        deferRender: false,
+        pageLength: 10,
+        serverSide: true,
+        rowReorder: true,
+        order: [[0,'desc']],
+        dom: '<"card-header border-bottom p-1"<"head-label"><"dt-action-buttons text-end"B>><"d-flex justify-content-between align-items-center mx-0 row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>t<"d-flex justify-content-between mx-0 row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
+        ajax: '{%url "envio-list" %}?format=datatables',
+        language: {
+            "lengthMenu": "Mostrar _MENU_ envios por página",
+            "zeroRecords": "Lo Sentimos, por el momento no hay envios en el sistema.",
+            "info": "Mostrando página _PAGE_ de _PAGES_",
+            "infoEmpty": "No hay envios",
+            "infoFiltered": "(filtrados de un total de _MAX_ envios)",
+            "loadingRecords": "Cargando...",
+            "processing":     "Procesando...",
+            "search":         "Buscar:",
+            "paginate": {
+                "first":      "Primera",
+                "last":       "Ultima",
+                "next":       "Siguiente",
+                "previous":   "Anterior"
+            },
+        },
+        columns: [
+            {data : 'id'},
+            {data: 'lugar_o.nombre',name:'lugar_o.nombre'},
+            {data: 'lugar_d.nombre',name:'lugar_d.nombre'},
+            {data : 'fecha_envio',name:'fecha_envio',render:function(data,type,row){
+                return data.split(' ')[0];
+            }},
+            {data: 'medio_transporte'},
+            {data: 'estadot',name:'estado'},
+            {%if 'logistica.envio.detalle' in perms or 'logistica.envio.actualizar' in perms or 'logistica.envio.eliminar' in perms%}
+            {mData: 'id',searchable: false,
+            mRender: (data,type,row)=>{
+                let botones ="";
+                {%if 'logistica.envio.detalle' in perms%}
+                botones+= `<button data-bs-tooltip="tooltip" data-bs-placement="top" title="Detalle Envio" style="margin-right:20px;" type="button" onclick="vue.remplazarModal(${data})"  data-bs-toggle="modal" data-bs-target="#default" class="btn btn-icon btn-info waves-effect"><i data-feather="book"></i></button>`;
+                {%endif%}
+                {%if 'logistica.envio.eliminar' in perms%}
+                    if(row.estadot == 'En Transito')
+                    {
+                    botones+= `<button onclick="eliminar(event,${data})" type="button" style="margin-right:20px;" data-bs-tooltip="tooltip" data-bs-placement="top" title="Eliminar Envio" class="btn btn-icon btn-danger waves-effect"><i data-feather="trash"></i></button>`;
+                    }
+                    else
+                    {
+                    botones+= `<button disabled type="button" data-bs-tooltip="tooltip" style="margin-right:20px;" data-bs-placement="top" title="Eliminar Envio" class="btn btn-icon btn-danger waves-effect"><i data-feather="trash"></i></button>`;
+                    }
+                {%endif%}
+                {%if 'logistica.envio.retroceder' in perms%}
+                    if(row.estadot == 'Recepcionado')
+                    {
+                    botones+= `<button onclick="retroceder(event,${data})" style="margin-right:20px;" type="button" data-bs-tooltip="tooltip" data-bs-placement="top" title="Retroceder Envio" class="btn btn-icon btn-primary waves-effect"><i data-feather="corner-up-left"></i></button>`;
+                    }
+                    else
+                    {
+                    botones+= `<button disabled type="button" data-bs-tooltip="tooltip" style="margin-right:20px;" data-bs-placement="top" title="Retroceder Envio" class="btn btn-icon btn-primary waves-effect"><i data-feather="corner-up-left"></i></button>`;
+                    }
+                {%endif%}
+                return botones;
+            }}
+            {%endif%}
+        ],
+        "drawCallback": function(){
+            feather.replace();
+            activarTooltip();
+        },
+        "initComplete": function () {
+            feather.replace();
+            activarTooltip();
+        },
+    } );
+tabla.on('responsive-display',function(){
+    feather.replace();
+});
+$('div.head-label').html('<h6 class="mb-0">Lotes</h6>');
+});
+</script>
+
+{%if 'logistica.envio.eliminar' in perms %}
+<script src="{%static 'nucleo/vendors/js/extensions/sweetalert2.all.min.js'%}"></script>
+<script>
+
+function eliminar(event,id){
+    let url = "{% url 'logistica:envios:eliminar' 1%}".replace('1',id);
+    Swal.fire({
+        title: '¿Estas Seguro?',
+        html:"El Envio sera eliminado <b style='color:red'>eliminada</b> permanentemente del sistema.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        cancelButtonText: 'Cancelar',
+        confirmButtonText: 'Si, Eliminar!'
+        }).then(result=>{
+            if (result.isConfirmed) {
+                axios.get(url).then(response => {
+                    if (response.data.estado == 'ok'){
+                        Swal.fire(
+                        'Eliminado!',
+                        'El envio ha sido eliminado del sistema',
+                        'success'
+                        );
+                        let tbody = document.querySelector(`#${nombreTabla} tbody`);
+                        let totalColumnas = tbody.querySelectorAll('tr').length;
+                        let tr = event.target.closest('tr').remove();
+                        if (totalColumnas -1 <= 0){
+                            document.querySelector(`#${nombreTabla}`).remove();
+                        }
+                    }
+                });
+            }
+        });               
+}
+</script>
+{%endif%}
+{%if 'logistica.envio.retroceder' in perms %}
+<script src="{%static 'nucleo/vendors/js/extensions/sweetalert2.all.min.js'%}"></script>
+<script>
+
+function retroceder(event,id){
+    let boton = event.target.closest('button');
+    let url = "{% url 'logistica:envios:retroceder' 1%}".replace('1',id);
+    Swal.fire({
+        title: '¿Estas Seguro?',
+        html:"El Envio cambiara su estado a <strong>En Transito</strong>",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        cancelButtonText: 'Cancelar',
+        confirmButtonText: 'Si, Cambiar!'
+        }).then(result=>{
+            if (result.isConfirmed) {
+                axios.get(url).then(response => {
+                    if (response.data.estado == 'ok'){
+                        Swal.fire(
+                        'Cambiado!',
+                        'El envio ha sido cambiado en el sistema.',
+                        'success'
+                        );
+                        boton.disabled = true;
+                    }
+                });
+            }
+        });               
+}
+</script>
+{%endif%}
+<script>
+let vue = Vue.createApp({
+    data(){
+        return{
+            fecha_envio:"",
+            fecha_recepcion:"",
+            medio_transporte:"",
+            numero_documento:"",
+            encargado_recepcion: '',
+            encargado_envio: "",
+            pallets: [],
+            resumen: [],
+            id:0,
+        }
+    },
+    methods:{
+        remplazarModal(numero){
+            let url = '{%url "api-envio-detalle" 1%}';
+            axios
+            .get(url.replace('1',numero))
+            .then(response => {
+                this.id = response.data.id;
+                this.fecha_envio = response.data.fecha_envio;
+                this.encargado_envio = response.data.encargado_envio;
+                this.encargado_recepcion = response.data.encargado_recepcion;
+                this.fecha_recepcion = response.data.fecha_repecion;
+                this.medio_transporte = response.data.medio_transporte;
+                this.numero_documento = response.data.numero_documento;
+                this.resumen = response.data.resumen;
+            });
+        },
+        verDetalle(){
+            let url = '{%url "logistica:envios:detalle" 1%}'.replace('1',this.id);
+            location.href = url;
+        },
+        verEtiquetas(){
+            let url = '{%url "logistica:envios:etiquetas" 1%}'.replace('1',this.id);
+            location.href = url;
+        },
+    },
+    delimiters: ['{$', '$}'],
+}).mount('#app');
+</script>
+{%endblock%}
+

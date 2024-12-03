@@ -1,0 +1,58 @@
+{%extends 'nucleo/base.html'%}
+{%block title%}Inicio{%endblock%}
+{%block content%}
+{%load static%}
+<!-- BEGIN: Content-->
+    <div class="app-content content ">
+        <div class="content-overlay"></div>
+        <div class="header-navbar-shadow"></div>
+        <div class="content-wrapper container-fluid p-0">
+            <div class="content-header row">
+                <div class="content-header-left col-md-9 col-12 mb-2">
+                    <div class="row breadcrumbs-top">
+                        <div class="col-12">
+                            <h2 class="content-header-title float-start mb-0">Logística</h2>
+                            <div class="breadcrumb-wrapper">
+                                <ol class="breadcrumb">
+                                    <li class="breadcrumb-item"><a href="{% url 'home' %}">Rutas</a>
+                                    </li>
+                                    <li class="breadcrumb-item active">Mis Rutas
+                                    </li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="content-body">
+                <!-- Dashboard -->
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">Mis Rutas 🚚</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-text">
+                            {% if request.user.ruta_set.count > 0%}
+                            <div class="row">
+                                <ul class="list-group">
+                                {%load filtroslogistica%}
+                                {%for ruta in request.user.ruta_set.all|filtrarRutas:'Abierto'%}
+                                    <li class="list-group-item"><a href="{% url 'logistica:rutas:detalle' ruta.id %}">{{ruta.nombre}} ({{ruta.rutaov_set.count}} OV)</a></li>
+                                {%endfor%}
+                                </ul>
+                            </div>
+                            {% else %}
+                            <p>No tienes rutas por el momento.</p>
+                            {%endif%}
+                           
+                            
+                        </div>
+                    </div>
+                </div>
+                <!--/ Dashboard -->
+
+            </div>
+        </div>
+    </div>
+    <!-- END: Content-->
+{%endblock%}

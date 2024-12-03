@@ -1,0 +1,198 @@
+{% extends 'nucleo/base.html'%}
+{%block title%}Logística{%endblock%}
+{%load static%}
+{%block head%}
+<link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/pickers/pickadate/pickadate.css'%}">
+<link rel="stylesheet" type="text/css" href="{%static 'nucleo/css/plugins/forms/pickers/form-pickadate.css'%}">
+{%endblock%}
+{%block content%}
+<style>
+.errorlist{
+    color:red;
+    list-style:none;
+    padding-left:0;
+}
+</style>
+<!-- BEGIN: Content-->
+    <div class="app-content content ">
+        <div class="content-overlay"></div>
+        <div class="header-navbar-shadow"></div>
+        <div class="content-wrapper container-fluid p-0">
+            <div class="content-header row">
+                <div class="content-header-left col-md-9 col-12 mb-2">
+                    <div class="row breadcrumbs-top">
+                        <div class="col-12">
+                            <h2 class="content-header-title float-start mb-0">Logística</h2>
+                            <div class="breadcrumb-wrapper">
+                                <ol class="breadcrumb">
+                                    <li class="breadcrumb-item"><a href="{% url 'logistica:envios:lista' %}">Envios</a>
+                                    </li>
+                                    <li class="breadcrumb-item active">Envio #{{envio.id}}
+                                    </li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="content-header-right text-md-end col-md-3 col-12 d-md-block d-none">
+                    <div class="mb-1 breadcrumb-right">
+                        {% if 'logistica.envio.etiquetas' in perms%}
+                        <a target="_blank" href="{% url 'logistica:envios:etiquetas' object.id %}"><button class="btn btn-info">Ver Etiquetas</button></a>
+                        {%endif%}
+                    </div>
+                </div>
+            </div>
+            <div class="content-body">
+                <!-- Dashboard -->
+                <div class="card" id="app">
+
+                    <div class="card-body">
+                        <div class="card-text">
+                           <h3>Información del Envio</h3>
+                           <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Dato</th>
+                                            <th>Detalle</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <th>Lugar Origen</th>
+                                            <td>{{envio.lugar_o.nombre}}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Fecha de Envio</th>
+                                            <td>{{envio.fecha_envio|date:"d M Y"}}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Lugar Destino</th>
+                                            <td>{{envio.lugar_d.nombre}}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Fecha de Recepción</th>
+                                            <td>{{envio.fecha_recepcion|default:'No Recepcionado'}}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Medio de Transporte</th>
+                                            <td>{{envio.medio_transporte}}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Número Documento</th>
+                                            <td>{{envio.numero_documento}}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                           </div>
+                           <h3 v-if="Object.keys(resumen).length > 0" class="mt-2">Resumen Envio</h3>
+                            <div v-if="Object.keys(resumen).length > 0" class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Codigo Lote</th>
+                                            <th>Producto</th>
+                                            <th>Cajas</th>
+                                            <th>Unidades</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="r in resumen">
+                                            <td>{$ r.numero $}</td>
+                                            <td>{$ r.producto$} ({$ r.presentacion $} {$r.unidad$})</td>
+                                            <td>{$ r.cajas $}</td>
+                                            <td>{$ r.cantidad $}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            {%if envio.estado%}
+                            <h3 class="mt-2">Detalle Pallets</h3>
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Codigo Pallet</th>
+                                        <th>Nombre Pallet</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {%for pallet in pallets%}
+                                    <tr>
+                                        <td>{{pallet.pk}}</td>
+                                        <td>{{pallet.nombre}}</td>
+                                    </tr>
+                                    {%endfor%}
+                                </tbody>
+                                    
+                                </table>
+                            </div> 
+                            {%else %}
+                           <h3 class="mt-2">Detalle Pallets</h3>
+                                <ul class="nav nav-tabs" role="tablist">
+                                    {%for pallet in pallets%}
+                                    <li class="nav-item">
+                                        <a class="nav-link {% if forloop.counter0 == 0%}active{%endif%}" id="base{{pallet.id}}" data-bs-toggle="tab" aria-controls="tab{{pallet.id}}" href="#tab{{pallet.id}}" role="tab" aria-selected="true">{{forloop.counter}}.- {{pallet.nombre}}</a>
+                                    </li>
+                                    {%endfor%}
+                                </ul>
+                                <div class="tab-content">
+                                   {%for pallet in pallets%}
+                                            <div class="tab-pane table-responsive {% if forloop.counter0 == 0%}active{%endif%}" id="tab{{pallet.id}}" role="tabpanel" aria-labelledby="base{{pallet.id}}">
+                                                <table class="table table-bordered">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Codigo Lote</th>
+                                                            <th>Producto</th>
+                                                            <th>Folio Caja</th>
+                                                            <th>Unidades</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {%for envio in pallet.loteenvio_set.all %}
+                                                        <tr>
+                                                            <td>{{envio.cajalote.lote.numero}}</td>
+                                                            <td>{{envio.cajalote.lote.producto.nombre}} ({{envio.cajalote.lote.producto.presentacion}} {{envio.cajalote.lote.producto.unidad}})</td>
+                                                            <td>{{envio.cajalote.caja}}</td>
+                                                            <td>{{envio.cajalote.cantidad}}</td>
+                                                        </tr>
+                                                        {%endfor%}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                    {%endfor%}
+                                </div>
+                                {%endif%}
+                            </div>
+                    </div>
+                </div>
+                <!--/ Dashboard -->
+            </div>
+        </div>
+    </div>
+    <!-- END: Content-->
+{%endblock%}
+{%block scripts%}
+<script>
+let vue = Vue.createApp({
+    data(){
+        return{
+            resumen:[],
+        }
+    },
+    methods:{
+        obtenerResumen(){
+            let url = "{% url 'api-envio-resumen' 1 %}".replace('1','{{envio.id}}');
+            axios
+            .get(url).then(response => {
+                this.resumen = response.data.resumen;
+            });
+        }
+    },
+    mounted(){
+        this.obtenerResumen();
+    },
+    delimiters: ['{$', '$}'],
+}).mount('#app');
+</script>
+{%endblock%}

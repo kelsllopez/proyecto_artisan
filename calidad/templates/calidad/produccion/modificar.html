@@ -1,0 +1,271 @@
+{% extends 'nucleo/base.html' %}
+
+{% block title %}Modificar de Producción{% endblock %}
+{% load static %}
+
+{% block head %}
+    <link rel="stylesheet" type="text/css" href="{% static 'nucleo/vendors/css/tables/datatable/dataTables.bootstrap5.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'nucleo/vendors/css/tables/datatable/responsive.bootstrap4.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'nucleo/vendors/css/tables/datatable/buttons.bootstrap5.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'nucleo/vendors/css/tables/datatable/rowGroup.bootstrap4.min.css' %}">
+{% endblock %}
+
+{% block content %}
+    <!-- Mostrar mensajes -->
+    {% if messages %}
+        <div class="alert alert-success">
+            {% for message in messages %}
+                <p>{{ message }}</p>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+<div class="app-content content">
+    <div class="content-overlay"></div>
+    <div class="header-navbar-shadow"></div>
+    <div class="content-wrapper container-fluid p-0">
+        <div class="content-header row">
+            <div class="content-header-left col-md-9 col-12 mb-2">
+                <div class="row breadcrumbs-top">
+                    <div class="col-12">
+                        <h2 class="content-header-title float-start mb-0">Modificar Producción</h2>
+                        <div class="breadcrumb-wrapper">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item"><a href="#">Producción</a></li>
+                                <li class="breadcrumb-item active">Modificar</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card para el formulario de modificación -->
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title">Detalles de Producción</h4>
+                <p class="card-subtitle">Aquí puedes modificar los detalles de la producción.</p>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="card-text">
+                        <!-- Pauta Producción -->
+                        <section id="detalle-produccion" class="card shadow-sm mb-4">
+                            <h3 class="mb-3" style="font-size: 1.5rem; color: #343a40;">Detalles de la Producción</h3>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>ID:</strong> <span>{{ pauta_produccion.id }}</span></p>
+                                    <p><strong>Fecha de fabricación:</strong> <span>{{ pauta_produccion.fecha }}</span></p>
+                                    <p><strong>Cantidad a elaborar:</strong> <span>{{ pauta_produccion.cantidad }}</span></p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Estado:</strong> <span>{{ pauta_produccion.get_estado_display }}</span></p>
+                                    <p><strong>Rendimiento:</strong> <span>{{ pauta_produccion.rendimiento }}%</span></p>
+                                    <p><strong>Costo Directo Producción:</strong> <span>{{ pauta_produccion.cdp }}</span></p>
+                                </div>
+                            </div>
+                        </section>
+
+                                <!-- Instrucciones -->
+                                {% if instrucciones %}
+                                <section id="instrucciones" class="mb-4">
+                                    <h4>Instrucciones de Producción</h4>
+                                    <table class="table table-bordered table-striped table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Instrucción</th>
+                                                <th>Valor</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for instruccion in instrucciones %}
+                                            <tr>
+                                                <td>{{ instruccion.plantilla_instruccion }}</td>
+                                                <td>{{ instruccion.valor }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </section>
+                                {% endif %}
+                    <div class="table-responsive">
+                        <!-- Tabla de Calidad de Producción -->
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Campo</th>
+                                    <th>Valor</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Observaciones:</strong></td>
+                                    <td><input type="text" class="form-control" name="observaciones" value="{{ calidad_form.observaciones.value|default:'' }}"></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>pH:</strong></td>
+                                    <td><input type="number" step="any" class="form-control" name="ph" value="{{ calidad_form.ph.value|default:'' }}"></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Textura:</strong></td>
+                                    <td><input type="text" class="form-control" name="textura" value="{{ calidad_form.textura.value|default:'' }}"></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Sabor:</strong></td>
+                                    <td><input type="text" class="form-control" name="sabor" value="{{ calidad_form.sabor.value|default:'' }}"></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Color:</strong></td>
+                                    <td><input type="text" class="form-control" name="color" value="{{ calidad_form.color.value|default:'' }}"></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Olor:</strong></td>
+                                    <td><input type="text" class="form-control" name="olor" value="{{ calidad_form.olor.value|default:'' }}"></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Aspecto:</strong></td>
+                                    <td><input type="text" class="form-control" name="aspecto" value="{{ calidad_form.aspecto.value|default:'' }}"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- PCC2 - Filtrado de Producto Final -->
+                        <div class="section-header">PCC2 - Filtrado de Producto Final</div>
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Campo</th>
+                                    <th>Valor</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Filtro Instalado:</strong></td>
+                                    <td><input type="text" class="form-control" name="filtro_instalado" value="{{ calidad_form.filtro_instalado.value|default:'' }}"></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Filtro Integrado:</strong></td>
+                                    <td><input type="text" class="form-control" name="filtro_integrado" value="{{ calidad_form.filtro_integrado.value|default:'' }}"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- Envasado y Almacenamiento -->
+                        <div class="section-header">Envasado y Almacenamiento (entre 2°C - 8°C)</div>
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Campo</th>
+                                    <th>Valor</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Inicio Envasado:</strong></td>
+                                    <td><input type="text" class="form-control" name="inicio_envasado" value="{{ calidad_form.inicio_envasado.value|default:'' }}"></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Termino Envasado:</strong></td>
+                                    <td><input type="text" class="form-control" name="fin_envasado" value="{{ calidad_form.fin_envasado.value|default:'' }}"></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Unidades Botellas (lt):</strong></td>
+                                    <td><input type="number" class="form-control" name="unidades_botellas_lt" value="{{ calidad_form.unidades_botellas_lt.value|default:'' }}"></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Unidades 360gr:</strong></td>
+                                    <td><input type="number" class="form-control" name="unidades_360gr" value="{{ calidad_form.unidades_360gr.value|default:'' }}"></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Unidades 150gr:</strong></td>
+                                    <td><input type="number" class="form-control" name="unidades_150gr" value="{{ calidad_form.unidades_150gr.value|default:'' }}"></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Merma (kg):</strong></td>
+                                    <td><input type="number" class="form-control" name="merma_kg" value="{{ calidad_form.merma_kg.value|default:'' }}"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- Responsables -->
+                        <div class="section-header">Responsables</div>
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Responsable</th>
+                                    <th>Nombre</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Responsable Elaboración:</strong></td>
+                                    <td><input type="text" class="form-control" name="elaboracion" value="{{ calidad_form.elaboracion.value|default:'' }}"></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Responsable Envasado:</strong></td>
+                                    <td><input type="text" class="form-control" name="envasado" value="{{ calidad_form.envasado.value|default:'' }}"></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Responsable Verificación:</strong></td>
+                                    <td><input type="text" class="form-control" name="verificacion" value="{{ calidad_form.verificacion.value|default:'' }}"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- Observaciones Adicionales -->
+                        <div class="section-header">Observaciones Adicionales</div>
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Campo</th>
+                                    <th>Valor</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Observaciones:</strong></td>
+                                    <td><input type="text" class="form-control" name="observaciones_adicionales" value="{{ calidad_form.observaciones.value|default:'' }}"></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Estado de Aprobación:</strong></td>
+                                    <td>
+                                        <select class="form-control" name="estado_aprobacion">
+                                            <option value="Aprobado" {% if calidad_form.estado_aprobacion.value == "Aprobado" %}selected{% endif %}>Aprobado</option>
+                                            <option value="Rechazado" {% if calidad_form.estado_aprobacion.value == "Rechazado" %}selected{% endif %}>Rechazado</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Botones -->
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-success">Actualizar Producción</button>
+                        <a href="{% url 'calidad:elaboraciones:lista' %}" class="btn btn-secondary">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Mostrar mensaje de éxito -->
+        {% if messages %}
+            <div class="alert alert-success mt-3">
+                <ul>
+                    {% for message in messages %}
+                        <li>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static 'nucleo/vendors/js/tables/datatable/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'nucleo/vendors/js/tables/datatable/dataTables.bootstrap5.min.js' %}"></script>
+    <script src="{% static 'nucleo/vendors/js/tables/datatable/dataTables.responsive.min.js' %}"></script>
+    <script src="{% static 'nucleo/vendors/js/tables/datatable/responsive.bootstrap4.min.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,826 @@
+{% extends 'nucleo/base.html'%}
+{%block title%}Actualizar Elaboración{%endblock%}
+{%load static%}
+{%block head%}
+<link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/pickers/pickadate/pickadate.css'%}">
+<link rel="stylesheet" type="text/css" href="{%static 'nucleo/css/plugins/forms/pickers/form-pickadate.css'%}">
+{%endblock%}
+{%block content%}
+<style>
+.errorlist{
+    color:red;
+    list-style:none;
+    padding-left:0;
+}
+</style>
+<!-- BEGIN: Content-->
+    <div class="app-content content ">
+        <div class="content-overlay"></div>
+        <div class="header-navbar-shadow"></div>
+        <div class="content-wrapper container-fluid p-0">
+            <div class="content-header row">
+                <div class="content-header-left col-md-9 col-12 mb-2">
+                    <div class="row breadcrumbs-top">
+                        <div class="col-12">
+                            <h2 class="content-header-title float-start mb-0">Producción</h2>
+                            <div class="breadcrumb-wrapper">
+                                <ol class="breadcrumb">
+                                    <li class="breadcrumb-item"><a href="{% url 'produccion:pauta:listapip' %}">Elaboración PIP</a>
+                                    </li>
+                                    <li class="breadcrumb-item active">Fabricar
+                                    </li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+             <!-- MENU -->
+            {% include 'produccion/common/menu.html' %}
+            <!-- FIN MENU -->
+            <div class="content-body">
+                <!-- Dashboard -->
+                <div class="card">
+
+                    <div class="card-body">
+                        <div class="card-text">
+                            <form class="form form-horizontal" method="post" enctype="multipart/form-data">{% csrf_token %}
+                               
+                                    <div class="mb-1 row">
+                                            <div class="col-sm-6">Pauta de elaboración a seguir <span style="color:red">*</span></div>
+                                       
+                                            <div class="col-sm-6 position-relative">
+                                               <select disabled class="form-control">
+                                                <option value="{{pauta.plantilla_pauta.id}}">{{pauta.plantilla_pauta.nombre}}</option>
+                                               </select>
+                                            </div>
+                                        </div>
+                                    {%for field in form %}
+
+                                        {% if field.id_for_label == 'id_cantidad' or field.id_for_label == 'id_masa_final'%}
+
+                                        {%else%}
+
+                                        <div class="mb-1 row">
+                                            <div class="col-sm-6">{{field.label_tag}} {%if field.field.required %}<span style="color:red">*</span>{%endif%}</div>
+                                       
+                                            <div class="col-sm-6 position-relative">{{field}}
+                                                {% if field.help_text %}
+                                                <small class="">{{field.help_text|safe}}</small>
+                                                {%endif%}
+                                                
+                                                {%if field.errors %}
+                                                <div class="invalid-feedback" style="display:block;">{{field.errors.as_text}}</div>
+                                                {%endif%}
+                                            </div>
+                                        </div>
+                                        {%endif%}
+                                    {%endfor%}
+                                    
+                                    <div class="col-12" id="app">
+                                    <div class="mb-1 row">
+                                        <div class="col-sm-6"><label for="id_cantidad">Cantidad de leche a utilizar:</label> <span style="color:red">*</span></div>
+                                        <div class="col-sm-6 position-relative">
+                                            <input type="number" name="cantidad" class="form-control" required id="id_cantidad" v-model="cantidadafabricar" />
+                                            <small class="">La cantidad de leche que se utilizará en esta elaboración.</small>
+                                        </div>
+
+                                    </div>
+                                     <div class="row">
+                                        <small v-if="mensaje">Seleccióna una <b>pauta de elaboración</b> y <b>ubicación</b> para continuar.</small>
+                                        <div class="mt-3" v-if="(productos && productos.length > 0) || (grupos && grupos.length > 0)">
+                                            <h3>Estimación de Producción ({$ parseFloat(cantidadafabricar / rendimiento).toFixed(2)$}kgs)</h3>
+                                            <table class="table table-striped table-bordered">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Producto</th>
+                                                        <th>Cantidad a producir</th>
+                                                        <th>Ingredientes Adicionales</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr v-for="producto in productos">
+                                                        <td>{$ producto.producto.nombre $} ({$producto.producto.presentacion$} {$producto.producto.unidad$})</td>
+                                                        <td><input type="hidden" name="producto_id[]" :value="producto.producto.id"/><input :data-unidad="producto.producto.unidad" :data-presentacion="producto.producto.presentacion" data-type="producto" @keyup="actualizarTotal(producto)" v-model="producto.cantidada" min="0" required type="number" name="producto_cantidad[]" class="form-control cantidadinsumo"/></td>
+                                                        <td><ul>
+                                                            <li v-for="insumo in producto.producto.insumose">{$(insumo.insumo.nombre)$}: {$ (insumo.cantidad * producto.cantidada).toFixed(2) $} {$insumo.insumo.unidad$}</li>
+                                                            </ul></td>
+                                                    </tr>
+                                                    <tr v-for="grupo in grupos">
+                                                        <td>{$ grupo.nombre $} (Kilogramos)</td>
+                                                        <td><input type="hidden" name="grupo_pva[]" v-model="grupo.pva"/><input type="hidden" name="grupo_id[]" v-model="grupo.id"/><input data-type="grupo" @keyup="actualizarTotal(grupo)" v-model="grupo.cantidada" min="0"  required type="number" step="any" name="grupo_cantidad[]" class="form-control cantidadinsumo"/></td>
+                                                        <td><ul>
+                                                            <li v-for="insumo in grupo.ingredientes">{$(insumo.nombre)$}: {$ (insumo.cantidad * grupo.cantidada).toFixed(2) $} {$insumo.unidad$}</li>
+                                                            </ul></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Total</td>
+                                                        <td><input v-model="total" readonly type="number" class="form-control"/></td>
+                                                        <td></td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div v-if="mostrarResto">
+                                            <div class="mt-1" id="trazabilidad" v-if="ingredientes && ingredientes.length > 0">
+                                                <h3>Trazabilidad</h3>
+                                                <p>Escanea todos los bultos y/o insumos que utilizaras en la elaboración</p>
+                                                <input type="hidden" v-for="bulto in bultos" v-model="bulto.id" name="bultos[]"/>
+                                                <input type="hidden" v-for="caja in cajas" v-model="caja.id" name="cajas[]"/>
+                                                <input class="form-control" placeholder="Escanear" autocomplete="off" id="lote" autofocus="autofocus" type="text" v-on:keydown.enter.prevent="agregarLote($event)">
+                                                <table class="table mt-1 table-striped" v-if="bultos && bultos.length > 0">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Bulto Id</th>
+                                                            <th>Insumo</th>
+                                                            <th>Lote</th>
+                                                            <th>Cantidad Restante</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr v-for="bulto in bultos">
+                                                            <td>{$bulto.id$}</td>
+                                                            <td>{$bulto.insumo.nombre$}</td>
+                                                            <td v-if="bulto.lote">{$bulto.lote$}</td>
+                                                            <td v-else>Sin Lote</td>
+                                                            <td>{$ ( (bulto.cantidad - bulto.cantidadu )*bulto.formato )$} ({$ bulto.insumo.unidad$}s) <button @click="eliminarBulto(bulto)" style="margin-left:10px;" class="btn btn-danger btn-icon"><i class="fas fa-trash"></i></button></td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <div v-if="ingredientes && ingredientes.length > 0" class="table-responsive mt-3">
+                                                <h3>Ingredientes</h3>
+                                                <table class="table table-bordered">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Ingrediente</th>
+                                                            <th>Formula Materia Base Prima</th>
+                                                            <th>Inventario {{request.user.perfil.lugar.nombre }}</th>
+                                                            <th>Cantidad sugerida</th>
+                                                            <th>Cantidad Utilizada</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr v-for="ingrediente in ingredientes">
+                                                            <td v-if="mostrar(ingrediente)">{$ capitalize(ingrediente.insumo.nombre) $}</td>
+                                                            <td v-if="mostrar(ingrediente)"><p v-if="ingrediente.original">{$ ingrediente.cantidad $} {$ ingrediente.unidad_t $}<span v-if="ingrediente.unidad_t == 'unidad'">es</span><span v-else>s</span> <span style="font-weight:600;" v-if="ingrediente.opcional">(Opcional)</span> <span style="font-weight:600" v-else-if="ingrediente.ingrediente == false">(Extra)</span></p><p v-else>---</p> </td>                                                        <td v-if="mostrar(ingrediente)">{$ formato(ingrediente.inventario) $} {$ingrediente.insumo.unidad $}s</td>
+                                                            <td v-if="mostrar(ingrediente)" v-html="calcularStock(ingrediente)"></td>
+                                                            <td v-if="mostrar(ingrediente)"><div class="input-group form-password-toggle mb-2">
+                                                                    <input class="form-control" type="hidden" name="insumoingrediente[]" :value="ingrediente.insumo.id"/>
+                                                                    <input class="form-control" type="number" step="0.01" v-model="ingrediente.cantidadu" name="cantidadingrediente[]" required />
+                                                                    <input class="form-control" type="hidden" name="unidadingrediente[]" :value="ingrediente.unidad"/>
+                                                                    <span class="input-group-text cursor-pointer bg-primary text-white">{$ ingrediente.unidad $}<span v-if="ingrediente.unidad == 'unidad'">es</span><span v-else>s</span></span>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <div v-if="etapas && etapas.length > 0" class="table-responsive mt-3">
+                                                <h3>Instrucciones</h3>
+                                                <table class="table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th style="width:40%">Instrucción</th>
+                                                            <th>Parámetros</th>
+                                                        </tr>
+                                                    </thead>
+                                                </table>
+                                                <div v-for="(etapa,indexe) in etapas">
+                                                <table class="table table-striped">
+                                                
+                                                    <tr>
+                                                        <td :colspan="etapa.maximop+1" style="font-weight:bold;text-transform:uppercase">{$ etapa.nombre $}</td>
+                                                    </tr>
+                                                    <tr v-for="(instruccion,indexi) in etapa.instrucciones">
+                                                        <td style="width:40%">{$ instruccion.orden +1 $} - {$ instruccion.descripcion $}</td>
+                                                        <td v-for="(columna,indexc) in instruccion.columnas">
+                                                            <div class="input-group">
+                                                                <input v-if="['0','1','2','4'].includes(columna.columna.tipo)" class="form-control" :type="obtenerTipo(columna.columna.tipo)" :value="obtenerValor(instruccion.id,columna.columna.id)" :placeholder='columna.columna.nombre' :name="'etapa'+indexe+'instruccion'+indexi+'columna'+indexc"/>
+                                                                <button @click="setearHora($event)" type="button" class="btn btn-outline-primary waves-effect" v-if="columna.tipo=='2'"><i class="fas fa-clock"></i></button>
+                                                                <input v-if="columna.columna.tipo=='3'" type="hidden" :name="'etapa'+indexe+'instruccion'+indexi+'columna'+indexc" :value="obtenerValor(instruccion.id,columna.columna.id)"/><input v-if="columna.columna.tipo=='3'" class="form-check-input" :checked="obtenerValor(instruccion.id,columna.columna.id) == '1'" type="checkbox" onclick="this.previousSibling.value=1-this.previousSibling.value"/><span style="margin-left:5px;" v-if="columna.columna.tipo=='3'">{$ columna.columna.nombre $}</span>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                                </div>
+                                            </div>
+                                            <div class="mt-3" v-if="ips && ips.length > 0">
+                                            <h3>Subproductos</h3>
+                                            <table class="table table-striped">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Insumo</th>
+                                                        <th>Cantidad Producida</th>
+                                                        <th>Comentarios</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr v-for="ip in ips">
+                                                        <td>{$ ip.insumo.nombre $} ({$ ip.insumo.unidad $})</td>
+                                                        <td><input type="number" name="cantidadip[]" :value="ip.cantidad" class="form-control"/></td>
+                                                        <td><textarea name="descripcionip[]" class="form-control">{$ip.descripcion$}</textarea></td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                            </div>
+                                        <div class="mt-3" v-if="(grupos && grupos.length > 0) || (productos && productos.length > 0)">
+                                            <h3>Lotes</h3>
+                                            <table class="table table-striped table-bordered">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Producto</th>
+                                                        <th>Unidades Producidas</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr v-for="grupo in grupos">
+                                                        <td v-if="grupo.cantidada > 0">{$ grupo.nombre $} (Kilogramos)</td>
+                                                        <td v-if="grupo.cantidada > 0"><input type="hidden" name="grupol_pva[]" v-model="grupo.pva"/><input type="hidden" name="grupol_id[]" v-model="grupo.id"/><input @keyup="actualizarTotal(grupo)" value="0" min="0" required type="number" step="any" name="grupol_cantidad[]" class="form-control"/></td>
+                                                    </tr>
+                                                    <tr v-for="producto in productos">
+                                                        <td>{$ producto.producto.nombre $} ({$ producto.producto.presentacion $} {$producto.producto.unidad$})</td>
+                                                        <td><input type="hidden" name="productol_id[]" v-model="producto.producto.id"/><input @keyup="actualizarTotal(producto)" min="0" required type="number" v-model="producto.cantidadf" name="productol_cantidad[]" class="form-control"/></td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div v-if="!mensaje" class="col-sm-12 mt-2">
+                                            <button :disabled="bloqueado" type="submit" class="btn btn-primary me-1 waves-effect waves-float waves-light">{$ boton $}</button>
+                                        </div>
+                                        </div>
+                                        <div class="mt-1" v-else>
+                                            <p v-if="mostrarMensaje" style="color:red">
+                                                <span v-if="cantidadafabricar <=0">Introduce la cantidad de leche a utilizar.</span>
+                                                <span v-else-if="total * (1-holgura) <= cantidadafabricar / rendimiento">Debes completar la estimación para continuar, el resultado debe ser igual a {$ parseFloat(cantidadafabricar / rendimiento).toFixed(2)$}kgs con una variación de {$holgura * 100$}%</span>
+                                                <span v-else-if="total * (1+holgura) > cantidadafabricar / rendimiento">Debes completar la estimación para continuar, el resultado debe ser igual a {$ parseFloat(cantidadafabricar / rendimiento).toFixed(2)$}kgs con una variación de {$holgura * 100$}%</span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <!--/ Dashboard -->
+            </div>
+        </div>
+    </div>
+    <!-- END: Content-->
+{%endblock%}
+{%block scripts%}
+<script src="{%static 'nucleo/vendors/js/pickers/pickadate/picker.js'%}"></script>
+<script src="{%static 'nucleo/vendors/js/pickers/pickadate/picker.date.js'%}"></script>
+<script>
+$('#id_fecha').pickadate({
+    monthsFull: [ 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre' ],
+    monthsShort: [ 'ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic' ],
+    weekdaysFull: [ 'Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado' ],
+    weekdaysShort: [ 'dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb' ],
+    today: 'Hoy',
+    clear: 'Borrar',
+    close: 'Cerrar',
+    firstDay: 1,
+    format: 'yyyy-mm-dd',
+    formatSubmit: 'yyyy-mm-dd',
+    onStart: function ()
+            {
+                var date = new Date("{{pauta.fecha|date:'Y-m-d H:i'}}");
+                this.set('select', [date.getFullYear(), date.getMonth(), date.getDate()]);
+            },
+        });
+</script>
+<script>
+let vue = Vue.createApp({
+    data(){
+        return {
+            bloqueado: false,
+            boton: 'Guardar',
+            ips: [],
+            contador: 0,
+            cajas: [],
+            bultos: [{%for bulto in object.bultopautaproduccion_set.all%}{'id':parseInt('{{bulto.bulto.pk}}'),'lotep':'{{bulto.bulto.lotep}}','cantidad':parseFloat('{{bulto.bulto.cantidad}}'.replace(',','.')),'cantidadu':parseFloat('{{bulto.bulto.cantidadu}}'.replace(',','.')),
+            'formato':parseFloat('{{bulto.bulto.formato}}'.replace(',','.')),'insumo':{'id':parseInt('{{bulto.bulto.insumo.id}}'),'nombre':'{{bulto.bulto.insumo.nombre}}','unidad':'{{bulto.bulto.insumo.unidad}}'}}, {%endfor%}],
+            lider: 100,
+            productos: [],
+            masa_final: parseFloat("{%if pauta.masa_final %}{{pauta.masa_final}}{%else%}0{%endif%}".replace(',','.')),
+            cantidadafabricar: parseFloat("{{pauta.cantidad}}".replace(',','.')),
+            instrucciones: [{%for instruccion in pauta.instruccionproduccion_set.all%}{'instruccion':parseInt('{{instruccion.plantilla_instruccion.id}}'),'columna':parseInt('{{instruccion.plantilla_columna.id}}'),'valor':'{{instruccion.valor}}'}, {%endfor%}],
+            etapas: [],
+            productosi: [{%for producto in object.lineaproduccion_set.all%} {%if producto.final == False%}{'linea':parseInt('{{producto.linea.id}}'),'pva':parseInt('{{producto.pva.id}}'),'cantidad':parseFloat('{{producto.cantidad}}'.replace(',','.'))} ,{%endif%}{%endfor%}],
+            productosii: [{%for producto in object.productoproduccion_set.all%} {%if producto.final == False%}{'producto':parseInt('{{producto.producto.id}}'),'cantidad':parseFloat('{{producto.cantidad}}'.replace(',','.'))} ,{%endif%}{%endfor%}],
+            total: parseFloat("{{total}}".replace(',','.')),
+            rendimiento: 8.5,
+            total:0,
+            grupos: [],
+            holgura: 0.1,
+            id: [],
+            ingredientes: [],
+            ingredientes_producion: [],
+            instrucciones_produccion: [],
+            nombre: "",
+            rama: "",
+            mensaje: true,
+        };
+    },
+    computed:{
+        mostrarResto(){
+            if(this.grupos.length == 0 && this.productos.length == 0){
+                return true;
+            }
+            let totall = this.cantidadafabricar / this.rendimiento
+            if (this.total <= 0 || this.cantidadafabricar <= 0){
+                return false;
+            }
+            if ( (this.total >  totall * (1-this.holgura)) && (this.total <= totall * (1+this.holgura)) ){
+                return true;
+            }
+            else{
+                return false;
+            }
+        },
+        mostrarMensaje(){
+            if (this.productos && this.productos.length > 0){
+                return true;
+            }
+            if (this.grupos && this.grupos.length > 0){
+                return true;
+            }
+            return false;
+        }
+    },
+    methods:{
+        actualizarBoton(event){
+            if ( parseFloat(event.target.value) > 0){
+                this.boton = 'Elaborar';
+            }
+            else{
+                this.boton = 'Guardar';
+            }
+            
+        },
+        eliminarBulto(bultoe){
+            this.bultos = this.bultos.filter(bulto => bulto.id != bultoe.id);
+        },
+        agregarInsumo(e){
+            let info = procesarScan(e.target.value);
+            let id_oc = info[1].trim();
+            let id_bulto = info[2].trim()
+            for (bulto of this.bultos){
+                if (id_bulto == bulto.id){
+                    audio.currentTime = 0;
+                    audio.play();
+                    e.target.value = "";
+                    return;
+                }
+            }
+            let url = '{%url "api-bulto-scan" 1 %}'.replace(1,parseInt(id_bulto));
+            axios.get(url).then(response => {
+                insumo = response.data;
+                //verificamos que el insumo sea parte de los ingrediente si no error
+                let check = this.ingredientes.filter(ingrediente => ingrediente.insumo.id == insumo.insumo.id)
+                if (check.length > 0){
+                    if ( (insumo.cantidad - insumo.cantidadu) > 0)
+                    {
+                        this.bultos.push(insumo);
+                    }
+                    
+                }else{
+                    audio.currentTime = 0;
+                    audio.play();
+                    console.log('error');
+                }
+                
+            }).catch((error)=>{
+                console.log('error');
+                audio.play();});
+            e.target.value = "";
+
+        },
+        agregarLote(e){
+            e.preventDefault();
+            let info = procesarScan(e.target.value);
+            console.log(info);
+            id_lote = info[0];
+            if(id_lote == "I"){
+                return this.agregarInsumo(e);
+            }
+            for (lote of this.lotes){
+                if (lote.id == parseInt(id_lote)){
+                    if(lote.caja == parseInt(info[1])){
+                        audio.play();
+                        e.target.value = "";
+                        return;
+                    }
+                }
+            }
+            let url = '{%url "api-lote-scan" 1 %}'.replace(1,parseInt(id_lote)) + `?caja=${parseInt(info[1])}&unidades=${parseInt(info[2])}`;
+            axios.get(url).then(response => {
+                lote = response.data;
+                lote.unidades = info[2]
+                lote.caja = info[1]
+                this.lotes.push(lote);
+                this.datos= true;
+                this.resumir();
+            }).catch((error)=>{
+                console.log('error');
+                audio.play();});
+            e.target.value = "";
+        },
+        mostrar(ingrediente){
+            if (ingrediente.totalr > 0){
+                return true;
+            }
+            else{
+                return false;
+            }
+            
+        },
+        obtenerValor(idi,idc){
+            console.log(idi,idc);
+            columna = this.instrucciones.filter(instruccion => (instruccion.instruccion == idi && instruccion.columna == idc))
+            if (columna && columna.length > 0){
+                console.log(columna);
+                return columna[0].valor;
+            }
+            return '';
+        },
+        obtenerTipo(columna){
+            if (['0','1'].includes(columna)){
+                return 'number';
+            }else{
+                return 'text';
+            }
+        },
+        actualizarTotal(producto){
+            for(ingrediente of this.ingredientes){
+                    ingrediente.totalp = 0;
+                    ingrediente.totalr = 0;
+                }
+            for (grupo of this.grupos){
+                if(grupo){
+                    for (insumo of grupo.ingredientes){
+                        for(ingrediente of this.ingredientes){
+                            if( (ingrediente.insumo.id == insumo.id ) && (ingrediente.insumo.unidad == insumo.unidad)){
+                                ingrediente.totalp += parseFloat(insumo.cantidad * grupo.cantidada)
+                                ingrediente.totalr = parseFloat(ingrediente.totalr) + parseFloat(insumo.cantidad * grupo.cantidada)
+                            }
+                        }
+                    }
+                }
+            }
+            for (producto of this.productos){
+                if(producto){
+                    for (insumo of producto.producto.insumose){
+                        for(ingrediente of this.ingredientes){
+                            if( (ingrediente.insumo.id == insumo.insumo.id ) && (ingrediente.insumo.unidad == insumo.insumo.unidad)){
+                                ingrediente.totalp += parseFloat(insumo.cantidad * producto.cantidada)
+                                ingrediente.totalr = parseFloat(ingrediente.totalr) + parseFloat(insumo.cantidad * producto.cantidada)
+                            }
+                        }
+                    }
+                }
+            }
+            total = 0;
+            elementos = document.querySelectorAll('.cantidadinsumo');
+            for (elemento of elementos){
+                if (elemento.value.length > 0){
+                    let tipo = elemento.getAttribute('data-type');
+                    if (tipo == 'grupo'){
+                        total+= parseFloat(elemento.value);
+                    }else{
+                        let presentacion = elemento.getAttribute('data-presentacion');
+                        let unidad = elemento.getAttribute('data-unidad');
+                        unidades = {'ml':1000,'gr':1000,'mg':1000000,'kg':1,'lt':1,'unidad':1,'caja':1,'n/a':1}
+                        console.log(elemento.value);
+                        console.log(unidades[unidad]);
+                        total+=  ( parseFloat(elemento.value) * parseFloat(presentacion) ) / unidades[unidad];
+                    }
+                    
+                    
+                }
+                
+            }
+            this.total = total;
+            this.calcularNuevo();
+        },
+        calcularTotal(){
+            if(this.contador > 0){
+                total = 0;
+            elementos = document.querySelectorAll('.cantidadinsumo');
+            for (elemento of elementos){
+                if (elemento.value.length > 0){
+                    let tipo = elemento.getAttribute('data-type');
+                    if (tipo == 'grupo'){
+                        total+= parseFloat(elemento.value);
+                    }else{
+                        let presentacion = elemento.getAttribute('data-presentacion');
+                        let unidad = elemento.getAttribute('data-unidad');
+                        unidades = {'ml':1000,'gr':1000,'mg':1000000,'kg':1,'l':1,'lt':1,'unidad':1,'caja':1,'n/a':1}
+                        total+=  ( parseFloat(elemento.value) * parseFloat(presentacion) ) / unidades[unidad];
+                    }
+                }
+                
+            }
+            this.total = total;
+            }
+            this.contador+=1;
+            
+        },
+         calcularNuevo(){
+            for (ingrediente of this.ingredientes){
+                this.calcularStock(ingrediente);
+            }
+            this.calcularTotal()
+        },
+        calcularProducto(ingrediente){
+            let extra = 0;
+            unidades = {'mililitro':1000,'gramo':1000,'miligramo':1000000,'kilogramo':1,'litro':1,'unidad':1,'caja':1,'n/a':1}
+            for (producto of this.productos){
+                for(i of producto.producto.insumose){
+                    if(i.insumo.id == ingrediente.insumo.id){
+                        extra+= parseFloat(i.cantidad * producto.cantidada * (1000 / producto.producto.presentacion) * unidades[ingrediente.unidad_t]);
+                    }
+                }
+            }
+            return extra;
+        },
+        formato(valor){
+            return new Intl.NumberFormat("es-CL",{ minimumFractionDigits: 0,maximumFractionDigits:3}).format(valor);
+        },
+        zeroPad(num,places){
+            return String(num).padStart(places, '0')
+        },
+         setearHora(event){
+            const d = new Date();
+            event.target.parentNode.parentNode.querySelector('input').value=`${this.zeroPad(d.getHours(),2)}:${this.zeroPad(d.getMinutes(),2)}`;
+        },
+        capitalize(word) {
+            return word[0].toUpperCase() + word.slice(1).toLowerCase();
+        },
+        calcularStock(ingrediente){
+            unidades = {'mililitro':1000,'gramo':1000,'miligramo':1000000,'kilogramo':1,'litro':1,'unidad':1,'caja':1,'n/a':1}
+            transformacion = {'mililitro':'litro','gramo':'kilogramo','miligramo':'gramo'}
+            ingrediente_total = "";
+            extra = this.calcularProducto(ingrediente);
+            if(ingrediente.ingrediente){
+                if(this.lider == 0){
+                    this.lider = 1;
+                }
+                ingrediente_total = (ingrediente.cantidad * this.cantidadafabricar/this.lider) + extra;
+                console.log(ingrediente_total);
+                ingrediente_t = ingrediente_total  / unidades[ingrediente.unidad_t];
+                inventario = ingrediente.inventario;
+                stock_critico = ingrediente.insumo.stock_critico;
+                unidad = ingrediente.insumo.unidad;
+                unidad_total = ingrediente.unidad_t;
+                while (ingrediente_total >= 1000 && ( unidad_total != 'kilogramo' && unidad_total != 'litro' && unidad_total != 'caja' && unidad_total != 'unidad' && unidad_total != 'n/a')){
+                    ingrediente_total = ingrediente_total / 1000;
+                    unidad_total = transformacion[unidad_total];
+                }
+                ingrediente.unidad = unidad_total;
+                ingrediente.totalr = ingrediente_total;
+                ingrediente_total = ingrediente_total.toFixed(18).replace(/\.?0+$/, '')
+                if(ingrediente.unidad == 'unidads'){
+                    ingrediente.unidad == 'unidades';
+                }
+                ingrediente_total = this.formato(ingrediente_total);
+                if (unidad_total == 'unidad'){
+                    ingrediente_total += " " + unidad_total + "es";
+                }
+                else{
+                    ingrediente_total += " " + unidad_total + "s";
+                }
+            }else{
+                unidades = {'mililitro':1,'gramo':1000,'miligramo':1,'kilogramo':1000,'litro':1000,'unidad':1,'caja':1,'n/a':1}
+                transformacion = {'litro':'mililitro','kilogramo':'gramo','gramo':'miligramo'}
+                unidad_total = ingrediente.insumo.unidad.toLowerCase();
+                ingrediente_total = parseFloat(ingrediente.totalp);
+                while (ingrediente_total < 1 && ( unidad_total != 'miligramo' && unidad_total != 'mililitro' && unidad_total != 'caja' && unidad_total != 'unidad' && unidad_total != 'n/a')){
+                    ingrediente_total = ingrediente_total * 1000;
+                    unidad_total = transformacion[unidad_total];
+                }
+                ingrediente.totalr = ingrediente_total;
+                ingrediente.unidad = unidad_total;
+                ingrediente_total = ingrediente_total.toFixed(18).replace(/\.?0+$/, '')
+                if (unidad_total == 'unidad'){
+                    ingrediente_total += " " + unidad_total + "es";
+                }
+                else{
+                    ingrediente_total += " " + unidad_total + "s";
+                }
+            }
+           
+            
+            /*
+            if (ingrediente_t > inventario){
+                if(ingrediente.opcional == false){
+                    this.bloqueado = true;
+                }
+                return `<span style="color:red">${ingrediente_total}</span>`;
+            }
+            if (this.cantidadafabricar <=0){
+                if(ingrediente.opcional == false){
+                    this.bloqueado = true;
+                }
+                return `<span style="color:red">${ingrediente_total}</span>`;
+            }*/ 
+            this.bloqueado = false;
+            
+           return `<span style="color:green">${ingrediente_total}</span>`;
+        },
+        seleccionarPauta(){
+            let pauta_id = "{{pauta.id}}";
+            let lugar_id = "{{request.user.perfil.lugar.pk}}";
+            if (pauta_id != '' && lugar_id != ''){
+                this.mensaje = false;
+                let url = '{%url "api-pautaproduccion-detalle" 1%}'.replace(1,pauta_id);
+                axios.get(url).then(response=>{
+                    let data = response.data;
+                    this.etapas = data.plantilla_pauta.etapas;
+                    for(etapa of this.etapas){
+                        let max = 0;
+                        for(instruccion of etapa.instrucciones){
+                            if(max < instruccion.maximop){
+                                max = instruccion.maximop;
+                            }
+                        }
+                        etapa.maximop = max;
+                    }
+                    this.id = data.id;
+                    this.ingredientes = data.plantilla_pauta.ingredientes;
+                    this.rendimiento = data.plantilla_pauta.rendimiento;
+                    this.lider = data.plantilla_pauta.lider;
+                    this.ips = data.plantilla_pauta.insumosproceso;
+                    this.ips_produccion = data.insumoproceso_produccion;
+                    this.ingredientes_produccion = data.ingredientes_produccion;
+                    this.instrucciones_produccion = data.instruccion_produccion;
+                    this.lotes = data.lotes;
+                    this.productos = data.plantilla_pauta.productos;
+                    this.nombre = data.nombre;
+
+                    let ids = [];
+                    //obtenemos las lineas
+                    for(producto of this.productos){
+                        if(producto.producto.conjunto != null){
+                            let check = this.grupos.filter(grupo => grupo.nombre == producto.producto.linea.nombre)
+                            if (check.length == 0){
+                                this.grupos.push({
+                                    'nombre': producto.producto.linea.nombre,
+                                    'id': producto.producto.linea.id,
+                                    'pva':producto.producto.conjunto,
+                                    'ingredientes':[],
+                                    'cantidada':0,
+                                });
+                            }
+                            ids.push(producto.id);
+                        }
+                    }
+
+                    for(producto of this.productos){
+                        producto.cantidada = 0;
+                        producto.cantidadf = 0;
+                        for (pd of this.productosii){
+                            if (pd.producto == producto.producto.id){
+                                producto.cantidada+=pd.cantidad;
+                            }
+                        }
+                        for (lote of this.lotes){
+                            if(lote.producto.id == producto.producto.id){
+                                producto.cantidadf+= lote.cantidad_actual
+                            }
+                        }
+                        if(producto.producto.conjunto != null){
+                            //buscamos el grupo de esa linea
+                            let unidades = {'gr':1000,'kg':1,'lt':1,'cc':1000}
+                            let multiplicador = 1 / (producto.producto.presentacion / unidades[producto.producto.unidad]);
+                            let check = this.grupos.filter(grupo => grupo.nombre == producto.producto.linea.nombre)
+                            if(check.length > 0){
+                                grupo = check[0];
+                                for(insumo of producto.producto.insumose){
+                                    let ingredientes = grupo.ingredientes;
+                                    let existe = ingredientes.filter(ingrediente => ingrediente.id == insumo.insumo.id)
+                                    if(existe.length == 0){
+                                        //ver si existe
+                                        ingredientes.push({
+                                            'nombre': insumo.insumo.nombre,
+                                            'unidad': insumo.insumo.unidad,
+                                            'id': insumo.insumo.id,
+                                            'inventario': insumo.insumo.inventario,
+                                            'cantidad': insumo.cantidad * multiplicador,
+                                        });
+                                    }else{
+                                        if(existe[0].cantidad < insumo.cantidad * multiplicador){
+                                            existe[0].cantidad = insumo.cantidad * multiplicador;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        for(insumo of producto.producto.insumose){
+                            let existe = this.ingredientes.filter(ingrediente => ingrediente.insumo.id == insumo.insumo.id)
+                            if (existe.length == 0){
+                                this.ingredientes.push({
+                                    'ingrediente':false,
+                                    'cantidad':insumo.cantidad,
+                                    'insumo': {'id':insumo.insumo.id,'nombre':insumo.insumo.nombre,'unidad':insumo.insumo.unidad,'inventario':insumo.insumo.inventario},
+                                    'totalr':0,
+                                    'inventario':insumo.insumo.inventario,
+                                    'opcional': false,
+                                    'original': false,
+                                    'unidad': insumo.insumo.unidad.toLowerCase(),
+                                    'unidad_t': insumo.insumo.unidad.toLowerCase(),
+                                });
+                            }
+                        }
+                    }
+                    for(grupo of this.grupos){
+                        console.log(grupo);
+                        grupo.cantidada = 0;
+                        grupo.cantidadf = 0;
+                        for (producto of this.productosi){
+
+                            if ( (producto.pva == grupo.pva) && (producto.linea == grupo.id)){
+                                grupo.cantidada+=producto.cantidad;
+                            }
+                        }
+                        for (lote of this.lotes){
+                            if(lote.grupoproducto.id == grupo.grupo.id){
+                                grupo.cantidadf+= lote.cantidad_actual
+                            }
+                        }
+                        for(insumo of grupo.ingredientes){
+                            let existe = this.ingredientes.filter(ingrediente => ingrediente.insumo.id == insumo.id)
+                            if (existe.length == 0){
+                                this.ingredientes.push({
+                                    'ingrediente':false,
+                                    'cantidad':insumo.cantidad,
+                                    'insumo': {'id':insumo.insumo.id,'nombre':insumo.insumo.nombre,'unidad':insumo.insumo.unidad,'inventario':insumo.insumo.inventario},
+                                    'totalr':0,
+                                    'inventario':insumo.insumo.inventario,
+                                    'opcional': false,
+                                    'original': false,
+                                    'unidad': insumo.insumo.unidad.toLowerCase(),
+                                    'unidad_t': insumo.insumo.unidad.toLowerCase(),
+                                });
+                            }
+                        }
+                    }
+                    for(ip of this.ips){
+                        for (ipp of this.ips_produccion){
+                            if (ip.insumo.id == ipp.plantilla_ip.insumo){
+                                ip.cantidad = ipp.cantidad
+                                ip.descripcion = ipp.comentario;
+                                break;
+                            }
+                        }
+                    }
+                    for(ingrediente of this.ingredientes){
+                        if(ingrediente.original){
+                            ingrediente.ingrediente = true;
+                        }
+                        
+                    }
+                    
+                    
+                    contador = 0;
+                    for(ingrediente of this.ingredientes){
+                        ingrediente.unidad_t = ingrediente.unidad;
+                        if(this.ingredientes_produccion[contador] != null){
+                            ingrediente.cantidadu = this.ingredientes_produccion[contador].cantidad;
+                            contador+=1;
+                        }
+                        
+                    }
+                    this.productos = this.productos.filter(producto => !ids.includes(producto.id));
+                    setTimeout(()=>{
+                        this.actualizarTotal("");
+                    },1000);
+                    
+                });
+                
+            }else{
+                this.mensaje = true;
+                this.etapas = [];
+                this.productos = [];
+                this.grupos = [];
+                this.id = pauta_id;
+                this.ingredientes = [];
+                this.nombre = "";
+                this.rama = "";
+            }
+            
+            
+        },
+    },
+    mounted(){
+        this.seleccionarPauta();
+        if (this.masa_final > 0){
+            this.boton = 'Elaborar';
+        }
+    },
+    delimiters: ['{$', '$}'],
+}).mount('#app');
+</script>
+{%endblock%}

@@ -1,0 +1,7 @@
+Hola {{name|safe}}
+Haz sido registrado en la plataforma de Artisan, para ingresar debes utilizar los siguientes credenciales:
+Usuario: {{usuario|safe}}
+Contraseña: {{contrasena|safe}}
+Para acceder visita el siguiente enlace: http://172.104.26.182/
+Por otro lado puedes acceder directamente escaneando el codigo qr que se encuentra adjunto y ingresando tu PIN.
+Pin: {{pin|safe}}

@@ -1,0 +1,352 @@
+{% extends 'nucleo/base.html'%}
+{%block title%}Crear Orden de Venta{%endblock%}
+{%load static%}
+{%block head%}
+<link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/pickers/pickadate/pickadate.css'%}">
+<link rel="stylesheet" type="text/css" href="{%static 'nucleo/css/plugins/forms/pickers/form-pickadate.css'%}">
+{%endblock%}
+{%block content%}
+<style>
+.errorlist{
+    color:red;
+    list-style:none;
+    padding-left:0;
+}
+.menu-suggest{
+    position: absolute;
+    background:white;
+    width:96%;
+    padding: 0.571rem 1rem;
+    left:2%;
+    right:0;
+    list-style: none;
+    border-bottom: 1px solid #d8d6de;
+    border-left: 1px solid #d8d6de;
+    border-right:1px solid #d8d6de;
+    z-index:999;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+</style>
+<!-- BEGIN: Content-->
+    <div class="app-content content ">
+        <div class="content-overlay"></div>
+        <div class="header-navbar-shadow"></div>
+        <div class="content-wrapper container-fluid p-0">
+            <div class="content-header row">
+                <div class="content-header-left col-md-9 col-12 mb-2">
+                    <div class="row breadcrumbs-top">
+                        <div class="col-12">
+                            <h2 class="content-header-title float-start mb-0">Ventas</h2>
+                            <div class="breadcrumb-wrapper">
+                                <ol class="breadcrumb">
+                                   <li class="breadcrumb-item"><a href="{% url 'ventas:orden:lista' %}">Ordenes de Venta</a>
+                                    </li>
+                                    <li class="breadcrumb-item active">Agregar
+                                    </li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="content-body">
+                <!-- Dashboard -->
+                <div class="card" style="position:relative;" id="app">
+                    <div class="card-body">
+                    
+                        <div class="card-text">
+                        <button v-if="productos.length > 0" id="botons" class="btn btn-primary" style="position: absolute;
+    right: 10px;
+    top:50vh;
+    -webkit-transition: all 1s ease-in-out;
+    transition: all 1s ease-in-out;
+    z-index: 1;
+    padding: 15px;
+    color: white;
+    text-align: center;
+    box-sizing: border-box;">IC: {$ pc $}%</button>
+                            <form class="form form-horizontal" method="post" enctype="multipart/form-data">{% csrf_token %}
+                                <div class="row">
+                                    <div class="col-12" id="app">
+                                    {%if form.non_field_errors%}
+                                    <div class="alert alert-danger" role="alert">
+                                        <div class="alert-body">{{form.non_field_errors}}</div>
+                                    </div>
+                                    {%endif%}
+                                    <div class="mb-1 row">
+                                        <div class="col-sm-3">Cliente <span style="color:red">*</span></div>
+                                        <input type="hidden" name="cliente" id="id_cliente" v-model="cliente_id"/>
+                                        <div class="col-sm-6 position-relative">
+                                            <input v-model="nombre" @keyup="buscar()" @focus="sugerencias = true" @blur="cerrar()" type="text" placeholder="Cliente" class="form-control">
+                                            <ul v-if="sugerencias" class="menu-suggest">
+                                                <li v-for="cliente in listas" @click="sugerir(cliente)"><a href="#">{$ cliente.nombre $}</a></li>
+                                            </ul>
+                                        </div>
+                                        
+                                    </div>
+                                    <div class="mb-1 row">
+                                        <div class="col-sm-3">Local<span style="color:red">*</span></div>
+                                        <div class="col-sm-6 position-relative">
+                                            <select name="local" class="form-control">
+                                                <option v-if="cargado == false" value="">-- Selecciona un cliente para continuar --</option>
+                                                <option value="matriz" v-if="locales.length == 0">Casa Matriz</option>
+                                                <option v-for="local in locales" :value="local.id">{$ local.local $}</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    {%for field in form %}
+                                         {%if field.id_for_label != 'id_cliente'%}
+                                        <div class="mb-1 row">
+                                        <div class="col-sm-3">{{field.label_tag}} {%if field.field.required %}<span style="color:red">*</span>{%endif%}</div>
+
+                                        <div class="col-sm-6 position-relative">{{field}}
+                                        {% if field.help_text %}
+                                        <small class="">{{field.help_text|safe}}</small>
+                                        {%endif%}
+                                        {%if field.errors %}
+                                        <div class="invalid-feedback" style="display:block;">{{field.errors.as_text}}</div>
+                                        {%endif%}
+                                        </div>
+                                        </div>
+                                        {%endif%}
+                                    {%endfor%}
+
+                                    <div v-if="productos.length > 0" class="table-responsive">
+                                    <table class="table mb-2">
+                                    <thead>
+                                        <tr>
+                                            <th>Producto</th>
+                                            <th>En Inventario</th>
+                                            <th>Cantidad a comprar</th>
+                                            <th>Precio Unitario</th>
+                                            <th>% Descuento</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="producto in productos">
+                                            <input type="hidden" name="idproducto[]" v-model="producto.producto.id"/>
+                                            <td>{$ producto.producto.nombre $} ({$ producto.producto.presentacion$} {$ producto.producto.unidad $})</td>
+                                            <td v-bind:style="{ background: producto.activeColor, color: producto.color}">{$ producto.producto.inventario $}</td>
+                                            <td><input @keyup="ActualizarPrecios(producto)" type="number" class="form-control" name="cantidadproducto[]" v-model="producto.producto.cantidad"/></td>
+                                            <input type="hidden" class="form-control" name="codigo_cliente[]" v-model="producto.codigo_cliente"/>
+                                            <td><input @keyup="ActualizarPrecios(producto)" type="number" step="0.01" class="form-control" name="precioproducto[]" v-model="producto.precio"/></td>
+                                            <td><input @keyup="ActualizarPrecios(producto)" type="number" step="0" min="0" max="100" class="form-control" name="descuentoproducto[]" v-model="producto.producto.descuento"/></td>
+                                        </tr>
+                                        <thead>
+                                        <tr>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <th>Total Neto</th>
+                                            <th>{$ formatoCLP(total_neto)$}</th>
+                                        </tr>
+                                        <tr>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <th>Descuento</th>
+                                            <th>{$ formatoCLP(descuento)$}</th>
+                                        </tr>
+                                        <tr>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <th>Envio</th>
+                                            <th>{$ formatoCLP(envio)$}</th>
+                                        </tr>
+                                        <tr>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <th>Iva</th>
+                                            <th>{$ formatoCLP(iva)$}</th>
+                                        </tr>
+                                        <tr>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <th>Total</th>
+                                            <th>{$ formatoCLP(total)$}</th>
+                                        </tr></thead>
+                                    </tbody>
+                                        
+                                    </table>
+                                    </div>
+                                    
+                                    <div class="col-sm-12 mt-2">
+                                        <button type="submit" class="btn btn-primary me-1 waves-effect waves-float waves-light">Crear Orden de Venta</button>
+                                    </div>
+                                
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <!--/ Dashboard -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- END: Content-->
+{%endblock%}
+{%block scripts%}
+<script src="{%static 'nucleo/vendors/js/pickers/pickadate/picker.js'%}"></script>
+
+<script src="{%static 'nucleo/vendors/js/pickers/pickadate/picker.date.js'%}"></script>
+<script>
+let vue = Vue.createApp({
+    data(){
+        return {
+            nombre: '',
+            pc: 0,
+            cliente_id: 0,
+            descuento:0,
+            envio:0,
+            sugerencias: false,
+            listas: [],
+            locales: [],
+            cargado: false,
+            total: 0,
+            total_neto: 0,
+            iva: 0,
+            productos: [],
+        }
+    },
+    methods:{
+        ActualizarPrecios(producto){
+            if (producto.producto.inventario - producto.producto.cantidad < producto.producto.cantidad/4){
+                producto.activeColor = '#ea5455';
+                producto.color = 'white';
+            }
+            if (producto.producto.inventario >= producto.producto.cantidad/2){
+                producto.activeColor = '#ff9f43';
+                producto.color = 'white';
+            }
+            if (producto.producto.inventario - producto.producto.cantidad >= 0){
+                producto.activeColor = '#28c76f';
+                producto.color = 'white';
+            }
+            if (producto.producto.cantidad == 0){
+                producto.activeColor = 'none';
+                producto.color = '#6e6b7b';
+            }
+            let total_neto_nuevo = 0;
+            this.descuento = 0;
+            this.productos.forEach(producto => {
+                if (producto.producto.cantidad){
+                    total_neto_nuevo+= producto.producto.cantidad * producto.precio;
+                    this.descuento += producto.producto.cantidad * (producto.producto.descuento)/100*producto.precio
+                }
+            });
+            this.total_neto = total_neto_nuevo;
+            this.actualizarTotal();
+            this.calcularPC();
+        },
+        formatoCLP(numero){
+            return formatter.format(numero);
+        },
+        actualizarTotal(){
+            let valor_iva = parseFloat('{{valorIVA}}'.replace(',','.'));
+            this.iva = (this.total_neto - this.descuento) * valor_iva;
+            this.total = this.iva + this.total_neto + this.envio - this.descuento;
+        },
+        calcularPC(){
+            let cantidad = 0;
+            let total = 0;
+            for (p of this.productos){
+                if (p.producto.cantidad > 0){
+                    cantidad += p.producto.cantidad;
+                    if (p.producto.inventario > p.producto.cantidad){
+                        total+=p.producto.cantidad;
+                    }else{
+                        if(p.producto.inventario > 0){
+                             total+=p.producto.inventario;
+                        }
+                       
+                    }
+                }
+            }
+            this.pc = ((total / cantidad) * 100).toFixed(2);
+        },
+        sugerir(cliente){
+            let url2 = '{%url "api-cliente-avanzado" 1 %}'.replace("1",cliente.id);
+            axios.get(url2).then(response => {
+                cliente = response.data;
+                this.sugerencias = false;
+                this.cargado = true;
+                this.nombre = cliente.nombre;
+                this.cliente_id = cliente.id;
+                this.locales = cliente.locales;
+                if (cliente.listap){
+                    this.productos = cliente.listap.productos;
+                    this.productos.forEach(producto => {
+                                producto.producto.cantidad = 0;
+                                producto.producto.descuento = 0;
+                                producto.activeColor = 'none';
+                                producto.color = '#6e6b7b';
+                            });
+                }else{
+                    this.productos = [];
+                }
+                
+            });
+        },
+        cerrar(){
+            setTimeout(()=>{this.sugerencias = false;},500);
+            
+        },
+        buscar(){
+            let url = '{%url "api-cliente-buscar" 1 %}'.replace(1,this.nombre);
+            axios.get(url).then(response => {
+                if(response.data.results)
+                {
+                    let check = true;
+                    for(lista of response.data.results){
+                        if (lista.nombre.toLowerCase().includes(this.nombre.toLowerCase()) == false){
+                            check = false;
+                        }
+                    }
+                    if (check){
+                        this.listas = response.data.results;
+                    }
+                }
+                this.buscando = false;
+            }).catch(error => {
+                console.log("No se encontraron resultados");
+            });
+        }
+    },
+    delimiters: ['{$', '$}'],
+    mounted(){
+        $('#fecha').pickadate({
+    monthsFull: [ 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre' ],
+    monthsShort: [ 'ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic' ],
+    weekdaysFull: [ 'Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado' ],
+    weekdaysShort: [ 'dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb' ],
+    today: 'Hoy',
+    clear: 'Borrar',
+    close: 'Cerrar',
+    firstDay: 1,
+    format: 'yyyy-mm-dd',
+    formatSubmit: 'yyyy-mm-dd',
+    onStart: function ()
+            {
+                var date = new Date();
+                this.set('select', [date.getFullYear(), date.getMonth(), date.getDate()]);
+            },
+        });
+},
+}).mount('#app');
+</script>
+<script>
+$(window).scroll(function() {
+    var winScrollTop = $(window).scrollTop();
+    var winHeight = $(window).height();
+    var floaterHeight = $('#botons').outerHeight(true);
+    var fromBottom = $(window).height() * 0.50;
+    var top = winScrollTop + winHeight - floaterHeight - fromBottom;
+	$('#botons').css({'top': top + 'px'});
+});
+</script>
+
+{%endblock%}

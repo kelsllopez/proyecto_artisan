@@ -1,0 +1,110 @@
+<!--
+{% block scripts %}
+    <script src="{% static 'nucleo/vendors/js/tables/datatable/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'nucleo/vendors/js/tables/datatable/dataTables.bootstrap5.min.js' %}"></script>
+    <script src="{% static 'nucleo/vendors/js/tables/datatable/dataTables.responsive.min.js' %}"></script>
+    <script src="{% static 'nucleo/vendors/js/tables/datatable/responsive.bootstrap4.min.js' %}"></script>
+    <script src="{% static 'nucleo/vendors/js/tables/datatable/dataTables.buttons.min.js' %}"></script>
+    <script src="{% static 'nucleo/vendors/js/tables/datatable/buttons.bootstrap5.min.js' %}"></script>
+    <script src="{% static 'nucleo/vendors/js/tables/datatable/jszip.min.js' %}"></script>
+    <script src="{% static 'nucleo/vendors/js/tables/datatable/pdfmake.min.js' %}"></script>
+    <script src="{% static 'nucleo/vendors/js/tables/datatable/vfs_fonts.js' %}"></script>
+    <script src="{% static 'nucleo/vendors/js/tables/datatable/buttons.html5.min.js' %}"></script>
+    <script src="{% static 'nucleo/vendors/js/tables/datatable/buttons.print.min.js' %}"></script>
+    <script>
+        $(document).ready(function() {
+            var table = $('#produccion-table').DataTable({
+                responsive: true,
+                dom: 'Bfrtip',  // Añadir la barra de botones encima de la tabla
+                buttons: [
+                    'copy', 'csv', 'excel', 'pdf', 'print'
+                ],
+                language: {
+                    url: "//cdn.datatables.net/plug-ins/1.10.21/i18n/Spanish.json"
+                }
+            });
+
+            // Filtros por fecha
+            $('#filter-date').on('change', function() {
+                var filterValue = $(this).val();
+                table.column(3).search(filterValue).draw();
+            });
+
+            // Filtros por estado
+            $('#filter-state').on('change', function() {
+                var filterValue = $(this).val();
+                table.column(7).search(filterValue).draw();
+            });
+        });
+    </script>
+{% endblock %}
+-->
+
+
+@method_decorator(login_required, 'dispatch')
+class produccionagregar(ValidatePermissionRequiredMixin, TemplateView):
+    permission_required = 'calidad.produccion.agregar'
+    url_redirect = reverse_lazy('calidad:elaboraciones:lista')
+    tipo_mensaje = 'error'
+    mensaje = 'No tienes los permisos necesarios para listar las producciones'
+    template_name = 'calidad/produccion/modificar_calidad.html'
+    success_url = reverse_lazy('calidad:elaboraciones:lista')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        pauta_produccion_id = kwargs.get('pauta_id')
+        pauta_produccion = get_object_or_404(PautaProduccion, id=pauta_produccion_id)
+
+        # Obtener los detalles relacionados
+        bultos = BultoPautaProduccion.objects.filter(pauta=pauta_produccion)
+        ingredientes = IngredienteProduccion.objects.filter(pauta_produccion=pauta_produccion)
+        insumos = InsumoProcesoProduccion.objects.filter(pauta_produccion=pauta_produccion)
+        instrucciones = InstruccionProduccion.objects.filter(pauta_produccion=pauta_produccion)
+        productos = ProductoProduccion.objects.filter(pauta_produccion=pauta_produccion)
+        lotes = Lote.objects.filter(pauta_produccion=pauta_produccion)
+
+        # Obtener o crear la calidad de producción
+        calidad_produccion = CalidadProduccion.objects.filter(pauta_produccion=pauta_produccion).first()
+
+        # Si no existe una calidad de producción para esta pauta, la creamos vacía
+        if not calidad_produccion:
+            calidad_produccion = CalidadProduccion(pauta_produccion=pauta_produccion)
+
+        context.update({
+            'pauta_produccion': pauta_produccion,
+            'bultos': bultos,
+            'ingredientes': ingredientes,
+            'insumos': insumos,
+            'instrucciones': instrucciones,
+            'productos': productos,
+            'lotes': lotes,
+            'calidad_form': CalidadProduccionForm(instance=calidad_produccion),
+            'calidad_produccion': calidad_produccion  # Si necesitas acceder al objeto en el template
+        })
+
+        return context
+
+    def post(self, request, *args, **kwargs):
+        pauta_produccion_id = kwargs.get('pauta_id')
+        pauta_produccion = get_object_or_404(PautaProduccion, id=pauta_produccion_id)
+
+        calidad_produccion = CalidadProduccion.objects.filter(pauta_produccion=pauta_produccion).first()
+        if not calidad_produccion:
+            calidad_produccion = CalidadProduccion(pauta_produccion=pauta_produccion)
+
+        # Crear el formulario a partir de los datos de la solicitud POST
+        form = CalidadProduccionForm(request.POST, instance=calidad_produccion)
+
+        if form.is_valid():
+            form.save()  # Guarda el objeto en la base de datos
+
+            # Asegúrate de que el mensaje de éxito se vea
+            messages.success(request, 'Estado de aprobación actualizado correctamente.')
+
+            return redirect(self.success_url)
+
+        # Si el formulario no es válido, renderizamos nuevamente con errores
+        context = self.get_context_data(**kwargs)
+        context['form'] = form
+        return render(request, self.template_name, context)

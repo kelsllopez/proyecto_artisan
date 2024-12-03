@@ -1,0 +1,92 @@
+{% extends 'nucleo/base.html'%}
+{%block title%}Registro de Limpieza - Seleccionar{%endblock%}
+{%load static%}
+{%block head%}
+<link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/pickers/pickadate/pickadate.css'%}">
+<link rel="stylesheet" type="text/css" href="{%static 'nucleo/css/plugins/forms/pickers/form-pickadate.css'%}">
+{%endblock%}
+{%block content%}
+<style>
+.errorlist{
+    color:red;
+    list-style:none;
+    padding-left:0;
+}
+#id_utensilios{
+    list-style:none;
+    display:flex;
+    margin:0;
+    padding:0;
+}
+#id_utensilios li{
+    margin-left:1rem;
+}
+#id_utensilios li:first-child{
+    margin-left:0;
+}
+</style>
+<!-- BEGIN: Content-->
+    <div class="app-content content ">
+        <div class="content-overlay"></div>
+        <div class="header-navbar-shadow"></div>
+        <div class="content-wrapper container-fluid p-0">
+            <div class="content-header row">
+                <div class="content-header-left col-md-9 col-12 mb-2">
+                    <div class="row breadcrumbs-top">
+                        <div class="col-12">
+                           <h2 class="content-header-title float-start mb-0">Calidad</h2>
+                            <div class="breadcrumb-wrapper">
+                                <ol class="breadcrumb">
+                                    <li class="breadcrumb-item"><a href="{% url 'calidad:limpiezaequipo:lista' %}">Limpieza Equipo</a></li>
+                                    <li class="breadcrumb-item"><a href="#">{{equipo.nombre}}</a></li>
+                                    <li class="breadcrumb-item active">Seleccionar
+                                    </li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="content-body">
+                <!-- Dashboard -->
+                <div class="card">
+
+                    <div class="card-body">
+                        <div class="card-text">
+                           
+                                <div class="row">
+                                {%if personales|length > 0%}
+                                <h2 class="text-center">Supervisar</h2>
+                                    {%for registro in personales%}
+                                            <p class="text-center"><b>Hora:</b> {{ registro.created }} - <b>Operador:</b> {{registro.encargado.first_name}} {{registro.encargado.last_name}} - <b>Estado:</b> {%if registro.estado == 'Ejecutado'%}<span style="font-weight:bold;color:#ea5455">{%else%}<span style="font-weight:bold;color:#FFC107">{%endif%}{{ registro.estado }}</span></p>
+                                            <a href="{% url 'calidad:limpiezaequipo:actualizar' registro.pk %}"><button style="width:100%;" class="btn waves-effect waves-float waves-light btn-warning">Supervisar</button></a>
+                                            <hr class="mt-2">
+                                        {%endfor%}
+                                {%endif%}
+                                {%if registros|length > 0%}
+                                <h2 class="text-center">Limpiezas Pendientes</h2>
+                                    {%for registro in registros%}
+                                        <p class="text-center">{{ registro.created }} - {%if registro.estado == 'Ejecutado'%}<span style="font-weight:bold;color:#ea5455">{%else%}<span style="font-weight:bold;color:#FFC107">{%endif%}{{ registro.estado }}</span></p>
+                                        <a href="{% url 'calidad:limpiezaequipo:actualizar' registro.pk %}"><button style="width:100%;" class="btn waves-effect waves-float waves-light btn-info">Detalles</button></a>
+                                        <hr class="mt-2">
+                                    {%endfor%}
+                                </div>
+                                {%endif%}
+                                       
+                               
+                                    <h2 class="text-center">Comenzar Limpieza</h2>
+                                    <div class="col-sm-12">
+                                        <a href="{%url 'calidad:limpiezaequipo:crear'%}?equipo={{identificador}}"><button style="width:100%;" class="btn btn-block btn-success me-1 waves-effect waves-float waves-light">Comenzar Limpieza</button></a>
+                                    </div>
+                                </div>
+                                
+                            
+                        </div>
+                    </div>
+                </div>
+                <!--/ Dashboard -->
+            </div>
+        </div>
+    </div>
+    <!-- END: Content-->
+{%endblock%}

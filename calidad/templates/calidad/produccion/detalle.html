@@ -1,0 +1,227 @@
+{% extends 'nucleo/base.html' %}
+
+{% block title %}Detalle de Producción{% endblock %}
+{% load static %}
+
+{% block head %}
+    <link rel="stylesheet" type="text/css" href="{% static 'nucleo/vendors/css/tables/datatable/dataTables.bootstrap5.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'nucleo/vendors/css/tables/datatable/responsive.bootstrap4.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'nucleo/vendors/css/tables/datatable/buttons.bootstrap5.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'nucleo/vendors/css/tables/datatable/rowGroup.bootstrap4.min.css' %}">
+{% endblock %}
+
+{% block content %}
+    <!-- Mostrar mensajes -->
+    {% if messages %}
+        <div class="alert alert-success">
+            {% for message in messages %}
+                <p>{{ message }}</p>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- BEGIN: Content -->
+    <div class="app-content content">
+        <div class="content-overlay"></div>
+        <div class="header-navbar-shadow"></div>
+        <div class="content-wrapper container-fluid p-0">
+            <div class="content-header row">
+                <div class="content-header-left col-md-9 col-12 mb-2">
+                    <div class="row breadcrumbs-top">
+                        <div class="col-12">
+                            <h2 class="content-header-title float-start mb-0">Producción Detalle</h2>
+                            <div class="breadcrumb-wrapper">
+                                <ol class="breadcrumb">
+                                    <li class="breadcrumb-item"><a href="#">Producción</a></li>
+                                    <li class="breadcrumb-item active">Detalle</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-body">
+                <!-- Dashboard -->
+                <div class="card">
+                    <div class="card-body">
+                        <form method="post" id="produccion-form">
+                            {% csrf_token %}
+                            
+                            <div class="card-text">
+                                <!-- Pauta Producción -->
+                                <section id="detalle-produccion" class="card shadow-sm mb-4">
+                                    <h3 class="mb-3" style="font-size: 1.5rem; color: #343a40;">Detalles de la Producción</h3>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong>ID:</strong> <span>{{ pauta_produccion.id }}</span></p>
+                                            <p><strong>Fecha de fabricación:</strong> <span>{{ pauta_produccion.fecha }}</span></p>
+                                            <p><strong>Cantidad a elaborar:</strong> <span>{{ pauta_produccion.cantidad }}</span></p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong>Estado:</strong> <span>{{ pauta_produccion.get_estado_display }}</span></p>
+                                            <p><strong>Rendimiento:</strong> <span>{{ pauta_produccion.rendimiento }}%</span></p>
+                                            <p><strong>Costo Directo Producción:</strong> <span>{{ pauta_produccion.cdp }}</span></p>
+                                        </div>
+                                    </div>
+                                </section>
+
+                                        <!-- Instrucciones -->
+                                        {% if instrucciones %}
+                                        <section id="instrucciones" class="mb-4">
+                                            <h4>Instrucciones de Producción</h4>
+                                            <table class="table table-bordered table-striped table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Instrucción</th>
+                                                        <th>Valor</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for instruccion in instrucciones %}
+                                                    <tr>
+                                                        <td>{{ instruccion.plantilla_instruccion }}</td>
+                                                        <td>{{ instruccion.valor }}</td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </section>
+                                        {% endif %}
+                                <!-- PCC2 - Filtrado de Producto Final -->
+                                <section id="pcc2-filtrado" class="card shadow-sm mb-4">
+                                    <h4>PCC2 - Filtrado de Producto Final</h4>
+                                    <p><strong>Porosidad máxima de 2.5 mm se constata con R-AC-010</strong>
+                                        <textarea class="form-control" rows="3" name="filtro_instalado">{{ calidad_form.filtro_instalado.value }}</textarea>
+                                    </p>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong>Filtro bien instalado (completar SI o NO):</strong>
+                                                <textarea class="form-control" rows="1" name="filtro_instalado">{{ calidad_form.filtro_instalado.value }}</textarea>
+                                            </p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong>Filtro integrado sin deterioro (completar SI o NO):</strong>
+                                                <textarea class="form-control" rows="1" name="filtro_integrado">{{ calidad_form.filtro_integrado.value }}</textarea>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </section>
+
+                                <!-- Envasado y Almacenamiento -->
+                                <section id="envasado-almacenamiento" class="card shadow-sm mb-4">
+                                    <h4>Envasado y Almacenamiento (entre 2°C - 8°C)</h4>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong>Inicio envasado:</strong>
+                                                <textarea class="form-control" rows="1" name="inicio_envasado">{{ calidad_form.inicio_envasado.value }}</textarea>
+                                            </p>
+                                            <p><strong>Termino envasado:</strong>
+                                                <textarea class="form-control" rows="1" name="fin_envasado">{{ calidad_form.fin_envasado.value }}</textarea>
+                                            </p>
+                                            <p><strong>Unidades de botellas (lt):</strong>
+                                                <textarea class="form-control" rows="1" name="unidades_botellas_lt">{{ calidad_form.unidades_botellas_lt.value }}</textarea>
+                                            </p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong>Unidades de 360gr:</strong>
+                                                <textarea class="form-control" rows="1" name="unidades_360gr">{{ calidad_form.unidades_360gr.value }}</textarea>
+                                            </p>
+                                            <p><strong>Unidades de 150gr:</strong>
+                                                <textarea class="form-control" rows="1" name="unidades_150gr">{{ calidad_form.unidades_150gr.value }}</textarea>
+                                            </p>
+                                            <p><strong>Merma (kg):</strong>
+                                                <textarea class="form-control" rows="1" name="merma_kg">{{ calidad_form.merma_kg.value }}</textarea>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </section>
+
+                                <!-- Evaluación Sensorial -->
+                                <section id="evaluacion-sensorial" class="card shadow-sm mb-4">
+                                    <h4>Evaluación Sensorial según parámetros en P-AC-011</h4>
+                                    <p><strong>Cumple (C) / No Cumple (NC)</strong></p>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <p><strong>pH:</strong>
+                                                <textarea class="form-control" rows="1" name="ph">{{ calidad_form.ph.value }}</textarea>
+                                            </p>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <p><strong>Textura:</strong>
+                                                <textarea class="form-control" rows="1" name="textura">{{ calidad_form.textura.value }}</textarea>
+                                            </p>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <p><strong>Sabor:</strong>
+                                                <textarea class="form-control" rows="1" name="sabor">{{ calidad_form.sabor.value }}</textarea>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <p><strong>Color:</strong>
+                                                <textarea class="form-control" rows="1" name="color">{{ calidad_form.color.value }}</textarea>
+                                            </p>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <p><strong>Olor:</strong>
+                                                <textarea class="form-control" rows="1" name="olor">{{ calidad_form.olor.value }}</textarea>
+                                            </p>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <p><strong>Aspecto:</strong>
+                                                <textarea class="form-control" rows="1" name="aspecto">{{ calidad_form.aspecto.value }}</textarea>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </section>
+
+                                <!-- Responsables -->
+                                <section id="responsables" class="card shadow-sm mb-4">
+                                    <h4>Responsables</h4>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <p><strong>Elaboración:</strong>
+                                                <textarea class="form-control" rows="1" name="elaboracion">{{ calidad_form.elaboracion.value }}</textarea>
+                                            </p>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <p><strong>Envasado:</strong>
+                                                <textarea class="form-control" rows="1" name="envasado">{{ calidad_form.envasado.value }}</textarea>
+                                            </p>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <p><strong>Verificación:</strong>
+                                                <textarea class="form-control" rows="1" name="verificacion">{{ calidad_form.verificacion.value }}</textarea>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </section>
+
+                                <!-- Observaciones -->
+                                <section id="observaciones" class="card shadow-sm mb-4">
+                                    <h4>Observaciones</h4>
+                                    <p>
+                                        <textarea class="form-control" rows="4" name="observaciones" placeholder="Ingrese cualquier observación adicional aquí">{{ calidad_form.observaciones.value }}</textarea>
+                                    </p>
+                                </section>
+                                <div class="mb-3">
+                                    <label for="id_estado_aprobacion" class="form-label">Estado de Aprobación</label>
+                                    <select name="estado_aprobacion" id="id_estado_aprobacion" class="form-select">
+                                        <option value="Pendiente" selected>Pendiente</option>
+                                        <option value="Desaprobado">Desaprobado</option>
+                                        <option value="Aprobado">Aprobado</option>
+                                    </select>
+                                </div>
+                                
+                                <!-- Botón Guardar -->
+                                <button type="submit" class="btn btn-success">Guardar</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

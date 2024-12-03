@@ -1,0 +1,203 @@
+{% extends 'nucleo/base.html'%}
+{%block title%}Asociar Insumo a Proveedor{%endblock%}
+{%load static%}
+{%block head%}
+<link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/pickers/pickadate/pickadate.css'%}">
+<link rel="stylesheet" type="text/css" href="{%static 'nucleo/css/plugins/forms/pickers/form-pickadate.css'%}">
+{%endblock%}
+{%block content%}
+<style>
+.errorlist{
+    color:red;
+    list-style:none;
+    padding-left:0;
+}
+</style>
+<!-- BEGIN: Content-->
+    <div class="app-content content ">
+        <div class="content-overlay"></div>
+        <div class="header-navbar-shadow"></div>
+        <div class="content-wrapper container-fluid p-0">
+            <div class="content-header row">
+                <div class="content-header-left col-md-9 col-12 mb-2">
+                    <div class="row breadcrumbs-top">
+                        <div class="col-12">
+                            <h2 class="content-header-title float-start mb-0">Administrador</h2>
+                            <div class="breadcrumb-wrapper">
+                                <ol class="breadcrumb">
+                                    <li class="breadcrumb-item"><a href="{% url 'administrador:proveedor:lista' %}">Proveedor</a>
+                                    </li>
+                                    <li class="breadcrumb-item active">Añadir Asociación
+                                    </li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="content-body">
+                <!-- Dashboard -->
+                <div class="card">
+
+                    <div class="card-body">
+                        <div class="card-text">
+                            <form class="form form-horizontal" method="post" enctype="multipart/form-data">{% csrf_token %}
+                                <div class="row">
+                                    <div class="col-12" id="app">
+                                    {{ form.non_field_errors }}
+                                    {%for field in form %}
+                                        <div class="mb-1 row">
+                                        {%if field.id_for_label == 'id_formato'%}
+                                         <div class="col-sm-3">Formato de Compra ({$unidadp$}): {%if field.field.required %}<span style="color:red">*</span>{%endif%}</div>
+                                        {%elif field.id_for_label == 'id_precio'%}
+                                        <div class="col-sm-3">Moneda:</div>
+                                            <div class="col-sm-6 position-relative">
+                                                <select @change="CambiarDivisa($event)" class="form-select" name="moneda">
+                                                    {%for moneda in monedas%}<option data-multiplicador="{{moneda.valor}}" value="{{moneda.pk}}">{{moneda.nombre}}</option>{%endfor%}
+                                                </select>
+                                                <small class="">Si deseas vincular este insumo a una divisa internacional</small>
+                                            </div>
+                                        </div>
+                                        <div class="mb-1 row">
+                                            <div class="col-sm-3">{{field.label_tag}} {%if field.field.required %}<span style="color:red">*</span>{%endif%}</div>
+
+                                        {%else%}
+                                        <div class="col-sm-3">{{field.label_tag}} {%if field.field.required %}<span style="color:red">*</span>{%endif%}</div>
+                                        {%endif%}
+                                        <div class="col-sm-6 position-relative">
+                                        {%if field.id_for_label == 'id_formato'%}
+                                            <div class="input-group">
+                                                
+                                                <input v-model='formato' type="number" name="formato" step="any" class="form-control" required="" id="id_formato" aria-describedby="unidad">
+                                                <div class="col-sm-2">
+                                                <span class="input-group-text btn-primary" id="unidad">{$ unidadp $}</span>
+                                                </div>
+                                                
+                                            </div>
+                                            {% if field.help_text %}
+                                        <small class="">{{field.help_text|safe}}</small>
+                                        {%endif%}
+                                            
+                                        {%elif field.id_for_label == 'id_precio'%}
+                                        
+                                        <div class="input-group">
+                                            <input @keyup='calcularPrecio()' type="number" name="precio" step="any" class="form-control" required="" id="id_precio">
+                                            <div class="col-sm-4">
+                                                <span class="input-group-text btn-primary" id="unidad">Precio por {$ unidad $}: {$ precio $}</span>
+                                            </div>
+                                            
+                                        </div>
+                                        {% if field.help_text %}
+                                        <small class="">{{field.help_text|safe}}</small>
+                                        {%endif%}
+                                        <div class="col-sm-6">
+                                            
+                                        </div>
+                                        
+                                        {%else%}
+                                        {{field}}
+                                         {% if field.help_text %}
+                                        <small class="">{{field.help_text|safe}}</small>
+                                        {%endif%}
+                                        {%endif%}
+                                        {%if field.errors %}
+                                        <div class="invalid-feedback" style="display:block;">{{field.errors.as_text}}</div>
+                                        {%endif%}
+                                        </div>
+                                        </div>
+                                    {%endfor%}
+                                    <div class="col-sm-12">
+                                            <button type="submit" class="btn btn-primary me-1 waves-effect waves-float waves-light">Añadir Asociación</button>
+                                        </div>
+                                
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <!--/ Dashboard -->
+
+            </div>
+        </div>
+    </div>
+    <!-- END: Content-->
+{%endblock%}
+{%block scripts%}
+<script>
+let vue = Vue.createApp({
+    data(){
+        return {
+            unidad: 'Unidad',
+            unidadp: 'Unidades',
+            precio: 0,
+            multiplicador: 1,
+            divisa: 'CLP',
+            formato: 0,
+            insumos: [],
+        }
+    },
+    watch: {
+        unidad: function(newUnidad,oldUnidad){
+            this.unidad = newUnidad.charAt(0).toUpperCase() + newUnidad.slice(1).toLowerCase();
+        },
+    },
+    methods:{
+        CambiarDivisa(e){
+            divisa = e.target.options[e.target.options.selectedIndex]
+            this.divisa = divisa.text;
+            this.multiplicador = parseFloat(divisa.getAttribute('data-multiplicador').replace(',','.'))
+            this.calcularPrecio();
+        },
+        calcularPrecio(){
+            let preciod = document.querySelector('#id_precio').value;
+            let formato = document.querySelector('#id_formato').value;
+            this.precio = this.formatoCLP(preciod * this.multiplicador / formato);
+            console.log(this.precio);
+        },
+        formatoCLP(numero){
+            return formatter.format(numero);
+        },
+        actualizarUnidad(){
+            let target = event.target;
+            let texto = target.textContent;
+            if (texto != '---------'){
+                unidad = texto.split('- ')[1].toUpperCase();
+                this.unidad = unidad;
+            }
+            else{
+                this.unidad = 'Unidad';
+            }
+            this.unidadp = this.transformar(this.unidad);
+        },
+        transformar(string){
+            string = string.toLowerCase()
+            if (string != 'n/a'){
+                if (string.substr(-1) == 'd'){
+                    string = string + "ES";
+                }else if (string.substr(-1) != 's'){
+                    string = string + "S";
+                }
+            }
+            return string.toUpperCase();
+        },
+    },
+    mounted(){
+        let target = document.querySelector('#id_insumo');
+        let texto = target.options[target.selectedIndex].text;
+        if (texto != '---------'){
+            unidad = texto.split('- ')[1].toUpperCase();
+            this.unidad = unidad;
+        }
+        this.opciones = Array.from(document.querySelector('#id_insumo').options);
+        
+        
+    },
+    delimiters: ['{$', '$}'],
+}).mount('#app');
+</script>
+<script>
+ $(document).ready(function () {
+     $('#id_proveedor').selectize();
+     $('#id_insumo').selectize();
+  });
+</script>
+{%endblock%}

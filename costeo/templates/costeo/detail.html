@@ -1,0 +1,163 @@
+{%extends 'nucleo/base.html' %}
+{%block title%}Costeo {{object.nombre}}{%endblock%}
+{%load static%}
+{%block head%}
+<link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/pickers/pickadate/pickadate.css'%}">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" type="text/css" href="{%static 'nucleo/css/plugins/forms/pickers/form-pickadate.css'%}">
+{%endblock%}
+{%block content%}
+<!-- BEGIN: Content-->
+    <div class="app-content content ">
+        <div class="content-overlay"></div>
+        <div class="header-navbar-shadow"></div>
+        <div class="content-wrapper container-fluid p-0">
+            <div class="content-header row">
+                <div class="content-header-left col-md-9 col-12 mb-2">
+                    <div class="row breadcrumbs-top">
+                        <div class="col-12">
+                            <h2 class="content-header-title float-start mb-0">Costeo</h2>
+                            <div class="breadcrumb-wrapper">
+                                <ol class="breadcrumb">
+                                    <li class="breadcrumb-item"><a href="{% url 'costeo:producto_listar' %}">Productos</a>
+                                    </li>
+                                    <li class="breadcrumb-item active">{{object.nombre}} ({{object.presentacion}} {{object.unidad}})
+                                    </li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="content-body">
+                <!-- Dashboard -->
+                <div class="card">
+
+                    <div class="card-body">
+                        <div class="card-text">
+                            <div class="row">
+                                <h4>Filtros</h4>
+                                <form method="GET">
+                                    <div class="mb-1 row">
+                                        <div class="col-sm-3">Fecha Inicio</div>
+                                        <div class="col-sm-6"><input type="text" class="form-control" name="fecha" id="fecha"/></div>
+                                    </div>
+                                    <div class="mb-1 row">
+                                        <div class="col-sm-3">Locación</div>
+                                        <div class="col-sm-6"><select name="ubicacion" class="form-select">
+                                            <option value="0">Todas</option>
+                                            {%for bodega in bodegas%}
+                                            <option {%if bodega.id == ubicacion%}selected{%endif%} value="{{bodega.id}}">{{bodega.nombre}}</option>
+                                            {%endfor%}
+                                        </select>
+                                        </div>
+                                    </div>
+                                    <div class="mb-1 row">
+                                        <div class="col-sm-3"> <button class="btn btn-primary" type="submit">Filtrar</button></div>
+                                    </div>
+                                </form>
+                                <hr>
+                                <h3 class="text-center mb-1">{{object.nombre}} ({{object.presentacion}} {{object.unidad}})
+                                <div class="col-lg-12">
+                                    <canvas id="grafico"></canvas>
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+                <!--/ Dashboard -->
+            </div>
+        </div>
+    </div>
+    <!-- END: Content-->
+{%endblock%}
+{%block scripts%}
+<script src="{%static 'nucleo/vendors/js/charts/chart.min.js' %}"></script>
+<script src="{%static 'nucleo/vendors/js/pickers/pickadate/picker.js'%}"></script>
+<script src="{%static 'nucleo/vendors/js/pickers/pickadate/picker.date.js'%}"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://npmcdn.com/flatpickr/dist/l10n/es.js"></script>
+
+<script>
+    flatpickr("#fecha", {locale:'es',mode: "range",
+    dateFormat: "d-m-Y",defaultDate: [{%for fecha in fechas%}'{{fecha}}',{%endfor%}]});
+</script>
+<script>
+  var ctx = document.getElementById("grafico").getContext('2d');
+  var options = {responsive: true, // Instruct chart js to respond nicely.
+    maintainAspectRatio: false // Add to prevent default behaviour of full-width/height 
+};
+const footer = (tooltipItems) => {
+    let sum = 0;
+    tooltipItems.forEach(function(tooltipItem) {
+        if(tooltipItem.datasetIndex == 1){
+            sum+=tooltipItem.yLabel;
+        }else{
+            sum-=tooltipItem.yLabel;
+        }
+    });
+    return `Margen: $${sum}`;
+  };
+{%load mathfilters%}
+var mixedChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      datasets: [{
+            label: 'CDP',
+            data: [{%for lote in lotes%} parseFloat('{{lote.cdp}}'.replace(',','.'),2).toFixed(2),{%endfor%}],
+            borderColor: 'rgb(255, 99, 132)',
+            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+            fill: false,
+          }, {
+            label: 'Venta',
+            data: [{%for lote in lotes%} parseFloat('{{lote.margen}}'.replace(',','.'),2).toFixed(2),{%endfor%}],
+            // Changes this dataset to become a line
+            type: 'line',
+            borderColor: 'rgb(80,199,105)',
+            backgroundColor: 'rgba(80,199,105, 0.2)',
+            fill: false
+          }],
+      labels: [{%for lote in lotes%} '{{lote.fecha|date:"d M Y"}}', {%endfor%}]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        aspectRatio: 0.7,
+        interaction: {
+            intersect: false,
+            mode: 'index',
+          },
+        tooltips: {
+            mode: 'x-axis',
+            titleFontSize: 18,
+            bodyFontSize: 16,
+            footerFontSize: 16,
+            callbacks: {
+                label: function(t, d) {
+                    var xLabel = d.datasets[t.datasetIndex].label;
+                    var yLabel = t.yLabel >= 1000 ? '$' + t.yLabel.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") : '$' + t.yLabel;
+                    return xLabel + ': ' + yLabel;
+                },
+                footer: footer,
+            }
+        },
+        
+        scales: {
+            yAxes: [{
+                ticks: {
+                    callback: function(value, index, values) {
+                        if (parseInt(value) >= 1000) {
+                        return '$' + value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                        } else {
+                        return '$' + value;
+                        }
+                    }
+                }
+            }]
+        }
+     }
+  });
+</script>
+
+{%endblock%}

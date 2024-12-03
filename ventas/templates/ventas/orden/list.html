@@ -1,0 +1,487 @@
+{% extends 'nucleo/base.html' %}
+{%block title%}Ordenes de Venta{%endblock%}
+{%load static%}
+{%block head%}
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/tables/datatable/dataTables.bootstrap5.min.css'%}">
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/tables/datatable/responsive.bootstrap4.min.css'%}">
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/tables/datatable/buttons.bootstrap5.min.css'%}">
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/tables/datatable/rowGroup.bootstrap4.min.css'%}">
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/pickers/flatpickr/flatpickr.min.css'%}">
+{%endblock%}
+{%block content%}
+<!-- BEGIN: Content-->
+    <div class="app-content content ">
+        <div class="content-overlay"></div>
+        <div class="header-navbar-shadow"></div>
+        <div class="content-wrapper container-fluid p-0">
+            <div class="content-header row">
+                <div class="content-header-left col-md-9 col-12 mb-2">
+                    <div class="row breadcrumbs-top">
+                        <div class="col-12">
+                            <h2 class="content-header-title float-start mb-0">Ventas</h2>
+                            <div class="breadcrumb-wrapper">
+                                <ol class="breadcrumb">
+                                   <li class="breadcrumb-item"><a href="{% url 'ventas:orden:lista' %}">Ordenes de Venta</a>
+                                    </li>
+                                    <li class="breadcrumb-item active">Lista
+                                    </li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="content-header-right text-md-end col-md-3 col-12 d-sm-block d-md-none ">
+                    {%if 'ventas.orden.crear' in perms %}
+
+                        <a class="mb-1" href="{% url 'ventas:orden:pickear' %}"><button data-bs-tooltip="tooltip" data-bs-placement="top" title="Pickear OV" class="btn mb-1 btn-primary"><i class="fas fa-crosshairs"></i></button></a>
+
+                        <a class="mb-1" href="{% url 'ventas:orden:cargar' %}"><button data-bs-tooltip="tooltip" data-bs-placement="top" title="Subir OV" class="btn btn-icon mb-1 btn-info"><i class="fas fa-upload"></i></button></a>
+
+                        <a class="mb-1"  href="{% url 'ventas:orden:crear' %}"><button data-bs-tooltip="tooltip" data-bs-placement="top" title="Agregar OV"  class="btn btn-icon mb-1 btn-success"><i class="fas fa-folder-plus"></i></button></a>
+
+                        
+                    {%endif%}
+                </div>
+                <div class="content-header-right text-md-end col-md-3 col-12 d-md-block d-none">
+                    <div class="mb-1 breadcrumb-right d-flex">
+                        {%if 'ventas.orden.crear' in perms %}
+                            <a class="me-2" href="{% url 'ventas:orden:gexcel' %}">
+                                <button data-bs-tooltip="tooltip" data-bs-placement="top" title="Exportar OV" class="btn btn-success">Exportar</button>
+                            </a>
+                
+                            <a class="me-2" href="{% url 'ventas:orden:cargar' %}">
+                                <button data-bs-tooltip="tooltip" data-bs-placement="top" title="Subir OV" class="btn btn-icon btn-info">Subir OV</button>
+                            </a>
+                
+                            <a href="{% url 'ventas:orden:crear' %}">
+                                <button data-bs-tooltip="tooltip" data-bs-placement="top" title="Agregar OV" class="btn btn-icon btn-primary">Crear OV</button>
+                            </a>
+                        {%endif%}
+                    </div>
+                </div>
+                
+            </div>
+                <section id="basic-datatable">
+                    <div class="row" id="app">
+                    <div class="modal fade text-start"id="default" tabindex="-1" aria-labelledby="myModalLabel1" aria-hidden="true">
+                    <div class="modal-dialog modal-xl">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h4 class="modal-title" id="myModalLabel1">{$ titulo $}</h4>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Información</th>
+                                            <th>Dato</th>
+                                        </tr>
+                                    </thead>
+                                        <tbody>
+                                            <tr>
+                                                <th>Fecha de emisión</th>
+                                                <td>{$ fecha $}</td>
+                                            </tr>
+                                            <tr v-if="cliente">
+                                                <th>Cliente</th>
+                                                <td>{$ cliente.nombre $}</td>
+                                            </tr>
+                                            <tr v-if="local">
+                                                <th>Local</th>
+                                                <td>{$ local.local $}</td>
+                                            </tr>
+                                            <tr v-if="local">
+                                                <th>Dirección</th>
+                                                <td>{$ local.direccion $}</td>
+                                            </tr>
+                                            <tr v-if="facturas.length > 0">
+                                                <th><span v-if="boleta">Boleta</span><span v-else>Facturas</span></th>
+                                                
+                                                <td><span v-for="(factura,index) in facturas">{$ factura $}<span v-if="index != Object.keys(facturas).length - 1">, </span> </span></td>
+                                            </tr>
+                                            <tr>
+                                                <th>Condiciones Comerciales Y Especificaciones Técnicas:</th>
+                                                <td>{$ condiciones $}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Productos</th>
+                                                <td><table v-if="supermercado == false" class="table table-bordered">
+                                                    <tr>
+                                                        <th>Producto</th>
+                                                        <th>Unidades</th>
+                                                        <th>Cajas</th>
+                                                        <th>Precio</th>
+                                                        <th>Valor Neto</th>
+                                                    </tr>
+                                                    <tr v-for="producto in productos">
+                                                        <td>{$ upperCase(producto.producto.nombre) $} ({$producto.producto.presentacion$} {$producto.producto.unidad$})</td>
+                                                        
+                                                        <td v-if="facturas.length > 0">{$ producto.cantidad_fc $}</td>
+                                                        <td v-else>{$ producto.cantidad $}</td>
+                                                        <td>{$ (producto.cantidad / producto.producto.unidades).toFixed(1) $}</td>
+                                                        <td>{$ formatoCLP(producto.precio) $}</td>
+                                                        <td>{$ formatoCLP(producto.cantidad * producto.precio) $}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <th>NETO</th>
+                                                        <td>{$ formatoCLP(totales.neto) $}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <th>DESCUENTO</th>
+                                                        <td>{$ formatoCLP(totales.descuento) $}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <th>ENVIO</th>
+                                                        <td>{$ formatoCLP(totales.envio) $}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <th>IVA</th>
+                                                        <td>{$ formatoCLP(totales.iva) $}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <th class="bg-primary text-white">TOTAL</th>
+                                                        <th class="bg-primary text-white">{$ formatoCLP(totales.total) $}</th>
+                                                    </tr>
+                                                </table>
+                                                <table v-if="supermercado" class="table table-bordered">
+                                                    <tr>
+                                                        <th>Producto</th>
+                                                        <th>Cajas</th>
+                                                        <th>Precio Caja</th>
+                                                        <th>Valor Neto</th>
+                                                    </tr>
+                                                    <tr v-for="producto in productos">
+                                                        <td>{$ upperCase(producto.producto.nombre) $} ({$producto.producto.presentacion$} {$producto.producto.unidad$})</td>
+                                                        <td>{$ (producto.cantidad / producto.producto.unidades).toFixed(1) $}</td>
+                                                        <td>{$ formatoCLP(producto.precio * producto.producto.unidades) $}</td>
+                                                        <td>{$ formatoCLP(producto.cantidad * producto.precio) $}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td></td>
+                                                        <td></td>
+
+                                                        <th>NETO</th>
+                                                        <td>{$ formatoCLP(totales.neto) $}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <th>IVA</th>
+                                                        <td>{$ formatoCLP(totales.iva) $}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <th class="bg-primary text-white">TOTAL</th>
+                                                        <th class="bg-primary text-white">{$ formatoCLP(totales.total) $}</th>
+                                                    </tr>
+                                                </table></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    {%if 'ventas.orden.pdf' in perms %}
+                                    <button @click="verPDF" class="btn btn-primary">Imprimir PDF</button>
+                                    {%endif%}
+                                    {%if 'ventas.orden.listar' in perms %}
+                                    <button style="margin-left:10px;" @click="verDetalle" class="btn btn-secondary">Ver Detalle</button>
+                                    {%endif%}
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cerrar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                            <div class="col-12">
+                                <div class="card">
+                                    <table id="orden" class="datatables-basic table text-center">
+                                        <thead>
+                                            <tr>
+                                                <th>N°</th>
+                                                <th>Fecha</th>
+                                                <th>Cliente</th>
+                                                <th>Factura</th>
+                                                <th>Total Neto</th>
+                                                <th>Estado</th>
+                                                {%if 'ventas.orden.actualizar' in perms or 'ventas.orden.eliminar' in perms or 'ventas.orden.detalle' in perms %} 
+                                                <th>Opciones</th>
+                                                {%endif%}
+                                            </tr>
+                                        </thead>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                </section>
+                <!--/ Dashboard -->
+
+            </div>
+        </div>
+    </div>
+{%endblock%}
+
+{%block scripts%}
+<!-- BEGIN: Page Vendor JS-->
+<script src="{% static 'nucleo/vendors/js/tables/datatable/jquery.dataTables.min.js'%}"></script>
+<script src="{% static 'nucleo/vendors/js/tables/datatable/dataTables.bootstrap5.min.js'%}"></script>
+<script src="{% static 'nucleo/vendors/js/tables/datatable/dataTables.responsive.min.js'%}"></script>
+<script src="{% static 'nucleo/vendors/js/tables/datatable/responsive.bootstrap4.js'%}"></script>
+<script src="{% static 'nucleo/vendors/js/pickers/flatpickr/flatpickr.min.js'%}"></script>
+<!-- END: Page Vendor JS-->
+<script>
+$( function() {
+   let tabla = $('#orden').DataTable( {
+        responsive: true,
+        autoWidth: true,
+        destroy: true,
+        deferRender: true,
+        pageLength: 10,
+        serverSide: true,
+        rowReorder: true,
+        order: [[0,'desc']],
+        dom: '<"card-header border-bottom p-1"<"head-label"><"dt-action-buttons text-end"B>><"d-flex justify-content-between align-items-center mx-0 row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>t<"d-flex justify-content-between mx-0 row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
+        ajax: '{%url "ordendeventa-list" %}?format=datatables',
+        language: {
+            "lengthMenu": "Mostrar _MENU_ ordenes por página",
+            "zeroRecords": "Por el momento no hay ordenes de venta.",
+            "info": "Mostrando página _PAGE_ de _PAGES_",
+            "infoEmpty": "No hay ordenes",
+            "infoFiltered": "(filtrados de un total de _MAX_ ordenes)",
+            "loadingRecords": "Cargando...",
+            "processing":     "Procesando...",
+            "search":         "Buscar:",
+            "paginate": {
+                "first":      "Primera",
+                "last":       "Ultima",
+                "next":       "Siguiente",
+                "previous":   "Anterior"
+            },
+        },
+        columnDefs: [
+            {
+                targets: [ 3 ],
+                visible: false,
+                searchable: true
+            },
+        ],
+        columns: [
+            {data : 'id'},
+            {data: 'fecha'},
+            {data: 'cliente.nombre', name:'cliente.nombre',render:function(data,type,row,meta){
+                if(row['n_orden_cliente'] != '')
+                {
+                    return data + ` (${row['n_orden_cliente']})`;
+                }
+                else{
+                    return data;
+                }
+                
+            }},
+            {data: 'facturas',name:'ordendeventaproducto.factura'},
+            {data: 'total.neto',searchable:false,render:function(data,type,row,meta){
+                return vue.formatoCLP(data - row['total']['descuento']);
+            }},
+            {data: 'estado',name:'estado'},
+            {%if 'ventas.orden.actualizar' in perms or 'ventas.orden.eliminar' in perms %} 
+            {mData: 'id',searchable: false,
+            mRender: (data,type,row)=>{
+                let botones ="";
+                {%if 'ventas.orden.detalle' in perms%}
+                let boton = `<button data-bs-tooltip="tooltip" data-bs-placement="top" title="Detalle OV" style="margin-right:20px;" type="button" onclick="vue.remplazarModal(${data})"  data-bs-toggle="modal" data-bs-target="#default" class="btn btn-icon btn-info waves-effect"><i data-feather="book"></i></button>`
+                botones+= boton;
+                {%endif%}
+                {%if 'ventas.orden.actualizar' in perms %}
+                let estado = row.estado;
+                let botoninfo = {
+                    'Pendiente':`<a style="margin-right:20px;" href="{%url 'ventas:orden:actualizar' 1 %}"><button data-bs-tooltip="tooltip" data-bs-placement="top" title="Actualizar OV" type="button" class="btn btn-icon btn-success waves-effect"><i data-feather="edit"></i></button></a>`,
+                    'Pickeado':`<a style="margin-right:20px;" href="{%url 'ventas:orden:facturar' 1 %}"><button data-bs-tooltip="tooltip" data-bs-placement="top" title="Siguiente Paso" type="button" class="btn btn-icon btn-success waves-effect"><i class="fas fa-book"></i></button></a>`,
+                    'Facturado': `<a style="margin-right:20px;" href="{%url 'ventas:orden:asignar' 1 %}"><button data-bs-tooltip="tooltip" data-bs-placement="top" title="Asignar OV" type="button" class="btn btn-icon btn-success waves-effect"><i class="fas fa-truck"></i></button></a>`,
+                    'Boleteado': `<a style="margin-right:20px;" href="{%url 'ventas:orden:asignar' 1 %}"><button data-bs-tooltip="tooltip" data-bs-placement="top" title="Asignar OV" type="button" class="btn btn-icon btn-success waves-effect"><i class="fas fa-truck"></i></button></a>`,
+
+                    'Asignado': ``,
+                    'En Ruta': ``,
+                    'Recepción Parcial': ``,
+                    'No Entregado': ``,
+                    'Entregado': ``};
+                let boton1 = String(botoninfo[estado])
+                boton1 = boton1.replace('1',data);
+                
+                botones+= boton1;
+                if (estado == 'Pendiente'){
+                    botones+= `<a style="margin-right:20px;" href="{%url 'ventas:orden:pickear-ov' 1 %}"><button data-bs-tooltip="tooltip" data-bs-placement="top" title="Pickear OV" type="button" class="btn btn-icon btn-primary waves-effect"><i data-feather="truck"></i></button></a>`.replace('1',data);
+                }
+                {%endif%}
+                
+                {%if 'ventas.orden.retroceder' in perms %}
+                let estados = ['Pickeado','Boleteado','Facturado','Asignado']
+                if (estados.includes(estado))
+                {
+                    let boton2 = `<button onclick="retroceder(event,${data})" type="button" data-bs-tooltip="tooltip" data-bs-placement="top" title="Retroceder OV" class="btn btn-icon btn-warning waves-effect"><i data-feather="rotate-ccw"></i></button>`;
+                    botones+=boton2;
+                }
+                
+                {%endif%}
+                return botones;
+            }}
+            {%endif%}  
+             
+        ],
+        "drawCallback": function(){
+            feather.replace();
+            activarTooltip();
+        },
+        "initComplete": function () {
+            feather.replace();
+            activarTooltip();
+        },
+    } );
+tabla.on('responsive-display',function(){
+    feather.replace();
+});
+$('div.head-label').html('<h6 class="mb-0">Ordenes de Venta</h6>');
+});
+</script>
+
+{%if 'ventas.orden.retroceder' in perms %}
+<script src="{%static 'nucleo/vendors/js/extensions/sweetalert2.all.min.js'%}"></script>
+<script>
+function retroceder(event,id){
+    let url = "{% url 'ventas:orden:retroceder' 1%}".replace('1',id);
+    Swal.fire({
+        title: '¿Estas Seguro?',
+        html:"La orden de venta retrocedera al estado anterior.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        cancelButtonText: 'Cancelar',
+        confirmButtonText: 'Si, Retroceder!'
+        }).then(result=>{
+            if (result.isConfirmed) {
+                axios.get(url).then(response => {
+                    if (response.data.estado == 'ok'){
+                        Swal.fire(
+                        'Exito!',
+                        'La orden de venta ha cambiado de estado',
+                        'success'
+                        );
+                        setTimeout(()=>{
+                            location.href = location.href;
+                        },1500);
+                    }
+                });
+            }
+        });               
+}
+</script>
+{%endif%}
+<script>
+let vue = Vue.createApp({
+    data(){
+        return {
+            cliente: [],
+            titulo: "Orden de venta",
+            condiciones: "",
+            fecha: "",
+            id: 0,
+            facturas : [],
+            boleta: false,
+            supermercado: false,
+            local: [],
+            lugar: [],
+            productos: [],
+            n_orden_c: "1",
+            totales: [],
+            total_productos: 0,
+        }
+    },
+    methods:{
+        formatoCLP(numero){
+            return formatter.format(numero);
+        },
+        esSuper(){
+            if (this.cliente.length == 0){
+                this.supermercado = false;
+                return;
+            }
+            let supers = ['walmart','jumbo','unimarc'];
+            let nombre_c = this.cliente.nombre.toLocaleLowerCase();
+            if (supers.includes(nombre_c)){
+                this.supermercado = true;
+            }else{
+                this.supermercado = false;
+            }
+        },
+        capSentence(text) {
+            text = new String(text).replace('  ',' ');
+            if (text.length > 0){
+                let wordsArray = text.toLowerCase().split(' ');
+                let capsArray = wordsArray.map(word=>{
+                    return word[0].toUpperCase() + word.slice(1);
+                });
+                return capsArray.join(' ');
+            }
+            return text;
+            
+        },
+        verPDF(){
+            let url = '{%url "ventas:orden:pdf" 1 %}'.replace('1',this.id)
+            location.href = url;
+        },
+        verDetalle(){
+            let url = '{%url "ventas:orden:detalle" 1 %}'.replace('1',this.id)
+            location.href = url;
+        },
+        upperCase(string){
+            return string.toUpperCase();
+        },
+        remplazarModal(numero){;
+            let url = '{%url "ordendeventa-detail" 1%}';
+            axios
+            .get(url.replace('1',numero))
+            .then(response => {
+                console.log(response.data);
+                let data = response.data;
+                this.cliente = data.cliente;
+                this.facturas = data.facturas;
+                this.boleta = data.boleta;
+                this.titulo = `Orden de venta #${data.id}`;
+                this.condiciones = data.condiciones;
+                this.fecha = data.fecha;
+                this.id = data.id;
+                this.local = data.local;
+                this.lugar = data.lugar.nombre;
+                this.n_orden_c = data.n_orden_cliente;
+                this.totales = data.total;
+                this.productos = data.productos;
+                this.total_productos = data.total_productos;
+                this.esSuper();
+            });
+        }
+    },
+    mounted(){
+        
+    },
+    delimiters: ['{$', '$}'],
+}).mount('#app');
+</script>
+{%endblock%}
+

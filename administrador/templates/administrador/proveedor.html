@@ -1,0 +1,141 @@
+{% extends 'nucleo/base.html' %}
+{%block title%}Proveedor{%endblock%}
+{%load static%}
+{%block head%}
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/tables/datatable/dataTables.bootstrap5.min.css'%}">
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/tables/datatable/responsive.bootstrap4.min.css'%}">
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/tables/datatable/buttons.bootstrap5.min.css'%}">
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/tables/datatable/rowGroup.bootstrap4.min.css'%}">
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/pickers/flatpickr/flatpickr.min.css'%}">
+{%endblock%}
+{%block content%}
+<!-- BEGIN: Content-->
+    <div class="app-content content ">
+        <div class="content-overlay"></div>
+        <div class="header-navbar-shadow"></div>
+        <div class="content-wrapper container-fluid p-0">
+            <div class="content-header row">
+                <div class="content-header-left col-md-9 col-12 mb-2">
+                    <div class="row breadcrumbs-top">
+                        <div class="col-12">
+                            <h2 class="content-header-title float-start mb-0">Proveedores</h2>
+                            <div class="breadcrumb-wrapper">
+                                <ol class="breadcrumb">
+                                    <li class="breadcrumb-item"><a href="#">Proveedores</a>
+                                    </li>
+                                    <li class="breadcrumb-item active">Lista
+                                    </li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="content-header-right text-md-end col-md-3 col-12 d-md-block d-none">
+                    {% if 'proveedores.crear' in perms %}
+                    <div class="mb-1 breadcrumb-right">
+                        <a target="_blank" href="#"><button class="btn btn-primary">Añadir Proveedor</button></a>
+                    </div>
+                    {%endif%}
+                </div>
+            </div>
+            <div class="content-body">
+                <!-- Dashboard -->
+                <section id="basic-datatable">
+                    <div class="row">
+                            <div class="col-12">
+                                <div class="card">
+                                    <table id="proveedores" class="datatables-basic table">
+                                        <thead>
+                                            <tr>
+                                                <th>Razón Social</th>
+                                                <th>Rut</th>
+                                                <th>Teléfono</th>
+                                                <th>Nombre Contacto Ventas</th>
+                                                <th>E-mail Contacto Ventas</th>
+                                                <th>Celular Contacto Ventas</th>
+                                                <th>Opciones</th>
+                                                <th></th>
+                                            </tr>
+                                        </thead>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                </section>
+                <!--/ Dashboard -->
+
+            </div>
+        </div>
+    </div>
+{%endblock%}
+
+{%block scripts%}
+<!-- BEGIN: Page Vendor JS-->
+<script src="{% static 'nucleo/vendors/js/tables/datatable/jquery.dataTables.min.js'%}"></script>
+<script src="{% static 'nucleo/vendors/js/tables/datatable/dataTables.bootstrap5.min.js'%}"></script>
+<script src="{% static 'nucleo/vendors/js/tables/datatable/dataTables.responsive.min.js'%}"></script>
+<script src="{% static 'nucleo/vendors/js/tables/datatable/responsive.bootstrap4.js'%}"></script>
+<script src="{% static 'nucleo/vendors/js/pickers/flatpickr/flatpickr.min.js'%}"></script>
+<!-- END: Page Vendor JS-->
+<script>
+$( function() {
+   $('#proveedores').DataTable( {
+        responsive: true,
+        autoWidth: true,
+        destroy: true,
+        deferRender: true,
+        pageLength: 10,
+        serverSide: true,
+        rowReorder: true,
+        order: [[0,'desc']],
+        dom: '<"card-header border-bottom p-1"<"head-label"><"dt-action-buttons text-end"B>><"d-flex justify-content-between align-items-center mx-0 row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>t<"d-flex justify-content-between mx-0 row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
+        ajax: '{%url "proveedor-list" %}?format=datatables',
+        language: {
+            "lengthMenu": "Mostrar _MENU_ proveedores por página",
+            "zeroRecords": "Ups - no hay proveedores",
+            "info": "Mostrando página _PAGE_ de _PAGES_",
+            "infoEmpty": "No hay proveedores",
+            "infoFiltered": "(filtrados de un total de _MAX_ proveedores)",
+            "loadingRecords": "Cargando...",
+            "processing":     "Procesando...",
+            "search":         "Buscar:",
+            "paginate": {
+                "first":      "Primera",
+                "last":       "Ultima",
+                "next":       "Siguiente",
+                "previous":   "Anterior"
+            },
+        },
+        columns: [
+            {data : 'empresa_nombre'},
+            {data : 'empresa_rut'},
+            {data: 'ventas_telefono'},
+            {data: 'ventas_nombre'},
+            {data: 'ventas_email'},
+            {data: 'ventas_celular'},
+            {mData: 'id',searchable: false,
+            mRender: (data,type,row)=>{
+                let boton1 = `<button style="margin-right:20px;" type="button" onclick="vue.remplazarModal(${data})"  data-bs-toggle="modal" data-bs-target="#default" class="btn btn-icon btn-info waves-effect"><i data-feather="book"></i></button>`
+                let boton2 = `<a style="margin-right:20px;" href="{%url 'ordendecompra:paso' 1 %}"><button type="button" class="btn btn-icon btn-success waves-effect"><i data-feather="settings"></i></button></a>`;
+                boton2 = boton2.replace('1',data);
+                return boton1 + boton2;
+                
+            }}
+            
+        ],
+            columnDefs: [
+            {"type": 'num-fmt',"targets":4}
+            ],
+        
+        "drawCallback": function(){
+            feather.replace();
+        },
+        "initComplete": function () {
+            feather.replace();
+        },
+    } );
+$('div.head-label').html('<h6 class="mb-0">Proveedores</h6>');
+});
+</script>
+
+{%endblock%}

@@ -1,0 +1,385 @@
+{% extends 'nucleo/base.html'%}
+{%block title%}Actualizar Orden de Venta{%endblock%}
+{%load static%}
+{%block head%}
+<link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/pickers/pickadate/pickadate.css'%}">
+<link rel="stylesheet" type="text/css" href="{%static 'nucleo/css/plugins/forms/pickers/form-pickadate.css'%}">
+{%endblock%}
+{%block content%}
+<style>
+.errorlist{
+    color:red;
+    list-style:none;
+    padding-left:0;
+}
+.menu-suggest{
+    position: absolute;
+    background:white;
+    width:96%;
+    padding: 0.571rem 1rem;
+    left:2%;
+    right:0;
+    list-style: none;
+    border-bottom: 1px solid #d8d6de;
+    border-left: 1px solid #d8d6de;
+    border-right:1px solid #d8d6de;
+    z-index:999;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+</style>
+<!-- BEGIN: Content-->
+    <div class="app-content content ">
+        <div class="content-overlay"></div>
+        <div class="header-navbar-shadow"></div>
+        <div class="content-wrapper container-fluid p-0">
+            <div class="content-header row">
+                <div class="content-header-left col-md-9 col-12 mb-2">
+                    <div class="row breadcrumbs-top">
+                        <div class="col-12">
+                            <h2 class="content-header-title float-start mb-0">Ventas</h2>
+                            <div class="breadcrumb-wrapper">
+                                <ol class="breadcrumb">
+                                    <li class="breadcrumb-item"><a href="{% url 'ventas:orden:lista' %}">Ordenes de Venta</a>
+                                    </li>
+                                    <li class="breadcrumb-item active">Actualizar
+                                    </li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="content-body">
+                <!-- Dashboard -->
+                <div class="card" id="app">
+                    <div class="card-body">
+                        <div class="card-text">
+                        <button v-if="productos.length > 0" id="botons" class="btn btn-primary" style="position: absolute;
+    right: 10px;
+    top:50vh;
+    -webkit-transition: all 1s ease-in-out;
+    transition: all 1s ease-in-out;
+    z-index: 1;
+    padding: 15px;
+    color: white;
+    text-align: center;
+    box-sizing: border-box;">IC: {$ pc $}%</button>
+                            <form class="form form-horizontal" method="post" enctype="multipart/form-data">{% csrf_token %}
+                                <div class="row">
+                                    <div class="col-12" id="app">
+                                    {%if form.non_field_errors%}
+                                    <div class="alert alert-danger" role="alert">
+                                        <div class="alert-body">{{form.non_field_errors}}</div>
+                                    </div>
+                                    {%endif%}
+                                    {%for field in form %}
+                                        
+                                        <div class="mb-1 row">
+                                        <div class="col-sm-3">{{field.label_tag}} {%if field.field.required %}<span style="color:red">*</span>{%endif%}</div>
+
+                                        <div class="col-sm-6 position-relative">{{field}}
+                                        {% if field.help_text %}
+                                        <small class="">{{field.help_text|safe}}</small>
+                                        {%endif%}
+                                        {%if field.errors %}
+                                        <div class="invalid-feedback" style="display:block;">{{field.errors.as_text}}</div>
+                                        {%endif%}
+                                        </div>
+                                        </div>
+
+                                    {%endfor%}
+                                    {% if 'ventas.archivo.listar' in perms%}
+                                    {% if object.archivoordendeventa_set.all|length > 0 %}
+                                        <div id="archivos" class="mb-2">
+                                            <h3 class="mt-1">Archivos Adjuntos</h3>
+                                            <div class="table-responsive">
+                                                <table class="table table-bordered">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Archivo</th>
+                                                            {%if 'ventas.archivo.eliminar' in perms %}<th>Opciones</th>{%endif%}
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                    {%for r in object.archivoordendeventa_set.all%}
+                                                        <tr>
+                                                            <td><a target="_blank" href="{{r.archivo.url}}">{{r.nombre}}</a></td>
+                                                            {%if 'ventas.archivo.eliminar' in perms %}
+                                                            <td><button type="button" class="btn btn-danger" @click="eliminarArchivo($event,{{r.id}})">Eliminar</button></td>
+                                                            {%endif%}
+                                                        </tr>
+                                                    {%endfor%}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    {%endif%}
+                                    {%endif%}
+                                    <div v-if="productosa.length >= 0" class="table-responsive">
+                                    <table class="table mb-2">
+                                    <thead>
+                                        <tr>
+                                            <th>Producto</th>
+                                            <th>En Inventario</th>
+                                            <th>Cantidad a comprar</th>
+                                            <th>Precio Unitario</th>
+                                            <th>% Descuento</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="producto in productos">
+                                            <input type="hidden" name="idproducto[]" v-model="producto.producto.id"/>
+                                            <td>{$ producto.producto.nombre $} ({$ producto.producto.presentacion$} {$ producto.producto.unidad $})</td>
+                                            <td v-bind:style="{ background: producto.activeColor, color: producto.color}">{$ producto.producto.inventario $}</td>
+                                            <td><input @keyup="ActualizarPrecios(producto)" type="number" class="form-control" name="cantidadproducto[]" v-model="producto.cantidad"/></td>
+                                            <input type="hidden" class="form-control" name="codigo_cliente[]" v-model="producto.codigo_cliente"/>
+                                            <td><input @keyup="ActualizarPrecios(producto)" step="0.01" type="number" class="form-control" name="precioproducto[]" v-model="producto.precio"/></td>
+                                            <td><input @keyup="ActualizarPrecios(producto)" step="0" min="0" max="100" type="number" class="form-control" name="descuentoproducto[]" v-model="producto.descuento"/></td>
+                                        </tr>
+                                        <thead>
+                                        <tr>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <th>Total Neto</th>
+                                            <th>{$ formatoCLP(total_neto)$}</th>
+                                        </tr>
+                                        <tr>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <th>Descuento</th>
+                                            <th>{$ formatoCLP(descuento)$}</th>
+                                        </tr>
+                                        <tr>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <th>Envio</th>
+                                            <th>{$ formatoCLP(envio)$}</th>
+                                        </tr>
+                                        <tr>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <th>Iva</th>
+                                            <th>{$ formatoCLP(iva)$}</th>
+                                        </tr>
+                                        <tr>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <th>Total</th>
+                                            <th>{$ formatoCLP(total)$}</th>
+                                        </tr></thead>
+                                    </tbody>
+                                        
+                                    </table>
+                                    </div>
+                                    
+                                    
+                                    <div class="col-sm-12 mt-2">
+                                        <button type="submit" class="btn btn-primary me-1 waves-effect waves-float waves-light">Actualizar Orden de Venta</button>
+                                    </div>
+                                
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <!--/ Dashboard -->
+            </div>
+        </div>
+    </div>
+    <!-- END: Content-->
+{%endblock%}
+{%block scripts%}
+<script src="{%static 'nucleo/vendors/js/pickers/pickadate/picker.js'%}"></script>
+<script src="{%static 'nucleo/vendors/js/extensions/sweetalert2.all.min.js'%}"></script>
+<script src="{%static 'nucleo/vendors/js/pickers/pickadate/picker.date.js'%}"></script>
+<script>
+let vue = Vue.createApp({
+    data(){
+        return {
+            nombre: '',
+            cliente_id: 0,
+            descuento:0,
+            envio: parseFloat('{{object.envio}}'),
+            sugerencias: false,
+            listas: [],
+            locales: [],
+            cargado: false,
+            total: 0,
+            pc: 0,
+            total_neto: 0,
+            iva: 0,
+            productosa: [],
+            productos: [],
+        }
+    },
+    methods:{
+        ActualizarPrecios(producto){
+            if (producto.producto.inventario - producto.cantidad < producto.cantidad/4){
+                producto.activeColor = '#ea5455';
+                producto.color = 'white';
+            }
+            if (producto.producto.inventario >= producto.cantidad/2){
+                producto.activeColor = '#ff9f43';
+                producto.color = 'white';
+            }
+            if (producto.producto.inventario - producto.cantidad >= 0){
+                producto.activeColor = '#28c76f';
+                producto.color = 'white';
+            }
+            if (producto.cantidad == 0){
+                producto.activeColor = 'none';
+                producto.color = '#6e6b7b';
+            }
+            let total_neto_nuevo = 0;
+            this.descuento = 0;
+            this.productos.forEach(producto => {
+                if (producto.cantidad){
+                    total_neto_nuevo+= producto.cantidad * producto.precio;
+                    this.descuento += producto.cantidad * (producto.descuento)/100*producto.precio;
+                }
+            });
+            this.total_neto = total_neto_nuevo;
+            this.actualizarTotal();
+            this.calcularPC()
+        },
+
+        formatoCLP(numero){
+            return formatter.format(numero);
+        },
+        actualizarTotal(){
+            let valor_iva = parseFloat('{{valorIVA}}'.replace(',','.'));
+            this.iva = (this.total_neto - this.descuento) * valor_iva;
+            this.total = this.iva + this.total_neto + this.envio - this.descuento;
+        },
+        entreCruzar(){
+            for(p of this.productos){
+                p.cantidad = 0;
+                for (po of this.productosa){
+                    if (po.producto.id == p.producto.id){
+                        p.cantidad = po.cantidad;
+                        p.descuento = po.descuento;
+                        //p.producto.inventario+=po.cantidad;
+                        p.codigo_cliente = po.codigo_cliente;
+                        p.precio = Number(po.precio).toFixed(2);
+                    }
+                }
+                p.activeColor = 'none';
+                p.color = '#6e6b7b';
+                p.precio = Number(p.precio).toFixed(2);
+                this.ActualizarPrecios(p);
+            }
+            this.productos.sort( (a,b) => (a.cantidad > b.cantidad) ? -1 : 1);
+        },
+        calcularPC(){
+            let cantidad = 0;
+            let total = 0;
+            for (p of this.productos){
+                if (p.cantidad > 0){
+                    cantidad += p.cantidad;
+                    if (p.producto.inventario > p.cantidad){
+                        total+=p.cantidad;
+                    }else{
+                        if (p.producto.inventario > 0){
+                             total+=p.producto.inventario;
+                        }
+                           
+                    }
+                }
+            }
+            this.pc = ((total / cantidad) * 100).toFixed(2);
+        },
+        rellenarInfo(){
+            let url = '{%url "ordendeventa-detail" 1%}'.replace(1,'{{object.id}}');
+            axios.get(url).then(response=>{
+                let data = response.data;
+                console.log(data);
+                this.productosa = data.productos;
+                let url2 = '{%url "listaprecio-detail" 1%}?id=true&oc='.replace(1, data.cliente.listap) + '{{object.id}}';
+                axios.get(url2).then(respuesta=>{
+                    this.productos = respuesta.data.productos;
+                    this.entreCruzar();
+                    this.calcularPC();
+                });
+                
+            })
+        },
+        eliminarArchivo(event,id){
+                let url = "{% url 'ventas:orden:eliminar-archivo' 1%}".replace('1',id);
+                Swal.fire({
+                    title: 'Estas Seguro?',
+                    text: "El archivo sera eliminado permanentemente del sistema",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Si, Eliminar!'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            axios.get(url).then(response =>{
+                                if (response.data.estado == 'ok'){
+                                    Swal.fire(
+                                    'Eliminado!',
+                                    'El archivo ha sido eliminado',
+                                    'success'
+                                    );
+                                    let tbody = event.target.parentNode.parentNode.parentNode;
+                                    let totalArchivos = tbody.querySelectorAll('tr').length;
+                                    event.target.parentNode.parentNode.remove();
+                                    if (totalArchivos -1 <= 0){
+                                        document.querySelector('#archivos').remove();
+                                    } 
+                                }else{
+                                    Swal.fire(
+                                    'Error',
+                                    'El archivo que intentas acceder ya fue eliminado',
+                                    'error'
+                                    );
+                                }
+                            });
+                                        }
+                                                }
+                            );
+                    
+
+                    
+                }
+    },
+    delimiters: ['{$', '$}'],
+    mounted(){
+        this.rellenarInfo();
+        $('#fecha').pickadate({
+    monthsFull: [ 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre' ],
+    monthsShort: [ 'ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic' ],
+    weekdaysFull: [ 'Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado' ],
+    weekdaysShort: [ 'dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb' ],
+    today: 'Hoy',
+    clear: 'Borrar',
+    close: 'Cerrar',
+    firstDay: 1,
+    format: 'yyyy-mm-dd',
+    formatSubmit: 'yyyy-mm-dd',
+    onStart: function ()
+            {
+                var date = new Date();
+                this.set('select', [date.getFullYear(), date.getMonth(), date.getDate()]);
+            },
+        });
+},
+}).mount('#app');
+</script>
+<script>
+$(window).scroll(function() {
+    var winScrollTop = $(window).scrollTop();
+    var winHeight = $(window).height();
+    var floaterHeight = $('#botons').outerHeight(true);
+    var fromBottom = $(window).height() * 0.50;
+    var top = winScrollTop + winHeight - floaterHeight - fromBottom;
+	$('#botons').css({'top': top + 'px'});
+});
+</script>
+{%endblock%}

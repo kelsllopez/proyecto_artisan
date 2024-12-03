@@ -1,0 +1,192 @@
+{% extends 'nucleo/base.html' %}
+{%block title%}Columnas{%endblock%}
+{%load static%}
+{%block head%}
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/tables/datatable/dataTables.bootstrap5.min.css'%}">
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/tables/datatable/responsive.bootstrap4.min.css'%}">
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/tables/datatable/buttons.bootstrap5.min.css'%}">
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/tables/datatable/rowGroup.bootstrap4.min.css'%}">
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/pickers/flatpickr/flatpickr.min.css'%}">
+{%endblock%}
+{%block content%}
+<!-- BEGIN: Content-->
+    <div class="app-content content ">
+        <div class="content-overlay"></div>
+        <div class="header-navbar-shadow"></div>
+        <div class="content-wrapper container-fluid p-0">
+            <div class="content-header row">
+                <div class="content-header-left col-md-9 col-12 mb-2">
+                    <div class="row breadcrumbs-top">
+                        <div class="col-12">
+                            <h2 class="content-header-title float-start mb-0">Administrador</h2>
+                            <div class="breadcrumb-wrapper">
+                                <ol class="breadcrumb">
+                                   <li class="breadcrumb-item"><a href="{% url 'administrador:pauta:lista' %}">Pautas</a>
+                                    </li>
+                                    <li class="breadcrumb-item"><a href="{% url 'administrador:pauta:columna' %}">Parámetros</a>
+                                    </li>
+                                    <li class="breadcrumb-item active">Lista
+                                    </li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="content-header-right text-md-end col-md-3 col-12 d-md-block d-none">
+                    <div class="mb-1 breadcrumb-right d-flex">
+                        {%if 'pauta.crear' in perms %}
+                        <a class="me-2" href="{% url 'administrador:pauta:lista' %}">
+                            <button class="btn btn-primary">Lista de Pautas</button>
+                        </a>
+                        {%endif%}
+                        {%if 'pauta.columna.crear' in perms %}
+                        <a href="{% url 'administrador:pauta:columna-crear' %}">
+                            <button class="btn btn-primary">Añadir Parámetro</button>
+                        </a>
+                        {%endif%}
+                    </div>
+                    
+                </div>
+            </div>
+                <section id="basic-datatable">
+                    <div class="row">
+                            <div class="col-12">
+                                <div class="card">
+                                    <table id="parametros" class="datatables-basic table text-center">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Parámetro</th>
+                                                <th>Fecha de Creación</th>
+                                                {%if 'pauta.columna.actualizar' in perms or 'pauta.columna.eliminar' in perms %} 
+                                                <th>Opciones</th>
+                                                {%endif%}
+                                            </tr>
+                                        </thead>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                </section>
+                <!--/ Dashboard -->
+
+            </div>
+        </div>
+    </div>
+{%endblock%}
+
+{%block scripts%}
+<!-- BEGIN: Page Vendor JS-->
+<script src="{% static 'nucleo/vendors/js/tables/datatable/jquery.dataTables.min.js'%}"></script>
+<script src="{% static 'nucleo/vendors/js/tables/datatable/dataTables.bootstrap5.min.js'%}"></script>
+<script src="{% static 'nucleo/vendors/js/tables/datatable/dataTables.responsive.min.js'%}"></script>
+<script src="{% static 'nucleo/vendors/js/tables/datatable/responsive.bootstrap4.js'%}"></script>
+<script src="{% static 'nucleo/vendors/js/pickers/flatpickr/flatpickr.min.js'%}"></script>
+<!-- END: Page Vendor JS-->
+<script>
+$( function() {
+   let tabla = $('#parametros').DataTable( {
+        responsive: true,
+        autoWidth: true,
+        destroy: true,
+        deferRender: true,
+        pageLength: 10,
+        serverSide: true,
+        rowReorder: true,
+        order: [[0,'desc']],
+        dom: '<"card-header border-bottom p-1"<"head-label"><"dt-action-buttons text-end"B>><"d-flex justify-content-between align-items-center mx-0 row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>t<"d-flex justify-content-between mx-0 row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
+        ajax: '{%url "columna-list" %}?format=datatables',
+        language: {
+            "lengthMenu": "Mostrar _MENU_ parámetros por página",
+            "zeroRecords": "Ups - no hay parámetros",
+            "info": "Mostrando página _PAGE_ de _PAGES_",
+            "infoEmpty": "No hay parámetros",
+            "infoFiltered": "(filtrados de un total de _MAX_ parámetros)",
+            "loadingRecords": "Cargando...",
+            "processing":     "Procesando...",
+            "search":         "Buscar:",
+            "paginate": {
+                "first":      "Primera",
+                "last":       "Ultima",
+                "next":       "Siguiente",
+                "previous":   "Anterior"
+            },
+        },
+        columns: [
+            {data : 'id'},
+            {data: 'nombre',render:function(data,type,row,meta){
+                return data.toUpperCase();
+            }},
+            {data: 'created'},
+            {%if 'pauta.columna.actualizar' in perms or 'pauta.columna.eliminar' in perms %} 
+            {mData: 'id',searchable: false,
+            mRender: (data,type,row)=>{
+                let botones ="";
+                {%if 'pauta.columna.actualizar' in perms %} 
+                let boton1 = `<a style="margin-right:20px;" href="{%url 'administrador:pauta:columna-actualizar' 1 %}"><button data-bs-tooltip="tooltip" data-bs-placement="top" title="Actualizar Parámetro" type="button" class="btn btn-icon btn-success waves-effect"><i data-feather="settings"></i></button></a>`;
+                boton1 = boton1.replace('1',data);
+                botones+= boton1;
+                {%endif%}
+                {%if 'pauta.columna.eliminar' in perms %} 
+                let boton2 = `<button onclick="eliminar(event,${data})" type="button" data-bs-tooltip="tooltip" data-bs-placement="top" title="Eliminar Parámetro" class="btn btn-icon btn-danger waves-effect"><i data-feather="trash"></i></button>`;
+                boton2 = boton2.replace('1',data);
+                botones+= boton2;
+                {%endif%}
+                return botones;
+            }}
+            {%endif%}
+        ],
+        "drawCallback": function(){
+            feather.replace();
+            activarTooltip();
+        },
+        "initComplete": function () {
+            feather.replace();
+            activarTooltip();
+        },
+    } );
+tabla.on('responsive-display',function(){
+    feather.replace();
+});
+$('div.head-label').html('<h6 class="mb-0">Parámetros</h6>');
+});
+</script>
+
+{%if 'pauta.columna.eliminar' in perms %}
+<script src="{%static 'nucleo/vendors/js/extensions/sweetalert2.all.min.js'%}"></script>
+<script>
+function eliminar(event,id){
+    let url = "{% url 'administrador:pauta:columna-eliminar' 1%}".replace('1',id);
+    Swal.fire({
+        title: '¿Estas Seguro?',
+        html:"El parámetro sera <b style='color:red'>eliminado</b> permanentemente del sistema, y también las <b>mediciones</b>",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        cancelButtonText: 'Cancelar',
+        confirmButtonText: 'Si, Eliminar!'
+        }).then(result=>{
+            if (result.isConfirmed) {
+                axios.get(url).then(response => {
+                    if (response.data.estado == 'ok'){
+                        Swal.fire(
+                        'Eliminado!',
+                        'El parámetro ha sido eliminada',
+                        'success'
+                        );
+                        let tbody = document.querySelector('#parametros tbody');
+                        let totalParametros = tbody.querySelectorAll('tr').length;
+                        let tr = event.target.closest('tr').remove();
+                        if (totalParametros -1 <= 0){
+                            document.querySelector('#parametros').remove();
+                        }
+                    }
+                });
+            }
+        });               
+}
+</script>
+{%endif%}
+{%endblock%}
+

@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte KPI - Análisis de Órdenes de Compra y Venta</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+            background-color: #f4f4f9;
+            color: #000; /* Color negro para todo el texto */
+            font-weight: bold; /* Negrita para todo el texto */
+        }
+        h1 {
+
+            font-family: "American Typewriter", serif;
+            font-size: 3em; /* Tamaño grande */
+            font-weight: bold; /* Negrita */
+            text-align: center; /* Centrado */
+            color: #333; /* Color del texto (puedes cambiarlo si prefieres otro color) */
+
+        }
+        .subtitle {
+            margin-bottom: 20px;
+            font-size: 16px;
+            color: #000;
+        }
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 30px;
+            color: #000;
+        }
+        .card {
+            margin-bottom: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #ffffff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .card-header {
+            font-size: 16px;
+            font-weight: bold;
+            color: #000;
+        }
+        .card-body {
+            font-size: 14px;
+            color: #000;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        /* Establecer bordes gruesos y color negro */
+        table th, table td {
+            border: 3px solid #000; /* Borde negro y grueso */
+            padding: 8px;
+            text-align: left;
+            color: #000; /* Color negro para el texto */
+            font-weight: bold; /* Negrita en las celdas */
+        }
+
+        /*        TABLA 2       */
+
+        .table-6 th {
+            text-align: center;
+
+            background-color: #ffeaea; /* Un tono más oscuro para los encabezados */
+        }
+
+        .table-6 td {
+            background-color: #ffeaea; /* Un tono más claro para las celdas */
+            text-align: center;
+
+        }
+
+        .table-6 th[colspan="2"] {
+            text-align: center;
+            font-size: 1.2em;
+            background-color: #ffeaea; /* Fondo más oscuro para el título */
+        }
+        .uwu {
+            background-color: #ffeaea; /* Azul pastel claro */
+        }
+
+        /* table 4 */
+        
+        .table-2 th {
+            text-align: center;
+
+            background-color: #ffeaea; /* Un tono más oscuro para los encabezados */
+        }
+
+        .table-2 td {
+            background-color: #ffeaea; /* Un tono más claro para las celdas */
+            text-align: center;
+
+        }
+
+        .table-2 th[colspan="2"] {
+            text-align: center;
+            font-size: 1.2em;
+            background-color: #ffeaea; /* Fondo más oscuro para el título */
+        }
+
+        /* TABLE 5 */
+        .table-3 th {
+            text-align: center;
+
+            background-color: #ffffff; /* Un tono más oscuro para los encabezados */
+        }
+
+        .table-3 td {
+            background-color: #ffffff; /* Un tono más claro para las celdas */
+            text-align: center;
+
+        }
+
+        .table-3 th[colspan="2"] {
+            text-align: center;
+            font-size: 1.2em;
+            background-color: #ffffff; /* Fondo más oscuro para el título */
+        }
+        /* TABLE 5 */
+        .table-4 th {
+            text-align: center;
+
+            background-color: #ffeaea; /* Un tono más oscuro para los encabezados */
+        }
+
+        .table-4 td {
+            background-color: #ffffff; /* Un tono más claro para las celdas */
+            text-align: center;
+
+        }
+
+        .table-4 th[colspan="2"] {
+            text-align: center;
+            font-size: 1.2em;
+            background-color: #ffeaea; /* Fondo más oscuro para el título */
+        }
+
+        /* TABLE 5 */  
+        
+        .table-1 th {
+            text-align: center;
+
+            background-color: #ffeaea; /* Un tono más oscuro para los encabezados */
+        }
+
+        .table-1 td {
+            background-color: #ffffff; /* Un tono más claro para las celdas */
+            text-align: center;
+
+        }
+
+        .table-1 th[colspan="2"] {
+            text-align: center;
+            font-size: 1.2em;
+            background-color: #ffeaea; /* Fondo más oscuro para el título */
+        } 
+        /* TABLE 5 */
+
+        
+        .table-7 th {
+            text-align: center;
+
+            background-color: #ffeaea; /* Un tono más oscuro para los encabezados */
+        }
+
+        .table-7 td {
+            background-color: #ffffff; /* Un tono más claro para las celdas */
+            text-align: center;
+
+        }
+
+        .table-7 th[colspan="2"] {
+            text-align: center;
+            font-size: 1.2em;
+            background-color: #ffeaea; /* Fondo más oscuro para el título */
+        } 
+
+        /**/
+        table tbody tr {
+            background-color: #ffffff;
+        }
+        .percentage {
+            text-align: right;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 12px;
+            color: #000; /* Color negro para el pie de página */
+        }
+    </style>
+</head>
+<body>
+    <h1>Informe PDF generado para ARTISAN</h1>
+
+<!-- Tabla 1: Resumen de Información del Reporte -->
+    <table class="table-7">
+        <thead>
+            <tr>
+                <th colspan="3">Resumen de Información del Reporte</th>
+            </tr>
+            <tr>
+                <th style="background-color: #ffeaea;">Fecha Inicio</th>
+                <th style="background-color: #ffeaea;">Fecha Final</th>
+                <th style="background-color: #ffeaea;">Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ fecha_inicio }}</td>
+                <td>{{ fecha_fin }}</td>
+                <td>
+                    {% if estado %}
+                        {{ estado }}
+                    {% else %}
+                        Todos los estados
+                    {% endif %}
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+<!-- Tabla 2: Resumen General -->
+{% if numero_ordenes_compra or total_neto_insumos_por_estado or total_ventas or rentabilidad_insumos %}
+    <table class="table-6">
+        <thead>
+            <tr>
+                <th colspan="2">Resumen General</th>
+            </tr>
+            <tr>
+                <th>Indicador</th>
+                <th>Valor</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if numero_ordenes_compra %}
+            <tr>
+                <td style="background-color: #ffeaea;">Número de Órdenes de Compra</td>
+                <td>{{ numero_ordenes_compra }}</td>
+            </tr>
+            {% endif %}
+
+            {% if total_neto_insumos_por_estado %}
+            <tr>
+                <td style="background-color: #ffeaea;">Total Neto de Insumos por Estado</td>
+                <td>
+                    {% for item in total_neto_insumos_por_estado %}
+                        <p>{{ item.orden__estado }}: ${{ item.total_neto|floatformat:2 }}</p>
+                    {% endfor %}
+                </td>
+            </tr>
+            {% endif %}
+
+            {% if total_ventas %}
+            <tr>
+                <td style="background-color: #ffeaea;">Total de Ventas de Productos</td>
+                <td>${{ total_ventas|floatformat:2 }}</td>
+            </tr>
+            {% endif %}
+
+            {% if rentabilidad_insumos %}
+            <tr>
+                <td style="background-color: #ffeaea;">Rentabilidad de Insumos</td>
+                <td>
+                    {% for insumo, rentabilidad in rentabilidad_insumos %}
+                        {% if rentabilidad != 0 %}
+                            <p>{{ insumo }}: ${{ rentabilidad|floatformat:2 }}</p>
+                        {% endif %}
+                    {% endfor %}
+                </td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+{% endif %}
+
+<!-- Tabla 3: KPIs de Desempeño - Porcentajes -->
+{% if porcentaje_ordenes_pagadas and porcentaje_ordenes_pagadas != 0 %}
+    <table class="table-2">
+        <thead>
+            <tr>
+                <th colspan="2">KPIs de Desempeño - Porcentajes</th>
+            </tr>
+            <tr>
+                <th style="background-color: #fdf1f6;">Descripción</th>
+                <th style="background-color: #fdf1f6;">Valor</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td style="background-color: #fdf1f6;">Total de Órdenes Pagadas</td>
+                <td>{{ porcentaje_ordenes_pagadas }}%</td>
+            </tr>
+        </tbody>
+    </table>
+{% endif %}
+
+<!-- Tabla 4: Rentabilidad de Insumos -->
+{% if porcentaje_rentabilidad_insumos %}
+    <table class="table-3">
+        <thead>
+            <tr>
+                <th colspan="2">Resumen General</th>
+            </tr>
+            <tr>
+                <th>Descripción</th>
+                <th>Valor</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td style="background-color: #fdf1f6;">Rentabilidad de Insumos</td>
+                <td>{{ porcentaje_rentabilidad_insumos }}%</td>
+            </tr>
+        </tbody>
+    </table>
+{% endif %}
+
+<!-- Tabla 5: Porcentaje de Ventas por Producto -->
+{% if porcentaje_ventas_por_producto %}
+    <table class="table-4">
+        <thead>
+            <tr>
+                <th colspan="2">Porcentaje de Ventas por Producto</th>
+            </tr>
+            <tr>
+                <th>Producto</th>
+                <th>Porcentaje de Ventas</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for producto, porcentaje in porcentaje_ventas_por_producto %}
+                <tr>
+                    <td style="background-color: #fdf1f6;">{{ producto }}</td>
+                    <td class="percentage">{{ porcentaje }}%</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+
+<!-- Tabla 6: Resumen de Ventas y Productos -->
+{% if productos %}
+    <div class="table-container">
+        <table class="table-1">
+            <thead>
+                <tr>
+                    <th colspan="2">Resumen de Ventas y Productos</th>
+                </tr>
+                <tr>
+                    <th>Producto</th>
+                    <th>Total Precio</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for producto, value in productos %}
+                    <tr>
+                        <td style="background-color: #fdf1f6;">{{ producto }}</td>
+                        <td>${{ value|floatformat:2 }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endif %}
+
+
+</body>
+</html>

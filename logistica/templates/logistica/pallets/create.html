@@ -1,0 +1,71 @@
+{% extends 'nucleo/base.html'%}
+{%block title%}Logística{%endblock%}
+{%load static%}
+{%block head%}
+<link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/pickers/pickadate/pickadate.css'%}">
+<link rel="stylesheet" type="text/css" href="{%static 'nucleo/css/plugins/forms/pickers/form-pickadate.css'%}">
+{%endblock%}
+{%block content%}
+<style>
+.errorlist{
+    color:red;
+    list-style:none;
+    padding-left:0;
+}
+</style>
+<!-- BEGIN: Content-->
+    <div class="app-content content ">
+        <div class="content-overlay"></div>
+        <div class="header-navbar-shadow"></div>
+        <div class="content-wrapper container-fluid p-0">
+            <div class="content-header row">
+                <div class="content-header-left col-md-9 col-12 mb-2">
+                    <div class="row breadcrumbs-top">
+                        <div class="col-12">
+                            <h2 class="content-header-title float-start mb-0">Envios</h2>
+                            <div class="breadcrumb-wrapper">
+                                <ol class="breadcrumb">
+                                    <li class="breadcrumb-item"><a href="{% url 'logistica:pallet:lista' %}">Envios</a>
+                                    </li>
+                                    <li class="breadcrumb-item active">Agregar Pallet
+                                    </li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="content-body">
+                <!-- Dashboard -->
+                <div class="card" id="app">
+
+                    <div class="card-body">
+                        <div class="card-text">
+                            <form id="formulario" class="form form-horizontal" action="#" method="post" enctype="multipart/form-data">{% csrf_token %}
+                                <div class="row">
+                                    {%for field in form %}
+                                            <div class="mb-1 row">
+                                            <div class="col-sm-3">{{field.label_tag}} {%if field.field.required %}<span style="color:red">*</span>{%endif%}</div>
+
+                                            <div class="col-sm-6 position-relative">{{field}}
+                                            
+                                            {%if field.errors %}
+                                            <div class="invalid-feedback" style="display:block;">{{field.errors.as_text}}</div>
+                                            {%endif%}
+                                            </div>
+                                            </div>
+                                    {%endfor%}
+                                </div>
+                                <div class="col-sm-12 mt-1">
+                                    <button type="submit" class="btn btn-primary">{%if 'agregar' in request.path%}Agregar{%else%}Actualizar{%endif%} Pallet</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <!--/ Dashboard -->
+            </div>
+        </div>
+    </div>
+    <!-- END: Content-->
+{%endblock%}

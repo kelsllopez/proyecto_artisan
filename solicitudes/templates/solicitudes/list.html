@@ -1,0 +1,360 @@
+{% extends 'nucleo/base.html'%}
+{%block title%}Ordenes de compra{%endblock%}
+{%load static%}
+{%block head%}
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/pickers/flatpickr/flatpickr.min.css'%}">
+{%endblock%}
+{%block content%}
+<!-- BEGIN: Content-->
+    <div class="app-content content ">
+        <div class="content-overlay"></div>
+        <div class="header-navbar-shadow"></div>
+        <div class="content-wrapper container-fluid p-0">
+            <div class="content-header row">
+                <div class="content-header-left col-md-9 col-12 mb-2">
+                    <div class="row breadcrumbs-top">
+                        <div class="col-12">
+                            <h2 class="content-header-title float-start mb-0">Solicitudes</h2>
+                            <div class="breadcrumb-wrapper">
+                                <ol class="breadcrumb">
+                                    <li class="breadcrumb-item"><a href="{% url 'ordendecompra:lista' %}">Solicitudes</a>
+                                    </li>
+                                    <li class="breadcrumb-item active">Lista
+                                    </li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="content-header-right text-md-end col-md-3 col-12 d-md-block">
+                    {% if 'solicitudes.crear' in perms %}
+                    <div class="mb-1 breadcrumb-right">
+                        <a href="{% url 'solicitudes:crear' %}"><button class="btn btn-primary">Solicitar</button></a>
+                    </div>
+                    {%endif%}
+                </div>
+            </div>
+            <div class="content-body">
+                <!-- Dashboard -->
+                <div id="app">
+                <div class="modal fade text-start"id="default" tabindex="-1" aria-labelledby="myModalLabel1" aria-hidden="true">
+                    <div class="modal-dialog modal-xl">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h4 class="modal-title" id="myModalLabel1">{$ titulo $}</h4>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Información</th>
+                                                <th>Dato</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Solicita</td>
+                                                <td>{$solicitante.nombre$}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Estado</td>
+                                                <td>{$estado$}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Lugar</td>
+                                                <td>{$lugar.nombre$}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Insumos</td>
+                                                <td>
+                                                    <table class="table table-striped">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Nombre Insumo</th>
+                                                                <th>Cantidad</th>
+                                                                <th>Comentario</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr v-for="insumo in insumos">
+                                                                <td>{$insumo.insumo.nombre$}</td>
+                                                                <td>{$insumo.cantidad$}</td>
+                                                                <td>{$insumo.comentario$}</td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>Encargados</td>
+                                                <td><span v-for="(encargado,index) in encargados"><span v-if="index != 0">, </span>{$encargado$}</span></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <button style="margin-right:10px;" class="btn btn-success" v-if="estado == 'No Completada'" @click="completar">Completar</button>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cerrar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </div>
+                <!-- Modal -->
+                
+                <section id="basic-datatable">
+                    <div class="row">
+                            <div class="col-12">
+                                <div class="card">
+                                    <table id="solicitudes" class="dt-responsive table">
+                                        <thead>
+                                            <tr>
+                                                <th>N°</th>
+                                                <th>Lugar</th>
+                                                <th>Solicita</th>
+                                                <th>Estado</th>
+                                                <th>Opciones</th>
+                                            </tr>
+                                        </thead>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                </section>
+                <!--/ Dashboard -->
+
+            </div>
+        </div>
+    </div>
+{%endblock%}
+
+{%block scripts%}
+<!-- BEGIN: Page Vendor JS-->
+<!-- END: Page Vendor JS-->
+
+<!-- BEGIN: Page JS-->
+<script>
+$( function() {
+   let tabla = $('#solicitudes').DataTable( {
+       responsive: true,
+        autoWidth: true,
+        destroy: true,
+        deferRender: true,
+        pageLength: 10,
+        serverSide: true,
+        rowReorder: true,
+        order: [[0,'desc']],
+        dom: '<"card-header border-bottom p-1"<"head-label"><"dt-action-buttons text-end"B>><"d-flex justify-content-between align-items-center mx-0 row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>t<"d-flex justify-content-between mx-0 row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
+        ajax: '{%url "solicitud-list" %}?format=datatables',
+        language: {
+            "lengthMenu": "Mostrar _MENU_ solicitudes por página",
+            "zeroRecords": "Por el momento no hay solicitudes",
+            "info": "Mostrando página _PAGE_ de _PAGES_",
+            "infoEmpty": "No hay solicitudes",
+            "infoFiltered": "(filtradas de un total de _MAX_ solicitudes)",
+            "loadingRecords": "Cargando...",
+            "processing":     "Procesando...",
+            "search":         "Buscar:",
+            "paginate": {
+                "first":      "Primera",
+                "last":       "Ultima",
+                "next":       "Siguiente",
+                "previous":   "Anterior"
+            },
+        },
+        columns: [
+            {data:'id',name:'id'},
+            {data:'lugar_o.nombre',name:'lugar_o.nombre'},
+            {data:'solicitante.nombre',name:'solicitante.first_name, solicitante.last_name'},
+            {data: 'estado',name:'estado',searchable:true,},
+            {mData: 'id',searchable: false,
+            mRender: (data,type,row)=>{
+                let botones = ''
+                {%if 'solicitudes.detalle' in perms%}
+                botones+=`<button data-bs-tooltip="tooltip" data-bs-placement="top" title="Detalle Solicitud" style="margin-right:20px;" type="button" onclick="vue.remplazarModal(event,${data})"  data-bs-toggle="modal" data-bs-target="#default" class="btn btn-icon btn-info waves-effect"><i data-feather="book"></i></button>`
+                {%endif%}
+                {%if 'solicitudes.actualizar' in perms%}
+                if (row.estado == 'Completada'){
+                    botones+= `<a style="margin-right:20px;" href="#"><button disabled data-bs-tooltip="tooltip" data-bs-placement="top" title="Actualizar" type="button" class="btn btn-icon btn-success waves-effect"><i data-feather="settings"></i></button></a>`;
+                }else{
+                    botones+= `<a style="margin-right:20px;" href="{%url 'solicitudes:actualizar' 1 %}"><button data-bs-tooltip="tooltip" data-bs-placement="top" title="Actualizar" type="button" class="btn btn-icon btn-success waves-effect"><i data-feather="settings"></i></button></a>`.replace('1',data);
+                }
+                {%endif%}
+                {%if 'solicitudes.eliminar' in perms %} 
+                botones+= `<button onclick="eliminar(event,${data})" type="button" data-bs-tooltip="tooltip" data-bs-placement="top" title="Eliminar Solicitud" class="btn btn-icon btn-danger waves-effect"><i data-feather="trash"></i></button>`;
+                {%endif%}
+                return botones
+                
+            }}
+            
+        ],
+        
+        "drawCallback": function(){
+            let td = document.querySelectorAll('td');
+            td.forEach(t => {
+                if(t.outerText == 'No Completada')
+                {
+                    t.style.backgroundColor = '#ea5455';
+                    t.style.color = 'white';
+                    t.style.fontWeight = "700";
+                }
+                else if(t.outerText == 'Completada'){
+                    t.style.backgroundColor = '#28c76f';
+                    t.style.color = 'white';
+                    t.style.fontWeight = "700";
+                }
+            });
+            feather.replace();
+            activarTooltip();
+        },
+        "initComplete": function () {
+            feather.replace();
+            activarTooltip();
+        },
+    } );
+tabla.on('responsive-display',function(){
+    feather.replace();
+});
+$('div.head-label').html('<h6 class="mb-0">Solicitudes</h6>');
+});
+</script>
+{%if 'solicitudes.eliminar' in perms%}
+<script>
+    function eliminar(event,id){
+        let url = "{% url 'solicitudes:eliminar' 1%}".replace('1',id);
+        Swal.fire({
+            title: '¿Estas Seguro?',
+            html: "La Solicitud sera <b style='color:red'>eliminada</b> permanentemente del sistema.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            cancelButtonText: 'Cancelar',
+            confirmButtonText: 'Si, Eliminar!'
+            }).then(result=>{
+                if (result.isConfirmed) {
+                    axios.get(url).then(response => {
+                        if (response.data.estado == 'ok'){
+                            Swal.fire(
+                            'Eliminada!',
+                            'La solicitud ha sido eliminada',
+                            'success'
+                            );
+                            let tbody = document.querySelector('#solicitudes tbody');
+                            let totalPautas = tbody.querySelectorAll('tr').length;
+                            let tr = event.target.closest('tr').remove();
+                            if (totalPautas -1 <= 0){
+                                document.querySelector('#solicitudes').remove();
+                            }
+                        }
+                    });
+                }
+            });               
+    }
+</script>
+{%endif%}
+<script src="{%static 'nucleo/vendors/js/extensions/sweetalert2.all.min.js'%}"></script>
+<script>
+let vue = Vue.createApp({
+            data() {
+                return {
+                    titulo: '',
+                    insumos: [],
+                    evento: [],
+                    solicitante: '',
+                    encargados: [],
+                    lugar: {},
+                    estado: '',
+                    id: 0,
+                };
+            },
+            computed:{
+                neto(){
+                    let total = 0;
+                    this.insumos.forEach(insumo => {
+                        total+=(insumo.cantidad*insumo.neto)
+                    });
+                    return total;
+                },
+                iva(){
+                    let valor_iva = parseFloat('{{valorIVA}}'.replace(',','.'));
+                    let total = this.neto;
+                    return total * valor_iva;
+                },
+                total(){
+                    return this.neto + this.iva;
+                }
+            },
+            methods: {
+                completar(){
+                    let url = "{% url 'solicitudes:completar' 1%}".replace('1',this.id);
+                    Swal.fire({
+                        title: '¿Estas Seguro?',
+                        html:"La Solicitud cambiara a estado <b style='color:green'>Completado</b>.",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        cancelButtonText: 'Cancelar',
+                        confirmButtonText: 'Si, Completar!'
+                        }).then(result=>{
+                            if (result.isConfirmed) {
+                                axios.get(url).then(response => {
+                                    if (response.data.estado == 'ok'){
+                                        Swal.fire(
+                                        'Completada!',
+                                        'La solicitud ha sido completada.',
+                                        'success'
+                                        );
+                                        this.evento.target.closest('tr').querySelectorAll('td')[3].innerHTML = 'Completada';
+                                        this.evento.target.closest('tr').querySelectorAll('td')[3].style.backgroundColor = '#28c76f';
+                                        let anchor = this.evento.target.closest('tr').querySelectorAll('td')[4].querySelector('a');
+                                        anchor.href = '#';
+                                        anchor.innerHTML = `<button disabled data-bs-tooltip="tooltip" data-bs-placement="top" title="Actualizar" type="button" class="btn btn-icon btn-success waves-effect"><i data-feather="settings"></i></button>`;
+                                        feather.replace();
+                                        this.estado = 'Completada';
+                                    }
+                                });
+                            }
+                        });              
+                },
+                transformar(dato){
+                    if(dato){
+                        return 'Sí'
+                    }
+                    return 'No'
+                },
+                upperCase(string){
+                    return string.toUpperCase();
+                },
+                formatoCLP(numero){
+                    return formatter.format(numero);
+                },
+                remplazarModal(event,numero){;
+                    let url = '{%url "solicitud-detail" 1%}';
+                    this.evento = event;
+                    axios
+                    .get(url.replace('1',numero))
+                    .then(response => {
+                        this.titulo = "Solicitud: " + response.data.id;
+                        this.insumos = response.data.insumos;
+                        this.solicitante = response.data.solicitante;
+                        this.encargados = response.data.encargados;
+                        this.lugar = response.data.lugar_o;
+                        this.estado = response.data.estado;
+                        this.id = response.data.id;
+                    })
+                }
+            },
+            mounted() {
+            },
+            delimiters: ['{$', '$}']
+        }).mount('#app');
+</script>
+
+<!-- END: Page JS-->
+
+{%endblock%}

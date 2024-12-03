@@ -1,0 +1,196 @@
+{% extends 'nucleo/base.html'%}
+{%block title%}Editar Grupo{%endblock%}
+{%load static%}
+{%block head%}
+<link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/pickers/pickadate/pickadate.css'%}">
+<link rel="stylesheet" type="text/css" href="{%static 'nucleo/css/plugins/forms/pickers/form-pickadate.css'%}">
+{%endblock%}
+{%block content%}
+<style>
+.errorlist{
+    color:red;
+    list-style:none;
+    padding-left:0;
+}
+</style>
+<!-- BEGIN: Content-->
+    <div class="app-content content ">
+        <div class="content-overlay"></div>
+        <div class="header-navbar-shadow"></div>
+        <div class="content-wrapper container-fluid p-0">
+            <div class="content-header row">
+                <div class="content-header-left col-md-9 col-12 mb-2">
+                    <div class="row breadcrumbs-top">
+                        <div class="col-12">
+                            <h2 class="content-header-title float-start mb-0">Administrador</h2>
+                            <div class="breadcrumb-wrapper">
+                                <ol class="breadcrumb">
+                                    <li class="breadcrumb-item"><a href="{% url 'administrador:grupo:lista' %}">Grupos</a>
+                                    </li>
+                                    <li class="breadcrumb-item active">Editar
+                                    </li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="content-body">
+                <!-- Dashboard -->
+                <div class="card">
+
+                    <div class="card-body">
+                        <div class="card-text">
+                            <form class="form form-horizontal" id="formulario" method="post" enctype="multipart/form-data">{% csrf_token %}
+                                <div class="row">
+                                    <div class="col-12" id="app">
+                                    {%for field in form %}
+                                        <div class="mb-1 row">
+                                        {%if field.id_for_label == 'id_permissions'%}
+                                        <div class="col-sm-12">
+                                        <div class="row">
+                                            <div class="col-sm-5">
+                                                    
+                                                    <h4>Todos los permisos</h4>
+                                                    <div class="input-group mb-2">
+                                                        <span class="input-group-text" id="basic-addon-search1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></span>
+                                                        <input type="text" id="buscar" @keyup="filtrar" class="form-control" placeholder="Buscar..." aria-label="Buscar.." aria-describedby="basic-addon-search1">
+                                                    </div>
+                                                    <select multiple="" name="user_permissions" class="form-control" id="permisos">
+                                                        <option v-for="permiso in filtrados" :value="permiso.id">{$ permiso.texto $}</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-sm-2 text-center">
+                                                    <h4 style="margin-block-end: 1.33em;"></h4>
+                                                    <button data-bs-tooltip="tooltip" data-bs-placement="top" title="Sacar Permisos" style="" type="button" @click="guardarOpcion" class="btn btn-primary btn-icon waves-effect"><i data-feather="arrow-right"></i></button>
+                                                    <br>
+                                                    <button data-bs-tooltip="tooltip" data-bs-placement="top" title="Agregar Permisos" style="margin-top:20px;" type="button" @click="sacarOpcion" class="btn btn-primary btn-icon waves-effect"><i data-feather="arrow-left"></i></button>
+                                                    
+                                                </div>
+                                                <div class="col-sm-5">
+                                                    <h4>Permisos de grupo</h4>
+                                                    <select style="height:150px;" multiple="" name="permissions" id="id_permissions" class="form-control" id="selected">
+                                                        <option v-for="permiso in seleccionados" :value="permiso.id">{$ permiso.texto $}</option>
+                                                    </select>
+                                            </div>
+                                        </div>
+                                            
+                                        </div>
+                                       
+                                        {%else%}
+                                            <div class="col-sm-3">{{field.label_tag}} {%if field.field.required %}<span style="color:red">*</span>{%endif%}</div>
+                                            <div class="col-sm-9 position-relative">{{field}}
+                                            {% if field.help_text %}
+                                            <small class="">{{field.help_text|safe}}</small>
+                                            {%endif%}
+                                        {%endif%}
+                                        {%if field.errors %}
+                                        <div class="invalid-feedback" style="display:block;">{{field.errors.as_text}}</div>
+                                        {%endif%}
+                                        </div>
+                                        </div>
+                                    {%endfor%}
+
+                                   
+                                    <div class="col-sm-12">
+                                            <button type="button" onclick="vue.enviar()" class="btn btn-primary me-1 waves-effect waves-float waves-light">Editar Grupo</button>
+                                        </div>
+                                    
+                                        
+                                
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <!--/ Dashboard -->
+            </div>
+        </div>
+    </div>
+    <!-- END: Content-->
+{%endblock%}
+{%block scripts%}
+<script>
+let permisos = [
+    {%for permiso in permisos%}
+    {
+        id:{{permiso.pk}},
+        texto:"{{permiso.content_type}} | {{permiso.name}}",
+    },
+    {%endfor%}
+]
+let permisos_a = [
+    {%for permiso in form.permissions.value%}
+    '{{permiso}}',
+    {%endfor%}
+];
+</script>
+<script>
+let vue = Vue.createApp({
+    data(){
+        return {
+            permisos: permisos,
+            filtrados: permisos,
+            seleccionados:[],
+        }
+    },
+    methods:{
+        guardarOpcion(){
+            opciones = document.getElementById('permisos').selectedOptions;
+           
+            ids = []
+            for (opcion of opciones){
+                ids.push(parseInt(opcion.value));
+            }
+            for (id of ids){
+                let filtro = this.permisos.filter(permiso => permiso.id == id)[0];
+                this.seleccionados.push(filtro);
+            }
+            this.permisos = this.permisos.filter(permiso => !ids.includes(permiso.id));
+            this.filtrar();
+            $('#permisos').val("[]");
+        },
+        sacarOpcion(){
+            let opcionesA = document.getElementById('id_permissions').selectedOptions;
+            ids = []
+            for (opcion of opcionesA){
+                ids.push(parseInt(opcion.value));
+            }
+            for (id of ids){
+                let filtro = this.seleccionados.filter(permiso => permiso.id == id)[0];
+                this.permisos.push(filtro);
+            }
+            this.seleccionados = this.seleccionados.filter(permiso => !ids.includes(permiso.id));
+            this.filtrar();
+            $('#id_permissions').val("[]");
+        },
+        enviar(event){
+            let form = document.getElementById('formulario');
+            let opciones= document.getElementById('id_permissions').options;
+            for (opcion of opciones){
+                opcion.selected = true;
+            }
+            form.submit();
+        },
+        filtrar(){
+           valor = document.getElementById('buscar').value;
+           function filtrame(elemento){
+               return elemento.texto.includes(valor);
+           }
+           this.filtrados = this.permisos.filter(filtrame);
+        }
+    },
+    delimiters: ['{$', '$}'],
+    mounted(){
+        ids = []
+        for (permiso of permisos_a){
+            ids.push(parseInt(permiso));
+        }
+        this.seleccionados = this.permisos.filter(permiso => ids.includes(permiso.id));
+        this.permisos = this.permisos.filter(permiso => !ids.includes(permiso.id));
+        this.filtrar();
+
+    },
+
+}).mount('#app');
+</script>
+{%endblock%}

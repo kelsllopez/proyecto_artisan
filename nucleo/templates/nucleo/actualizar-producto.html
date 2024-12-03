@@ -1,0 +1,430 @@
+{% extends 'nucleo/base.html' %}
+{% block title %}Actualizar Producto{% endblock %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<style>
+.errorlist {
+    color: red;
+    list-style: none;
+    padding-left: 0;
+}
+</style>
+
+<!-- BEGIN: Content-->
+<div class="app-content content">
+    <div class="content-overlay"></div>
+    <div class="header-navbar-shadow"></div>
+    <div class="content-wrapper container-fluid p-0">
+        <div class="content-body">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="mb-4">Actualizar Información del Producto</h2>
+                    <form method="POST">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="id_nombre">Nombre del producto: *</label>
+                            {{ form.nombre }}
+                            <small class="form-text text-muted">El nombre que poseerá el producto.</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_linea">Línea de negocio: *</label>
+                            {{ form.linea }}
+                            <small class="form-text text-muted">La línea de negocio del producto.</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_descripcion">Descripción del producto:</label>
+                            {{ form.descripcion }}
+                            <small class="form-text text-muted">Descripción del producto para ficha técnica.</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_presentacion">Presentación: *</label>
+                            {{ form.presentacion }}
+                            <small class="form-text text-muted">El peso o volumen del producto.</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_unidad">Unidad: *</label>
+                            {{ form.unidad }}
+                            <small class="form-text text-muted">La unidad de medida del producto.</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_duracion">Vida útil del producto: *</label>
+                            {{ form.duracion }}
+                            <small class="form-text text-muted">La vida útil del producto luego de ser elaborado.</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_unidades">Unidades por caja: *</label>
+                            {{ form.unidades }}
+                            <small class="form-text text-muted">La cantidad de unidades por caja de este producto.</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_dun14">DUN14:</label>
+                            {{ form.dun14 }}
+                            <small class="form-text text-muted">El código DUN14 del producto.</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_stock_critico">Stock Crítico: *</label>
+                            {{ form.stock_critico }}
+                            <small class="form-text text-muted">La cantidad de stock mínimo de este producto antes de levantar alertas.</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_sap">SAP:</label>
+                            {{ form.sap }}
+                        </div>
+
+                        <h2 class="mt-4">Información de Pautas de Elaboración</h2>
+                        
+                        <div class="mb-3">
+                            <label for="id_pautapip">Seleccione Pauta de elaboración PIP:</label>
+                            {{ form.pautapip }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_pautalinea">Seleccione Pauta de elaboración de Línea:</label>
+                            {{ form.pautalinea }}
+                        </div>
+
+                        <h2 class="mt-4">Pautas de Valor Agregado</h2>
+
+                        <div class="mb-3">
+                            <label for="id_conjunto">Indicar Conjunto de Valor Agregado:</label>
+                            {{ form.conjunto }}
+                            <small class="form-text text-muted">Los procesos de valor agregado a los cuales debe someterse este producto.</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_maduracion">Indicar Periodo de Maduración:</label>
+                            {{ form.maduracion }}
+                            <small class="form-text text-muted">La cantidad de días que el producto debe pasar en maduración.</small>
+                        </div>
+
+                        <h2 class="mt-4">3.- Ingredientes e Insumos</h2>
+                        <div class="mb-3">
+                            <h4>3.1 - Insumos de Elaboración (<span id="total-precio">$ 0.00</span>)</h4>
+                            <table class="table table-bordered table-striped">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Insumo</th>
+                                        <th>Cantidad</th>
+                                        <th>Precio</th>
+                                        <th>
+                                            <button type="button" class="btn btn-primary btn-sm" onclick="addInsumo();">Agregar Insumo</button>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody id="insumos-table-body">
+                                    {% for insumo in producto.insumos %}
+                                    <tr>
+                                        <td>
+                                            <select name="insumoe[]" class="form-control" onchange="calculatePrice();">
+                                                {% for insumo in insumos %}
+                                                    <option value="{{ insumo.id }}" data-precio="{{ insumo.proveedorinsumo_set.first.precio }}">
+                                                        {{ insumo.nombre }} - {{ insumo.unidad }}
+                                                    </option>
+                                                {% endfor %}
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <input type="number" name="insumoe_c[]" class="form-control" onchange="calculatePrice();" placeholder="Cantidad" required>
+                                        </td>
+                                        <td>
+                                            <input type="number" name="precio_proveedor[]" class="form-control" readonly placeholder="Precio" value="{{ objeto.precio_provedor.precio }}">
+                                        </td>
+                                        <td>
+                                            <button type="button" class="btn btn-danger btn-sm" onclick="this.closest('tr').remove(); calculatePrice();">Eliminar</button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    
+                        <h4>3.2 - Insumos de Costo Seco (<span id="total-costo-seco">$ 0.00</span>)</h4>
+                        <table class="table table-bordered table-striped">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Insumo</th>
+                                    <th>Cantidad</th>
+                                    <th>Porcentaje de Uso</th>
+                                    <th>Precio</th>
+                                    <th>Costo Total</th>
+                                    <th>
+                                        <button type="button" class="btn btn-primary btn-sm" onclick="addInsumoSeco();">Agregar Insumo</button>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="insumos-seco-table-body">
+                                <tr>
+                                    <td>
+                                        <select name="descriptores[]" class="form-control" onchange="calculateCostoSeco(this.closest('tr'));" required>
+                                            {% for insumo in insumos %}
+                                                <option value="{{ insumo.id }}" data-precio="{{ insumo.proveedorinsumo_set.first.precio }}">
+                                                    {{ insumo.nombre }} - {{ insumo.unidad }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="number" name="descriptores_c[]" class="form-control" onchange="calculateCostoSeco(this.closest('tr'));" placeholder="Cantidad" required>
+                                    </td>
+                                    <td>
+                                        <input type="number" name="descriptores_consumo[]" class="form-control" onchange="calculateCostoSeco(this.closest('tr'));" placeholder="Porcentaje de Uso" required>
+                                    </td>
+                                    <td>
+                                        <input type="number" name="descriptores_d[]" class="form-control" placeholder="Precio" readonly>
+                                    </td>
+                                    <td>
+                                        <input type="number" name="costo_total[]" class="form-control" placeholder="Costo Total" readonly>
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-danger btn-sm" onclick="this.closest('tr').remove(); calculateTotalCostoSeco();">Eliminar</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <h4>4. Resumen</h4>
+                        <table class="table table-bordered">
+                            <tbody>
+                                <tr>
+                                    <td>Costo Elaboración Directo</td>
+                                    <td id="costo-elaboracion-directo">$ 0.00</td>
+                                    <input type="hidden" name="costo_elaboracion_directo" id="input-costo-elaboracion-directo" />
+                                </tr>
+                                <tr>
+                                    <td>Costo Seco Directo</td>
+                                    <td id="costo-seco-directo">$ 0.00</td>
+                                    <input type="hidden" name="costo_seco_directo" id="input-costo-seco-directo" />
+                                </tr>
+                                <tr>
+                                    <td>Total Costo Directo Unidad</td>
+                                    <td id="total-costo-directo-unidad">$ 0.00</td>
+                                    <input type="hidden" name="total_costo_directo_unidad" id="input-total-costo-directo-unidad" />
+                                </tr>
+                                <tr>
+                                    <td>Total Costo Directo Kilogramo</td>
+                                    <td id="total-costo-directo-kilogramo">$ 0.00</td>
+                                    <input type="hidden" name="total_costo_directo_kilogramo" id="input-total-costo-directo-kilogramo" />
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <button type="submit" class="btn btn-primary">Actualizar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function calculatePrice() {
+        const rows = document.querySelectorAll('#insumos-table-body tr');
+        let total = 0;
+
+        rows.forEach(row => {
+            const insumoSelect = row.querySelector('select[name="insumoe[]');
+            const cantidadInput = row.querySelector('input[name="insumoe_c[]"]');
+            const precioInput = row.querySelector('input[name="precio_proveedor[]"]');
+
+            const selectedOption = insumoSelect.options[insumoSelect.selectedIndex];
+            const precioPorUnidad = parseFloat(selectedOption.getAttribute('data-precio'));
+            const cantidad = parseFloat(cantidadInput.value);
+
+            if (!isNaN(precioPorUnidad) && !isNaN(cantidad) && cantidad > 0) {
+                const subtotal = precioPorUnidad * cantidad;
+                precioInput.value = subtotal.toFixed(2);
+                total += subtotal;
+            } else {
+                precioInput.value = '';
+            }
+        });
+
+        document.getElementById('total-precio').innerText = `$ ${total.toFixed(2)}`;
+        updateResumen();
+    }
+
+    function addInsumo() {
+        const newRow = document.createElement('tr');
+        newRow.innerHTML = `
+            <td>
+                <select name="insumoe[]" class="form-control" onchange="calculatePrice();">
+                    {% for insumo in insumos %}
+                        <option value="{{ insumo.id }}" data-precio="{{ insumo.proveedorinsumo_set.first.precio|default:0 }}">
+                            {{ insumo.nombre }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td>
+                <input type="number" name="insumoe_c[]" class="form-control" onchange="calculatePrice();" placeholder="Cantidad">
+            </td>
+            <td>
+                <input type="number" name="precio_proveedor[]" class="form-control" readonly placeholder="Precio" value="{{ objeto.precio_provedor.precio }}">
+            </td>
+            <td>
+                <button type="button" class="btn btn-danger btn-sm" onclick="this.closest('tr').remove(); calculatePrice();">Eliminar</button>
+            </td>
+        `;
+        document.getElementById('insumos-table-body').appendChild(newRow);
+        calculatePrice();
+    }
+
+    function validateInputs() {
+        const insumosRows = document.querySelectorAll('#insumos-table-body tr');
+        const insumosSecoRows = document.querySelectorAll('#insumos-seco-table-body tr');
+        let isValid = true;
+
+        // Validar insumos de elaboración
+        insumosRows.forEach(row => {
+            const cantidadInput = row.querySelector('input[name="insumoe_c[]"]');
+            const cantidad = parseFloat(cantidadInput.value);
+            if (isNaN(cantidad) || cantidad <= 0) {
+                isValid = false;
+                cantidadInput.classList.add('is-invalid'); // Añadir clase de error
+            } else {
+                cantidadInput.classList.remove('is-invalid');
+            }
+        });
+
+        // Validar insumos de costo seco
+        insumosSecoRows.forEach(row => {
+            const cantidadInput = row.querySelector('input[name="descriptores_c[]"]');
+            const porcentajeInput = row.querySelector('input[name="descriptores_consumo[]"]');
+            const cantidad = parseFloat(cantidadInput.value);
+            const porcentaje = parseFloat(porcentajeInput.value);
+
+            if (isNaN(cantidad) || cantidad <= 0) {
+                isValid = false;
+                cantidadInput.classList.add('is-invalid'); // Añadir clase de error
+            } else {
+                cantidadInput.classList.remove('is-invalid');
+            }
+
+            if (isNaN(porcentaje) || porcentaje < 0) {
+                isValid = false;
+                porcentajeInput.classList.add('is-invalid'); // Añadir clase de error
+            } else {
+                porcentajeInput.classList.remove('is-invalid');
+            }
+        });
+
+        if (!isValid) {
+            alert("Debes ingresar todos los datos requeridos de insumos.");
+        }
+        return isValid; // Retorna true si todo es válido
+    }
+
+    function calculateCostoSeco(row) {
+        const insumoSelect = row.querySelector('select[name="descriptores[]"]');
+        const cantidadInput = row.querySelector('input[name="descriptores_c[]"]');
+        const porcentajeInput = row.querySelector('input[name="descriptores_consumo[]"]');
+        const precioInput = row.querySelector('input[name="descriptores_d[]"]');
+        const costoTotalInput = row.querySelector('input[name="costo_total[]"]');
+
+        const precioPorUnidad = parseFloat(insumoSelect.options[insumoSelect.selectedIndex].getAttribute('data-precio')) || 0;
+        const cantidad = parseFloat(cantidadInput.value) || 0;
+        const porcentajeUso = parseFloat(porcentajeInput.value) || 0;
+
+        const subtotal = calculateSubtotal(precioPorUnidad, cantidad);
+        precioInput.value = subtotal.toFixed(2);
+
+        const costoTotal = (subtotal * (porcentajeUso / 100)).toFixed(2);
+        costoTotalInput.value = costoTotal;
+
+        calculateTotalCostoSeco();
+        updateResumen();
+    }
+
+    function calculateSubtotal(precioPorUnidad, cantidad) {
+        return precioPorUnidad * cantidad;
+    }
+
+    function calculateTotalCostoSeco() {
+        const rows = document.querySelectorAll('#insumos-seco-table-body tr');
+        let totalCosto = 0;
+
+        rows.forEach(row => {
+            const costoTotalInput = row.querySelector('input[name="costo_total[]"]');
+            totalCosto += parseFloat(costoTotalInput.value) || 0;
+        });
+
+        document.getElementById('total-costo-seco').innerText = `$ ${totalCosto.toFixed(2)}`;
+        updateResumen();
+    }
+
+    function addInsumoSeco() {
+        const newRow = document.createElement('tr');
+        newRow.innerHTML = `
+            <td>
+                <select name="insumos" class="form-control" onchange="calculateCostoSeco(this.closest('tr'));">
+                    {% for insumo in insumos %}
+                        <option value="{{ insumo.id }}" data-precio="{{ insumo.proveedorinsumo_set.first.precio}}">
+                            {{ insumo.nombre }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td>
+                <input type="number" name="descriptores_c[]" class="form-control"  onchange="calculateCostoSeco(this.closest('tr'));" placeholder="Cantidad">
+            </td>
+            <td>
+                <input type="number" name="descriptores_consumo[]" class="form-control"  onchange="calculateCostoSeco(this.closest('tr'));" placeholder="Porcentaje de Uso">
+            </td>
+            <td>
+                <input type="number" name="descriptores_d[]" class="form-control" placeholder="Precio" readonly>
+            </td>
+            <td>
+                <input type="number" name="costo_total[]" class="form-control" placeholder="Costo Total" readonly>
+            </td>
+            <td>
+                <button type="button" class="btn btn-danger btn-sm" onclick="this.closest('tr').remove(); calculateTotalCostoSeco();">Eliminar</button>
+            </td>
+        `;
+        document.getElementById('insumos-seco-table-body').appendChild(newRow);
+    }
+
+    function updateResumen() {
+        const costoSeco = parseFloat(document.getElementById('total-costo-seco').innerText.replace('$ ', '')) || 0;
+        const costoElaboracion = parseFloat(document.getElementById('total-precio').innerText.replace('$ ', '')) || 0;
+
+        const totalCostoDirecto = costoElaboracion + costoSeco;
+        document.getElementById('costo-elaboracion-directo').innerText = `$ ${costoElaboracion.toFixed(2)}`;
+        document.getElementById('costo-seco-directo').innerText = `$ ${costoSeco.toFixed(2)}`;
+        document.getElementById('total-costo-directo-unidad').innerText = `$ ${totalCostoDirecto.toFixed(2)}`;
+
+ 
+        let cantidadTotalKilos = 0;
+        document.querySelectorAll('#insumos-table-body tr').forEach(row => {
+            const cantidadInput = row.querySelector('input[name="insumoe_c[]"]');
+            const cantidad = parseFloat(cantidadInput.value) || 0;
+            cantidadTotalKilos += cantidad;
+        });
+
+        document.querySelectorAll('#insumos-seco-table-body tr').forEach(row => {
+            const cantidadInput = row.querySelector('input[name="descriptores_c[]"]');
+            const cantidad = parseFloat(cantidadInput.value) || 0;
+            cantidadTotalKilos += cantidad;
+        });
+
+        const totalCostoDirectoKilogramo = cantidadTotalKilos > 0 ? (totalCostoDirecto / cantidadTotalKilos).toFixed(2) : '0.00';
+        document.getElementById('total-costo-directo-kilogramo').innerText = `$ ${totalCostoDirectoKilogramo}`;
+
+        document.getElementById('input-costo-elaboracion-directo').value = costoElaboracion.toFixed(2);
+        document.getElementById('input-costo-seco-directo').value = costoSeco.toFixed(2);
+        document.getElementById('input-total-costo-directo-unidad').value = totalCostoDirecto.toFixed(2);
+        document.getElementById('input-total-costo-directo-kilogramo').value = totalCostoDirectoKilogramo;
+    }
+
+</script>
+{% endblock %}

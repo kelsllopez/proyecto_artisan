@@ -1,0 +1,315 @@
+{% extends 'nucleo/base.html' %}
+{%block title%}Insumo{%endblock%}
+{%load static%}
+{%block head%}
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/tables/datatable/dataTables.bootstrap5.min.css'%}">
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/tables/datatable/responsive.bootstrap4.min.css'%}">
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/tables/datatable/buttons.bootstrap5.min.css'%}">
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/tables/datatable/rowGroup.bootstrap4.min.css'%}">
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/pickers/flatpickr/flatpickr.min.css'%}">
+{%endblock%}
+{%block content%}
+<!-- BEGIN: Content-->
+    <div class="app-content content ">
+        <div class="content-overlay"></div>
+        <div class="header-navbar-shadow"></div>
+        <div class="content-wrapper container-fluid p-0">
+            <div class="content-header row">
+                <div class="content-header-left col-md-9 col-12 mb-2">
+                    <div class="row breadcrumbs-top">
+                        <div class="col-12">
+                            <h2 class="content-header-title float-start mb-0">Administrador</h2>
+                            <div class="breadcrumb-wrapper">
+                                <ol class="breadcrumb">
+                                    <li class="breadcrumb-item"><a href="#">Áreas del Negocio</a>
+                                    </li>
+                                    <li class="breadcrumb-item active">Lista
+                                    </li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="content-header-right text-md-end col-md-3 col-12 d-md-block d-none">
+                    <div class="mb-1 breadcrumb-right d-flex">
+                        {%if 'nucleo.producto.crear' in perms %}
+                        <a class="me-2" href="{% url 'administrador:producto:crear' %}">
+                            <button class="btn btn-primary">Añadir Producto</button>
+                        </a>
+                        {%endif%}
+                        {%if 'nucleo.rama.crear' in perms %}
+                        <a href="{% url 'administrador:area:crear' %}">
+                            <button class="btn btn-primary">Añadir Área</button>
+                        </a>
+                        {%endif%}
+                    </div>
+                    
+                </div>
+            </div>
+            <div id="app">
+                <div class="modal fade text-start"id="default" tabindex="-1" aria-labelledby="myModalLabel1" aria-hidden="true">
+                    <div class="modal-dialog modal-xl">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h4 class="modal-title" id="myModalLabel1">Área de negocio: {$ upperCase(nombre) $}</h4>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Información</th>
+                                            <th>Dato</th>
+                                        </tr>
+                                    </thead>
+                                        <tbody>
+                                            <tr>
+                                                <th>Nombre Área</th>
+                                                <td>{$ upperCase(nombre) $}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    {%if 'nucleo.producto.listar' in perms%}
+                                    <div id="productos" v-if="productos.length > 0">
+                                        <h3>Productos</h3>
+                                        <table class="table table-bordered">
+                                            <thead>
+                                                <tr>
+                                                    <th>Codigo</th>
+                                                    <th>Nombre</th>
+                                                    <th>Formato</th>
+                                                    <th>Opciones</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr v-for="producto in productos">
+                                                <td>{$ producto.codigo $}</td>
+                                                <td>{$ producto.nombre $}</td>
+                                                <td>{$ producto.presentacion $}</td>
+                                                <td>
+                                                    <button data-bs-tooltip="tooltip" data-bs-placement="top" title="Modificar Producto" @click="editarProducto(producto.id)" type="button" class="btn btn-icon btn-success waves-effect"><i class="far fa-edit"></i></button>
+                                                    <button data-bs-tooltip="tooltip" data-bs-placement="top" title="Eliminar Producto" style="margin-left:10px;" @click="eliminarProducto($event,producto.id)" type="button" class="btn btn-icon btn-danger waves-effect"><i class="fas fa-trash"></i></button>
+                                                </td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                        
+                                    </div>
+                                    {%endif%}
+                                    {% if 'nucleo.producto.crear' in perms%}
+                                    <button @click="agregarProducto"  class="btn btn-primary">Añadir Producto</button>
+                                    {%endif%}
+                                </div>
+                               
+                            </div>
+                             
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cerrar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </div>
+                <section id="basic-datatable">
+                    <div class="row">
+                            <div class="col-12">
+                                <div class="card">
+                                    <table id="areas" class="datatables-basic table text-center" >
+                                        <thead>
+                                            <tr>
+                                                <th>N°</th>
+                                                <th>Nombre</th>
+                                                <th>Opciones</th>
+                                            </tr>
+                                        </thead>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                </section>
+                <!--/ Dashboard -->
+
+            </div>
+        </div>
+    </div>
+{%endblock%}
+
+{%block scripts%}
+<!-- BEGIN: Page Vendor JS-->
+<script src="{% static 'nucleo/vendors/js/tables/datatable/jquery.dataTables.min.js'%}"></script>
+<script src="{% static 'nucleo/vendors/js/tables/datatable/dataTables.bootstrap5.min.js'%}"></script>
+<script src="{% static 'nucleo/vendors/js/tables/datatable/dataTables.responsive.min.js'%}"></script>
+<script src="{% static 'nucleo/vendors/js/tables/datatable/responsive.bootstrap4.js'%}"></script>
+<script src="{% static 'nucleo/vendors/js/pickers/flatpickr/flatpickr.min.js'%}"></script>
+<!-- END: Page Vendor JS-->
+
+<script>
+$( function() {
+   let tabla = $('#areas').DataTable( {
+        responsive: true,
+        autoWidth: true,
+        destroy: true,
+        deferRender: true,
+        pageLength: 10,
+        serverSide: true,
+        rowReorder: true,
+        order: [[0,'desc']],
+        dom: '<"card-header border-bottom p-1"<"head-label"><"dt-action-buttons text-end"B>><"d-flex justify-content-between align-items-center mx-0 row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>t<"d-flex justify-content-between mx-0 row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
+        ajax: '{%url "rama-list" %}?format=datatables',
+        language: {
+            "lengthMenu": "Mostrar _MENU_ áreas por página",
+            "zeroRecords": "Ups - no hay áreas",
+            "info": "Mostrando página _PAGE_ de _PAGES_",
+            "infoEmpty": "No hay áreas",
+            "infoFiltered": "(filtrados de un total de _MAX_ áreas)",
+            "loadingRecords": "Cargando...",
+            "processing":     "Procesando...",
+            "search":         "Buscar:",
+            "paginate": {
+                "first":      "Primera",
+                "last":       "Ultima",
+                "next":       "Siguiente",
+                "previous":   "Anterior"
+            },
+        },
+        columns: [
+            {data : 'id'},
+            {data: 'nombre',render:function(data,type,row,meta){
+                return vue.upperCase(data);
+            }},
+            {mData: 'id',searchable: false,
+            mRender: (data,type,row)=>{
+                let boton1 = `<button data-bs-tooltip="tooltip" data-bs-placement="top" title="Ver detalle" style="margin-right:20px;" type="button" onclick="vue.remplazarModal(${data})"  data-bs-toggle="modal" data-bs-target="#default" class="btn btn-icon btn-info waves-effect"><i data-feather="book"></i></button>`
+                {%if 'nucleo.rama.actualizar' in perms%}
+                let boton2 = `<a style="margin-right:20px;" href="{%url 'administrador:area:actualizar' 1 %}"><button data-bs-tooltip="tooltip" data-bs-placement="top" title="Modificar" type="button" class="btn btn-icon btn-success waves-effect"><i data-feather="settings"></i></button></a>`;
+                boton2 = boton2.replace('1',data);
+                {%else%}boton2 = ``; {%endif%}
+                {%if 'nucleo.rama.eliminar' in perms%}
+                let boton3 = `<button data-bs-tooltip="tooltip" data-bs-placement="top" title="Eliminar" style="margin-right:20px;" type="button" onclick="vue.eliminarArea(event,${data})" class="btn btn-icon btn-danger waves-effect"><i data-feather="trash"></i></button>`
+                {%else%}boton3 = ``;{%endif%}
+                return boton1 + boton2 + boton3;
+            }}
+            
+        ],
+        
+        "drawCallback": function(){
+            feather.replace();
+            activarTooltip();
+        },
+        "initComplete": function () {
+            feather.replace();
+            activarTooltip();
+        },
+    } );
+tabla.on('responsive-display',function(){
+    feather.replace();
+});
+$('div.head-label').html('<h6 class="mb-0">Áreas del negocio</h6>');
+});
+</script>
+<script src="{%static 'nucleo/vendors/js/extensions/sweetalert2.all.min.js'%}"></script>
+<script>
+let vue = Vue.createApp({
+    data(){
+        return {
+            nombre: 'Hola',
+            id: 0,
+            productos: [],
+        };
+    },
+    methods:{
+         remplazarModal(numero){
+            let url = '{%url "rama-productos" 1%}';
+                    axios
+                    .get(url.replace('1',numero))
+                    .then(response => {
+                        this.productos = response.data.productos;
+                        this.nombre = response.data.rama.nombre;
+                        this.id = response.data.rama.id;
+                    });
+                    setTimeout(function() {
+                        activarTooltip();
+                    }, 500);
+                },
+        upperCase(string){
+            return string.toUpperCase();
+        },
+        agregarProducto(){
+            let url = "{% url 'administrador:producto:crear' %}?rama=" + this.id;
+            window.open(url,target='_blank');
+        },
+        editarProducto(producto){
+            let url = '{% url "administrador:producto:actualizar" 1%}'.replace('1',producto)
+            window.open(url, '_blank');
+        },
+        eliminarArea(event,id){
+                let url = "{% url 'administrador:area:eliminar' 1%}".replace('1',id);
+                Swal.fire({
+                    title: '¿Estas Seguro?',
+                    text: "El área del negocio sera permanentemente eliminada del sistema",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonText: 'Si, Eliminar!'
+                    }).then(result=>{
+                        if (result.isConfirmed) {
+                            axios.get(url).then(response => {
+                                if (response.data.estado == 'ok'){
+                                    Swal.fire(
+                                    'Eliminada!',
+                                    'El área de negocio ha sido eliminado',
+                                    'success'
+                                    );
+                                    let tbody = document.querySelector('#areas tbody');
+                                    let totalAreas = tbody.querySelectorAll('tr').length;
+                                    let tr = event.target.closest('tr').remove();
+                                    if (totalAreas -1 <= 0){
+                                        document.querySelector('#areas').remove();
+                                    }
+                                }
+                            });
+                        }
+                    });
+               
+        },
+        eliminarProducto(event,id){
+                let url = "{% url 'administrador:producto:eliminar' 1%}".replace('1',id);
+                Swal.fire({
+                    title: '¿Estas Seguro?',
+                    text: "El producto sera eliminado permanentemente del sistema",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonText: 'Si, Eliminar!'
+                    }).then(result=>{
+                        if (result.isConfirmed) {
+                            axios.get(url).then(response => {
+                                if (response.data.estado == 'ok'){
+                                    Swal.fire(
+                                    'Eliminado!',
+                                    'El producto ha sido eliminado',
+                                    'success'
+                                    );
+                                    let tbody = document.querySelector('#productos tbody');
+                                    let totalProductos = tbody.querySelectorAll('tr').length;
+                                    let tr = event.target.closest('tr').remove();
+                                    if (totalProductos -1 <= 0){
+                                        document.querySelector('#productos').remove();
+                                    }
+                                }
+                            });
+                        }
+                    });
+               
+        },
+    },
+    delimiters: ['{$', '$}'],
+}).mount('#app');
+</script>
+
+{%endblock%}

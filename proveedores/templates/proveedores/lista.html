@@ -1,0 +1,367 @@
+{% extends 'nucleo/base.html' %}
+{%block title%}Proveedor{%endblock%}
+{%load static%}
+{%block head%}
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/tables/datatable/dataTables.bootstrap5.min.css'%}">
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/tables/datatable/responsive.bootstrap4.min.css'%}">
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/tables/datatable/buttons.bootstrap5.min.css'%}">
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/tables/datatable/rowGroup.bootstrap4.min.css'%}">
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/pickers/flatpickr/flatpickr.min.css'%}">
+{%endblock%}
+{%block content%}
+<!-- BEGIN: Content-->
+    <div class="app-content content ">
+        <div class="content-overlay"></div>
+        <div class="header-navbar-shadow"></div>
+        <div class="content-wrapper container-fluid p-0">
+            <div class="content-header row">
+                <div class="content-header-left col-md-9 col-12 mb-2">
+                    <div class="row breadcrumbs-top">
+                        <div class="col-12">
+                            <h2 class="content-header-title float-start mb-0">Administrador</h2>
+                            <div class="breadcrumb-wrapper">
+                                <ol class="breadcrumb">
+                                    <li class="breadcrumb-item"><a href="#">Proveedores</a>
+                                    </li>
+                                    <li class="breadcrumb-item active">Lista
+                                    </li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="content-header-right text-md-end col-md-3 col-12 d-md-block d-none">
+                    <div class="mb-1 breadcrumb-right d-flex">
+                        {%if 'proveedores.insumo.crear' in perms %}
+                            <a class="me-2" target="_blank" href="{% url 'administrador:proveedor:insumo:asociar' %}">
+                                <button class="btn btn-primary">Añadir Asociación</button>
+                            </a>
+                        {%endif%}
+                        {%if 'proveedores.crear' in perms %}
+                            <a target="_blank" href="{% url 'administrador:proveedor:crear' %}">
+                                <button class="btn btn-primary">Añadir Proveedor</button>
+                            </a>
+                        {%endif%}
+                    </div>
+                    
+                </div>
+            </div>
+            <div class="content-body">
+                <div id="app">
+                <div class="modal fade text-start"id="default" tabindex="-1" aria-labelledby="myModalLabel1" aria-hidden="true">
+                    <div class="modal-dialog modal-xl">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h4 class="modal-title" id="myModalLabel1">{$ titulo $}</h4>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Información</th>
+                                            <th>Dato</th>
+                                        </tr>
+                                    </thead>
+                                        <tbody>
+                                            <tr>
+                                                <th>Nombre Empresa</th>
+                                                <td>{$ empresa_nombre $}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Rut Empresa</th>
+                                                <td>{$ empresa_rut $}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Nombre Contacto Ventas</th>
+                                                <td>{$ ventas_nombre $}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>E-mail Contacto Ventas</th>
+                                                <td>{$ ventas_email $}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Celular</th>
+                                                <td>{$ ventas_celular $}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    {%if 'proveedores.insumo.listar' in perms%}
+                                    <div id="insumos" v-if="insumos.length > 0">
+                                    <h3>Insumos Asociados a {$ empresa_nombre $}</h3>
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Insumo</th>
+                                                <th>Insumo Proveedor</th>
+                                                <th>Formato</th>
+                                                <th>Valor Neto</th>
+                                                <th>Lead Time</th>
+                                                <th>Mostrar</th>
+                                                {%if 'proveedores.insumo.actualizar' in perms or 'proveedores.insumo.eliminar' in perms%}
+                                                <th>Opciones</th>
+                                                {%endif%}
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="insumo in insumos">
+                                                <td>{$ insumo.insumo_nombre$}</td>
+                                                <td>{$ insumo.nombre_insumo $}</td>
+                                                <th>{$ insumo.formato $} {$ transformar(insumo.unidad) $}</th>
+                                                <td>{$ formatoCLP(insumo.precio) $}</td>
+                                                <td>{$ insumo.lead $} días</td>
+                                                <td><input type="checkbox" @change="cambiar($event,insumo.id)" :checked="insumo.mostrar"/></td>
+                                                {%if 'proveedores.insumo.actualizar' in perms or 'proveedores.insumo.eliminar' in perms%}
+                                                <td>
+                                                    {%if 'proveedores.insumo.actualizar' in perms%}
+                                                    <button data-bs-tooltip="tooltip" data-bs-placement="top" title="Modificar Asociación" @click="editarInsumo(insumo.id)" type="button" class="btn btn-icon btn-success waves-effect"><i class="far fa-edit"></i></button>
+                                                    {%endif%}
+                                                    {%if 'proveedores.insumo.eliminar' in perms%}
+                                                    <button data-bs-tooltip="tooltip" data-bs-placement="top" title="Eliminar Asociación" style="margin-left:10px;" @click="eliminarInsumo($event,insumo.id)" type="button" class="btn btn-icon btn-danger waves-effect"><i class="fas fa-trash"></i></button>
+                                                    {%endif%}
+                                                </td>
+                                                {%endif%}
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    
+                                    </div>
+                                    {%endif%}
+                                    <button style="margin-right:10px;" @click="asociarInsumo" class="btn btn-primary">Asociar Insumo</button>
+                                    {%if 'proveedores.detalle' in perms %}
+                                    <button style="margin-right:10px;" @click="verDetalle" class="btn btn-primary">Ver Detalle</button>
+                                    {%endif%}
+                                </div>
+                            </div>
+                            
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cerrar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </div>
+                <!-- Modal -->
+                <section id="basic-datatable">
+                    <div class="row">
+                            <div class="col-12">
+                                <div class="card">
+                                    <table id="proveedores" class="datatables-basic table">
+                                        <thead>
+                                            <tr>
+                                                <th>Razón Social</th>
+                                                <th>Rut</th>
+                                                <th>Teléfono</th>
+                                                <th>Nombre Contacto Ventas</th>
+                                                <th>E-mail Contacto Ventas</th>
+                                                {%if 'proveedores.detalle' in perms or 'proveedores.actualizar' in perms%}
+                                                <th>Opciones</th>
+                                                {%endif%}
+                                                
+                                            </tr>
+                                        </thead>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                </section>
+                <!--/ Dashboard -->
+
+            </div>
+        </div>
+    </div>
+{%endblock%}
+
+{%block scripts%}
+<!-- BEGIN: Page Vendor JS-->
+<script src="{% static 'nucleo/vendors/js/tables/datatable/jquery.dataTables.min.js'%}"></script>
+<script src="{% static 'nucleo/vendors/js/tables/datatable/dataTables.bootstrap5.min.js'%}"></script>
+<script src="{% static 'nucleo/vendors/js/tables/datatable/dataTables.responsive.min.js'%}"></script>
+<script src="{% static 'nucleo/vendors/js/tables/datatable/responsive.bootstrap4.js'%}"></script>
+<script src="{% static 'nucleo/vendors/js/pickers/flatpickr/flatpickr.min.js'%}"></script>
+<!-- END: Page Vendor JS-->
+
+<script>
+$( function() {
+   let tabla = $('#proveedores').DataTable( {
+        responsive: true,
+        autoWidth: true,
+        destroy: true,
+        deferRender: true,
+        pageLength: 10,
+        serverSide: true,
+        rowReorder: true,
+        order: [[0,'desc']],
+        dom: '<"card-header border-bottom p-1"<"head-label"><"dt-action-buttons text-end"B>><"d-flex justify-content-between align-items-center mx-0 row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>t<"d-flex justify-content-between mx-0 row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
+        ajax: '{%url "proveedor-list" %}?format=datatables',
+        language: {
+            "lengthMenu": "Mostrar _MENU_ proveedores por página",
+            "zeroRecords": "Ups - no hay proveedores",
+            "info": "Mostrando página _PAGE_ de _PAGES_",
+            "infoEmpty": "No hay proveedores",
+            "infoFiltered": "(filtrados de un total de _MAX_ proveedores)",
+            "loadingRecords": "Cargando...",
+            "processing":     "Procesando...",
+            "search":         "Buscar:",
+            "paginate": {
+                "first":      "Primera",
+                "last":       "Ultima",
+                "next":       "Siguiente",
+                "previous":   "Anterior"
+            },
+        },
+        columns: [
+            {data: 'empresa_nombre',render:function(data,type,row,meta){
+                return data.toUpperCase();
+            }},
+            {data : 'empresa_rut'},
+            {data: 'ventas_celular'},
+            {data: 'ventas_nombre'},
+            {data: 'ventas_email'},
+            {mData: 'id',searchable: false,
+            mRender: (data,type,row)=>{
+                let botones = "";
+                {%if 'proveedores.detalle' in perms%}
+                botones = botones + `<button data-bs-tooltip="tooltip" data-bs-placement="top" title="Ver detalle" style="margin-right:20px;" type="button" onclick="vue.remplazarModal(${data})"  data-bs-toggle="modal" data-bs-target="#default" class="btn btn-icon btn-info waves-effect"><i data-feather="book"></i></button>`
+                {%endif%}
+                {%if 'proveedores.actualizar' in perms%}
+                botones= botones + `<a style="margin-right:20px;" href="{%url 'administrador:proveedor:actualizar' 1 %}"><button data-bs-tooltip="tooltip" data-bs-placement="top" title="Modificar" type="button" class="btn btn-icon btn-success waves-effect"><i data-feather="settings"></i></button></a>`.replace('1',data);
+                {%endif%}
+                return botones;
+                
+            }}
+            
+        ],
+            columnDefs: [
+            {"type": 'num-fmt',"targets":4}
+            ],
+        
+        "drawCallback": function(){
+            feather.replace();
+            activarTooltip();
+        },
+        "initComplete": function () {
+            feather.replace();
+            activarTooltip();
+        },
+    } );
+tabla.on('responsive-display',function(){
+    feather.replace();
+});
+$('div.head-label').html('<h6 class="mb-0">Proveedores</h6>');
+});
+</script>
+<script src="{%static 'nucleo/vendors/js/extensions/sweetalert2.all.min.js'%}"></script>
+<script>
+let vue = Vue.createApp({
+    data (){
+        return {
+            insumos: [],
+            empresa_nombre: "Artisan",
+            empresa_rut: "rut",
+            ventas_celular: null,
+            ventas_email: "ventas@veto.cl",
+            ventas_nombre: null,
+            ventas_telefono: null,
+            titulo: "hola",
+            url_detalle: '{% url "administrador:proveedor:detalle" 1%}',
+            url_asociar: "{% url 'administrador:proveedor:insumo:asociar'%}?proveedor=1",
+            url_mostrar: "{% url 'administrador:proveedor:insumo:mostrar' 1%}"
+        };
+    },
+    methods:{
+        remplazarModal(numero){
+            let url = '{%url "proveedor-detail" 1%}';
+                    axios
+                    .get(url.replace('1',numero))
+                    .then(response => {
+                        this.titulo = "Empresa: " + response.data.empresa_nombre;
+                        this.empresa_nombre = response.data.empresa_nombre;
+                        this.empresa_rut = response.data.empresa_rut;
+                        this.insumos = response.data.insumos;
+                        this.ventas_nombre = response.data.ventas_nombre;
+                        this.ventas_email = response.data.ventas_email;
+                        this.ventas_celular = response.data.ventas_celular;
+                        this.url_detalle = this.url_detalle.replace('1',response.data.id);
+                        this.url_asociar = this.url_asociar.replace('1',response.data.id);
+                    });
+                    setTimeout(function() {
+                        activarTooltip();
+                    }, 500);
+                },
+        formatoCLP(numero){
+                    return formatter.format(numero);
+                },
+        verDetalle(){
+            location.href = this.url_detalle;
+        },
+        asociarInsumo(){
+            location.href = this.url_asociar;
+        },
+        upperCase(string){
+            return string.toUpperCase();
+        },
+        editarInsumo(insumo){
+            let url = '{% url "administrador:proveedor:insumo:actualizar" 1%}'.replace('1',insumo)
+            window.open(url, '_blank');
+        },
+        cambiar(event,id){
+            let url = this.url_mostrar.replace('1',id);
+            axios.get(url).then(response => {
+                if (response.data.estado == 'ok'){
+                    Swal.fire(
+                    'Actualizado!',
+                    'La asociación ha sido actualizada',
+                    'success'
+                    );
+                } 
+            });
+        },
+        transformar(string){
+            if (string != 'N/A'){
+                if (string.substr(-1) == 'd'){
+                    return string + "es";
+                }else{
+                    return string + "s";
+                }
+            }
+            return string;
+        },
+        eliminarInsumo(event,id){
+                let url = "{% url 'administrador:proveedor:insumo:eliminar' 1%}".replace('1',id);
+                Swal.fire({
+                    title: '¿Estas Seguro?',
+                    text: "La asociación sera eliminada permanentemente del sistema",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Si, Eliminar!'
+                    }).then(result=>{
+                        if (result.isConfirmed) {
+                            axios.get(url).then(response => {
+                                if (response.data.estado == 'ok'){
+                                    Swal.fire(
+                                    'Eliminado!',
+                                    'La asociación ha sido eliminada',
+                                    'success'
+                                    );
+                                    let tbody = document.querySelector('#insumos tbody');
+                                    let totalProveedores = tbody.querySelectorAll('tr').length;
+                                    let tr = event.target.closest('tr').remove();
+                                    if (totalProveedores -1 <= 0){
+                                        document.querySelector('#insumos').remove();
+                                    }
+                                }
+                            });
+                        }
+                    });
+               
+        },
+    },
+    delimiters: ['{$', '$}'],
+}).mount('#app');
+</script>
+
+{%endblock%}

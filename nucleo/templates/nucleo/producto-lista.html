@@ -1,0 +1,313 @@
+{% extends 'nucleo/base.html' %}
+{%block title%}Productos{%endblock%}
+{%load static%}
+{%block head%}
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/tables/datatable/dataTables.bootstrap5.min.css'%}">
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/tables/datatable/responsive.bootstrap4.min.css'%}">
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/tables/datatable/buttons.bootstrap5.min.css'%}">
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/tables/datatable/rowGroup.bootstrap4.min.css'%}">
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/pickers/flatpickr/flatpickr.min.css'%}">
+{%endblock%}
+{%block content%}
+<!-- BEGIN: Content-->
+    <div class="app-content content ">
+        <div class="content-overlay"></div>
+        <div class="header-navbar-shadow"></div>
+        <div class="content-wrapper container-fluid p-0">
+            <div class="content-header row">
+                <div class="content-header-left col-md-9 col-12 mb-2">
+                    <div class="row breadcrumbs-top">
+                        <div class="col-12">
+                            <h2 class="content-header-title float-start mb-0">Administrador</h2>
+                            <div class="breadcrumb-wrapper">
+                                <ol class="breadcrumb">
+                                    <li class="breadcrumb-item"><a href="#">Productos</a>
+                                    </li>
+                                    <li class="breadcrumb-item active">Lista
+                                    </li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="content-header-right text-md-end col-md-3 col-12 d-md-block d-none">
+
+                    <div class="mb-1 breadcrumb-right">
+                    
+                        {%if 'nucleo.rama.crear' in perms %}
+                            <a class="mb-1 d-sm-inline-block" href="{% url 'administrador:area:lista' %}"><button class="btn btn-primary">Áreas</button></a>
+                        {%endif%}
+                        {%if 'nucleo.producto.crear' in perms%}
+                            <a class="mb-1 d-sm-inline-block" href="{% url 'administrador:producto:crear' %}"><button class="btn btn-success">Añadir Producto</button></a>
+                        {%endif%}
+                    </div>
+                </div>
+            </div>
+            <div id="app">
+                <div class="modal fade text-start"id="default" tabindex="-1" aria-labelledby="myModalLabel1" aria-hidden="true">
+                    <div class="modal-dialog modal-xl">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h4 class="modal-title" id="myModalLabel1">Producto: {$ upperCase(nombre) $}</h4>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Información</th>
+                                            <th>Dato</th>
+                                        </tr>
+                                    </thead>
+                                        <tbody>
+                                            <tr>
+                                                <th>Nombre Insumo</th>
+                                                <td>{$ upperCase(nombre) $}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Presentación</th>
+                                                <td>{$ presentacion $} {$ unidad $}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Maduración</th>
+                                                <td>{$ maduracion $} días</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Vida Comercial</th>
+                                                <td>{$ duracion $} días</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Stock Critico</th>
+                                                <td>{$ stock $}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <div id="descriptores" v-if="descriptores.length > 0">
+                                        <h3>Descriptores de producto</h3>
+                                        <table class="table table-bordered">
+                                            <thead>
+                                                <tr>
+                                                    <th>Nombre Insumo</th>
+                                                    <th>Cantidad</th>
+                                                    <th>Detalle</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr v-for="descriptor in descriptores">
+                                                    <td>{$ descriptor.insumo_nombre $}</td>
+                                                    <td>{$ descriptor.cantidad $}</td>
+                                                    <td>{$ descriptor.detalle $}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                        
+                                    </div>
+                                   
+                                </div>
+                               
+                            </div>
+                             
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cerrar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </div>
+                <section id="basic-datatable">
+                    <div class="row">
+                            <div class="col-12">
+                                <div class="card">
+                                    <table id="productos" class="datatables-basic table">
+                                        <thead>
+                                            <tr>
+                                                <th>Codigo</th>
+                                                <th>Área</th>
+                                                <th>Nombre Producto</th>
+                                                <th>Formato Producto</th>
+                                                <th>Ciclo de Vida</th>
+                                                <th>Stock Crítico</th>
+                                                <th>Opciones</th>
+                                            </tr>
+                                        </thead>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                </section>
+                <!--/ Dashboard -->
+
+            </div>
+        </div>
+    </div>
+{%endblock%}
+
+{%block scripts%}
+<!-- BEGIN: Page Vendor JS-->
+<script src="{% static 'nucleo/vendors/js/tables/datatable/jquery.dataTables.min.js'%}"></script>
+<script src="{% static 'nucleo/vendors/js/tables/datatable/dataTables.bootstrap5.min.js'%}"></script>
+<script src="{% static 'nucleo/vendors/js/tables/datatable/dataTables.responsive.min.js'%}"></script>
+<script src="{% static 'nucleo/vendors/js/tables/datatable/responsive.bootstrap4.js'%}"></script>
+<script src="{% static 'nucleo/vendors/js/pickers/flatpickr/flatpickr.min.js'%}"></script>
+<!-- END: Page Vendor JS-->
+
+<script>
+$( function() {
+   let tabla = $('#productos').DataTable( {
+        responsive: true,
+        autoWidth: true,
+        destroy: true,
+        deferRender: true,
+        pageLength: 10,
+        serverSide: true,
+        rowReorder: true,
+        order: [[0,'desc']],
+        dom: '<"card-header border-bottom p-1"<"head-label"><"dt-action-buttons text-end"B>><"d-flex justify-content-between align-items-center mx-0 row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>t<"d-flex justify-content-between mx-0 row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
+        ajax: '{%url "producto-list" %}?format=datatables',
+        language: {
+            "lengthMenu": "Mostrar _MENU_ productos por página",
+            "zeroRecords": "Lo sentimos, actualmente no hay productos",
+            "info": "Mostrando página _PAGE_ de _PAGES_",
+            "infoEmpty": "No hay productos",
+            "infoFiltered": "(filtrados de un total de _MAX_ productos)",
+            "loadingRecords": "Cargando...",
+            "processing":     "Procesando...",
+            "search":         "Buscar:",
+            "paginate": {
+                "first":      "Primera",
+                "last":       "Ultima",
+                "next":       "Siguiente",
+                "previous":   "Anterior"
+            },
+        },
+        columns: [
+            {data : 'codigo'},
+            {data: 'rama_nombre',name:'linea.rama.nombre'},
+            {data: 'nombre'},
+            {data: 'presentacion',name:'presentacion',render:function(data,type,row){
+                return data + " " + row.unidad;
+            }},
+            {data: 'duracion',name:'duracion, maduracion',render:function(data,type,row){
+                return "<b>Comercial:</b> " + data + " días<br>" + "<b>Maduración:</b> " + row.maduracion + " días";
+            }},
+            {data: 'stock_critico',render:function(data,type,row){
+                return data;
+            }},
+            {mData: 'id',searchable: false,
+            mRender: (data,type,row)=>{
+                let boton1 = `<button data-bs-tooltip="tooltip" data-bs-placement="top" title="Ver detalle" style="margin-right:20px;" type="button" onclick="vue.remplazarModal(${data})"  data-bs-toggle="modal" data-bs-target="#default" class="btn btn-icon btn-info waves-effect"><i data-feather="book"></i></button>`
+                {%if 'nucleo.producto.actualizar' in perms%}
+                let boton2 = `<a style="margin-right:20px;" href="{%url 'administrador:producto:actualizar' 1 %}"><button data-bs-tooltip="tooltip" data-bs-placement="top" title="Modificar" type="button" class="btn btn-icon btn-success waves-effect"><i data-feather="settings"></i></button></a>`;
+                boton2 = boton2.replace('1',data);
+                {%else%}boton2 = ``;{%endif%}
+                {%if 'nucleo.producto.eliminar' in perms%}
+                let boton3 = `<button data-bs-tooltip="tooltip" data-bs-placement="top" title="Eliminar" style="margin-right:20px;" type="button" onclick="eliminarProducto(event,${data})" class="btn btn-icon btn-danger waves-effect"><i data-feather="trash"></i></button>`
+                {%else%}let boton3 = ``;{%endif%}
+                return boton1 + boton2 + boton3;
+            }}
+            
+        ],
+            columnDefs: [
+            {"type": 'num-fmt',"targets":4}
+            ],
+        
+        "drawCallback": function(){
+            feather.replace();
+            activarTooltip();
+        },
+        "initComplete": function () {
+            feather.replace();
+            activarTooltip();
+        },
+    } );
+tabla.on('responsive-display',function(){
+    feather.replace();
+});
+$('div.head-label').html('<h6 class="mb-0">Productos</h6>');
+});
+</script>
+{%if 'nucleo.producto.eliminar' in perms %}
+<script src="{%static 'nucleo/vendors/js/extensions/sweetalert2.all.min.js'%}"></script>
+<script>
+function eliminarProducto(event,id){
+                let url = "{% url 'administrador:producto:eliminar' 1%}".replace('1',id);
+                Swal.fire({
+                    title: '¿Estas Seguro?',
+                    text: "El producto sera eliminado permanentemente del sistema",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonText: 'Si, Eliminar!'
+                    }).then(result=>{
+                        if (result.isConfirmed) {
+                            axios.get(url).then(response => {
+                                if (response.data.estado == 'ok'){
+                                    Swal.fire(
+                                    'Eliminado!',
+                                    'El producto ha sido eliminado',
+                                    'success'
+                                    );
+                                    let tbody = document.querySelector('#productos tbody');
+                                    let totalProductos = tbody.querySelectorAll('tr').length;
+                                    let tr = event.target.closest('tr').remove();
+                                    if (totalProductos -1 <= 0){
+                                        document.querySelector('#productos').remove();
+                                    }
+                                }
+                            });
+                        }
+                    });
+               
+        }
+</script>
+{%endif%}
+<script>
+let vue = Vue.createApp({
+    data(){
+        return {
+            nombre: '',
+            area: '',
+            presentacion: '',
+            duracion: 0,
+            maduracion: 0,
+            id:0,
+            unidad: '',
+            stock: 5,
+            descriptores: [],
+        };
+    },
+    methods:{
+         remplazarModal(numero){
+            let url = '{%url "producto-detail" 1%}';
+                    axios
+                    .get(url.replace('1',numero))
+                    .then(response => {
+                        this.nombre = response.data.nombre;
+                        this.area = response.data.rama_nombre;
+                        this.id = response.data.id
+                        this.presentacion = response.data.presentacion;
+                        this.unidad = response.data.unidad;
+                        this.maduracion = response.data.maduracion;
+                        this.duracion = response.data.duracion;
+                        this.stock = response.data.stock_critico;
+                        this.descriptores = response.data.descriptores;
+                    });
+                    setTimeout(function() {
+                        activarTooltip();
+                    }, 500);
+                },
+        upperCase(string){
+            return string.toUpperCase();
+        },
+        formatoCLP(numero){
+                return formatter.format(numero);
+        },
+    },
+    delimiters: ['{$', '$}'],
+}).mount('#app');
+</script>
+
+{%endblock%}

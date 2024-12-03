@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Reporte de Producción</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        h1 {
+            text-align: center;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .section-title {
+            font-size: 18px;
+            margin-top: 30px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Reporte de Producción</h1>
+    <p><strong>Fecha de Inicio:</strong> {{ fecha_inicio|default:"No especificada" }}</p>
+    <p><strong>Fecha de Fin:</strong> {{ fecha_fin|default:"No especificada" }}</p>
+    <p><strong>Pauta:</strong> {{ pauta.plantilla_pauta__nombre|default:"No especificada" }}</p>
+    
+
+    <!-- Sección PIP -->
+    {% if pauta_info_pip %}
+    <div class="section-title">Total Lotes Hechos PIP</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>nombres</th>
+                <th>Cantidad Total</th>
+                <th>Lotes Hechos</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for pauta in pauta_info_pip %}
+            <tr>
+                <td>{{ pauta.fecha }}</td>
+                <td>{{ pauta.plantilla_pauta__nombre }}</td>
+                <td>{{ pauta.cantidad_total }}</td>
+                <td>{{ pauta.lotes_hechos }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    {% if pauta_info_pip %}
+    <div class="section-title">Cantidad Total Fabricada PIP</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>nombres</th>
+                <th>Cantidad Total</th>
+                <th>Lotes Hechos</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for pauta in pauta_info_pip %}
+            <tr>
+                <td>{{ pauta.fecha }}</td>
+                <td>{{ pauta.plantilla_pauta__nombre }}</td>
+
+                <td>{{ pauta.cantidad_total }}</td>
+                <td>{{ pauta.lotes_hechos }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    <!-- Sección Línea -->
+    {% if pauta_info_linea %}
+    <div class="section-title">Total Lotes Hechos Línea</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>nombres</th>
+
+                <th>Cantidad Total</th>
+                <th>Lotes Hechos</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for pauta in pauta_info_linea %}
+            <tr>
+                <td>{{ pauta.fecha }}</td>
+                <td>{{ pauta.plantilla_pauta__nombre }}</td>
+
+                <td>{{ pauta.cantidad_total }}</td>
+                <td>{{ pauta.lotes_hechos }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    {% if pauta_info_linea %}
+    <div class="section-title">Cantidad Total Fabricada Línea</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>nombres</th>
+
+                <th>Cantidad Total</th>
+                <th>Lotes Hechos</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for pauta in pauta_info_linea %}
+            <tr>
+                <td>{{ pauta.fecha }}</td>
+                <td>{{ pauta.plantilla_pauta__nombre }}</td>
+
+                <td>{{ pauta.cantidad_total }}</td>
+                <td>{{ pauta.lotes_hechos }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+</body>
+</html>

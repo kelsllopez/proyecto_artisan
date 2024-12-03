@@ -1,0 +1,480 @@
+{% extends 'nucleo/base.html'%}
+{%block title%}Añadir Pauta{%endblock%}
+{%load static%}
+{%block head%}
+<link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/pickers/pickadate/pickadate.css'%}">
+<link rel="stylesheet" type="text/css" href="{%static 'nucleo/css/plugins/forms/pickers/form-pickadate.css'%}">
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+{%endblock%}
+{%block content%}
+<style>
+.errorlist{
+    color:red;
+    list-style:none;
+    padding-left:0;
+}
+</style>
+<!-- BEGIN: Content-->
+    <div class="app-content content ">
+        <div class="content-overlay"></div>
+        <div class="header-navbar-shadow"></div>
+        <div class="content-wrapper container-fluid p-0">
+            <div class="content-header row">
+                <div class="content-header-left col-md-9 col-12 mb-2">
+                    <div class="row breadcrumbs-top">
+                        <div class="col-12">
+                            <h2 class="content-header-title float-start mb-0">Administrador</h2>
+                            <div class="breadcrumb-wrapper">
+                                <ol class="breadcrumb">
+                                    <li class="breadcrumb-item"><a href="{% url 'administrador:pauta:lista' %}">Pautas de elaboración</a>
+                                    </li>
+                                    <li class="breadcrumb-item active">Modificar
+                                    </li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="content-body">
+                <!-- Dashboard -->
+                <div class="card">
+
+                    <div class="card-body">
+                        <div class="card-text">
+                            <form class="form form-horizontal" id="formulario" method="post" enctype="multipart/form-data">{% csrf_token %}
+                                <div class="row">
+                                    <div class="col-12" id="app">
+                                    {%for field in form %}
+                                        <div class="mb-1 row">
+                                        <div class="col-sm-3">{{field.label_tag}} {%if field.field.required %}<span style="color:red">*</span>{%endif%}</div>
+                                       
+                                        <div class="col-sm-6 position-relative">{{field}}
+                                        {% if field.help_text %}
+                                        <small class="">{{field.help_text|safe}}</small>
+                                        {%endif%}
+                                        
+                                        {%if field.errors %}
+                                        <div class="invalid-feedback" style="display:block;">{{field.errors.as_text}}</div>
+                                        {%endif%}
+                                        </div>
+                                        </div>
+                                    {%endfor%}
+                                    <div class="col-sm-12">
+                                    <h3 v-if="tipo == 'PIP'">Ingredientes</h3>
+                                    <hr v-if="tipo == 'PIP'">
+                                    <table v-if="tipo == 'PIP'" class="table table-bordered table-striped mb-2">
+                                        <thead>
+                                            <tr>
+                                                <th>Insumo</th>
+                                                <th>Cantidad</th>
+                                                <th>Unidad de medida</th>
+                                                <th>Opcional</th>
+                                                <th><button class="btn btn-success" type="button" @click="agregarIngrediente">Agregar</button></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="(ingrediente,index) in ingredientes">
+                                                <td><select :data-index="index" onchange="vue.agregarInsumo(event)" required class="" name="ingredientes[]">
+                                                    <option value="">---</option>
+                                                    <option v-for="insumo in insumos" :selected="ingrediente.insumo==insumo.id" :value="insumo.id">{$ insumo.nombre $}</option>
+                                                </select></td>
+                                                <td><input type="number" required name="ingredientes_c[]" v-model="ingrediente.cantidad" placeholder="Cantidad" class="form-control" min="0" step="any" max="99999"/></td>
+                                                <td v-if="insumos_seleccionados[index]">
+                                                    <select class="" required name="ingredientes_u[]">
+                                                        <option value="">---</option>
+                                                        <option v-for="unidad in insumos_seleccionados[index].unidades" :selected="ingrediente.unidad == unidad">{$ unidad $}</option>
+                                                    </select>
+                                                </td>
+                                                <td v-else><small>Seleccione un insumo</small></td>
+                                                <td><div><input type="hidden" name="ingredientes_l[]" :value="ingrediente.valor"/><input class="form-check-input" type="checkbox" v-model="ingrediente.lider" @click="ingrediente.valor=1-ingrediente.valor"> Ingrediente Referencia 100%</div><br><div><input type="hidden" name="ingredientes_o[]" value="0"/><input v-model="ingrediente.opcional" class="form-check-input" type="checkbox" onclick="this.previousSibling.value=1-this.previousSibling.value"> Opcional</div></td>
+                                                <td><button class="btn btn-danger" type="button" @click="eliminarIngrediente($event,index)">Eliminar</button></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                     <h3>Subproductos a obtener</h3>
+                                    <hr>
+                                    <table class="table table-bordered table-striped mb-2">
+                                        <thead>
+                                            <tr>
+                                                <th>Insumo</th>
+                                                <th><button class="btn btn-success" type="button" @click="agregarIP">Agregar</button></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="(ip,index) in ips">
+                                                <td><select required class="form-select" name="ips[]">
+                                                    <option value="">---</option>
+                                                    <option v-for="insumo in insumos" :selected="ip.insumo==insumo.id" :value="insumo.id">{$ insumo.nombre $}</option>
+                                                </select></td>
+                                                <td><button class="btn btn-danger" type="button" @click="eliminarIPS($event,index)">Eliminar</button></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <div class="row">
+                                        <div class="col-8">
+                                            <h3>Etapas</h3>
+                                        </div>
+                                    </div>
+                                    
+                                    <hr>
+                                     <div v-for="(etapa,eindex) in etapas">
+                                            <table class="table table-bordered table-striped mb-2">
+                                                <thead>
+                                                <tr style="border-bottom: 2px solid #7367f0">
+                                                    <th colspan="1">Etapa {$ eindex+1 $}</th>
+                                                    <th colspan="2">
+                                                        <div class="input-group">
+                                                            <input type="text" name="etapas[]" v-model="etapa.nombre" required class="form-control">
+                                                            <input name="etapasidentificador[]" required v-model="etapa.identificador" type="hidden"/>
+                                                            <button class="btn btn-danger waves-effect" @click="eliminarEtapa(eindex)" type="button">Eliminar Etapa</button>
+                                                        </div>
+                                                    </th>
+                                                    
+                                                </tr>
+                                                </tr>
+                                                    <tr>
+                                                        <th>Orden</th>
+                                                        <th colspan="1">Instrucción</th>
+                                                        <th>Parámetros</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr v-for="(instruccion,index) in etapa.instrucciones">
+                                                        <td>Paso N°{$ index +1 $}</td>
+                                                        <td>
+                                                        <div class="input-group">
+                                                            <input type="text" class="form-control" v-model='instruccion.instruccion' required :name="obtenerNombreInput(eindex)"/>
+                                                            <input type="hidden" v-model='instruccion.identificador' required :name="obtenerIdentificadorInput(eindex)"/>
+                                                            <button class="btn btn-danger btn-small" type="button" @click="eliminarInstruccion(eindex,index)">Eliminar Paso</button>
+                                                        </td>
+                                                        <td><select data-placeholder="Parametros" multiple :name="'columnas_etapa'+eindex+'i'+index">{%for columna in columnas %}<option value="{{columna.id}}" :selected="instruccion.columnas.indexOf(parseInt('{{columna.id}}')) != -1">{{columna.nombre}}</option>{%endfor%}</select></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th colspan="3"><button data-bs-tooltip="tooltip" data-bs-placement="top" title="Agregar Instrucción" class="btn btn-success waves-effect waves-float waves-light" type="button" @click="agregarInstruccion(eindex)">Agregar Instrucción</button></th>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-sm-3 col-md-6">
+                                        <button data-bs-tooltip="tooltip" data-bs-placement="top" title="Agregar Etapa" class="btn btn-success waves-effect waves-float waves-light" type="button" @click="agregarEtapa()">Agregar Etapa</button></h3>
+                                        </div>
+                                        <div class="col-sm-3 col-md-6" style="text-align:right">
+                                            <button type="button" @click="validarForm" class="btn btn-primary me-1 waves-effect waves-float waves-light">Actualizar Pauta</button>
+                                        </div>
+                                    </div>
+                                
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <!--/ Dashboard -->
+            </div>
+        </div>
+    </div>
+    <!-- END: Content-->
+{%endblock%}
+{%block scripts%}
+<script>
+let ips = [
+    {%for insumo in pauta.insumoproceso_set.all%}
+        {
+            insumo: '{{insumo.insumo.pk}}',
+            identificador: '{{insumo.pk}}',
+            nombre: '{{insumo.insumo.nombre}}',
+        },
+    {%endfor%}
+]
+let etapas = [
+    {%for etapa in pauta.etapa_set.all%}
+        {
+            nombre: '{{etapa.nombre}}',
+            identificador: '{{etapa.pk}}',
+            instrucciones: [
+                {%for instruccion in etapa.instruccion_set.all%}
+                    {
+                        instruccion: '{{instruccion.descripcion}}',
+                        identificador: '{{instruccion.pk}}',
+                        columnas: [{%for columna in instruccion.instruccioncolumna_set.all%} parseInt('{{columna.columna.pk}}'),{%endfor%}],
+                    },
+                {%endfor%}
+            ],
+        },
+    {%endfor%}
+];
+let ingredientes = [
+    {%for ingrediente in pauta.ingrediente_set.all%}
+        {
+            insumo: '{{ingrediente.insumo.pk}}',
+            unidado: '{{ingrediente.insumo.unidad}}',
+            cantidad: parseFloat('{{ingrediente.cantidad}}'.replace(',','.')),
+            opcional: ('{{ingrediente.opcional}}' == 'False') ? false : true,
+            lider: ('{{ingrediente.lider}}' == 'False') ? false : true,
+            valor: ('{{ingrediente.lider}}' == 'False') ? 0 : 1,
+            identificador: '{{ingrediente.pk}}',
+            unidad: '{{ingrediente.unidad}}',
+        },
+    {%endfor%}
+]
+function procesar(ing){
+    unidades = []
+    if (ing.unidad == 'kilogramo' || ing.unidad == 'gramo' || ing.unidad == 'miligramo'){
+        unidades = ['kilogramo','gramo','miligramo']
+    }else if(ing.unidad == 'litro' || ing.unidad == 'cc'){
+        unidades = ['litro','cc']
+    }else if(ing.unidad == 'unidad'){
+        unidades = ['unidad']
+    }else if(ing.unidad == 'caja'){
+        unidades = ['caja']
+    }else{
+        unidades = ['n/a']
+    }
+    return unidades;
+}
+
+for (ing of ingredientes){
+    ing.unidades = procesar(ing);
+    const esIgual = (element) => element == ing.unidado.toLowerCase();
+    let index = ing.unidades.findIndex(esIgual);
+    if (index == -1){
+        ing.unidad = ing.unidado.toLowerCase();
+        ing.unidades = procesar(ing);
+    }
+}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+let vue = Vue.createApp({
+    data(){
+        return {
+            insumos:[],
+            tipo: '{{object.tipo}}',
+            productos: '',
+            rendimiento: '',
+            ingredientes:ingredientes,
+            insumos_seleccionados: [...ingredientes],
+            ips: [...ips],
+            seleccionados:[],
+            numeros:[],
+            url_base: '{%url "insumo-list" %}?format=json',
+            etapas: etapas,
+        };
+    },
+    methods:{
+        esconder(){
+            this.productos.style.display = this.tipo == 'Linea' ? 'flex' : 'none';
+            this.rendimiento.style.display = this.tipo == 'PIP' ? 'flex' : 'none';
+        },
+        cambiarTipo(event){
+            this.tipo = event.target.value;
+            this.esconder();
+        },
+        validarLider(){
+            let suma = 0;
+            let inputs = document.getElementsByName('ingredientes_l[]')
+            let inputo = document.getElementsByName('ingredientes_o[]')
+
+            for (const x of inputs.keys()){
+                
+                    lider = inputs[x]
+                    opcional = inputo[x]
+                    if (lider.value == '1' && '1' == opcional.value){
+                        alert("No puede haber un ingrediente opcional y de referencia 100%.");
+                        return false;
+                    }
+                    if(lider.value == '1'){
+                        suma+=1;
+                    }
+                    console.log(suma);
+                
+                
+            }
+            let ingredientes_u = document.getElementsByName('ingredientes_u[]');
+                console.log(ingredientes_u);
+                if (ingredientes_u.length > 0){
+                    if(suma > 1){
+                        alert("Debes seleccionar solo un ingrediente referencia 100%");
+                        return false;
+                    }
+                    if(suma <= 0){
+                        alert("Debes seleccionar un ingrediente referencia 100%");
+                        return false;
+                    }
+                }
+            
+            
+            return true;
+        },
+       obtenerInsumos(url){
+                    if (url == 'no'){
+                        url = this.url_base;
+                    }
+                    url = url.replace('127.0.0.1','127.0.0.1:71')
+                    axios
+                    .get(url)
+                    .then(response => {
+                        this.insumos = this.insumos.concat(response.data.results);
+                        for (insumo of this.insumos){
+                            if (insumo.unidad == 'Kilogramo'){
+                                insumo.unidades = ['kilogramo','gramo','miligramo']
+                            }else if(insumo.unidad == 'Litro'){
+                                insumo.unidades = ['litro','mililitro']
+                            }else if (insumo.unidad == 'Unidad'){
+                                insumo.unidades = ['unidad']
+                            }else if (insumo.unidad == 'Caja'){
+                                insumo.unidades = ['caja']
+                            }else{
+                                insumo.unidades = ['n/a']
+                            }
+                            insumo.opcional = false;
+                        }
+                        let next = response.data.next
+                        if (next != null){
+                            this.obtenerInsumos(next)
+                        }else{
+                            $(function(){
+                                setTimeout(()=>{
+                                    activarTooltip();
+                                    $('select').select2();
+                                },150);
+                            });
+                        }
+                    });
+                },
+                validarForm(){
+                    this.errores = [];
+                    let valida = true;
+                    let formulario = document.querySelector('#formulario');
+                    let inputs = formulario.querySelectorAll('input');
+                    for (input of inputs){
+                        if(input.id.includes('selectized') == false){
+                            if(input.validity.valid == false){
+                                valida = false;
+                                input.reportValidity();
+                            }
+                        }
+                        
+                    }
+                    if(this.tipo == 'PIP'){
+                        let ingredientes_u = document.getElementsByName('ingredientes_u[]');
+                    if (ingredientes_u.length <=0){
+                        alert("Debes seleccionar al menos un ingrediente.");
+                    }
+                    for(ingrediente_u of ingredientes_u){
+                        if(ingrediente_u.value == ''){
+                            ingrediente_u.focus();
+                            return alert("Debes seleccionar la unidad de medida de los ingredientes");
+                        }
+                    }
+                    }
+                    
+                    let selects = formulario.querySelectorAll('select')
+                    for (select of selects){
+                        if (select.name == 'columnas'){
+                            let opciones = select.selectedOptions;
+                            if (opciones.length <=0){
+                                select.focus();
+                                return alert("Debes seleccionar los parametros a utilizar en la pauta.");
+                            }
+                        }
+                    }
+                    if (this.validarLider()){
+                        if (valida){
+                            formulario.submit();
+                        }
+                    }
+                    
+                },
+        agregarIngrediente(){
+            this.ingredientes.push({
+                insumo: '',
+                cantidad: 0,
+                identificador: 'ingrediente' + String(this.ingredientes.length),
+            });
+            setTimeout(()=>{
+                $('select').select2();
+            },150);
+        },
+        agregarIP(){
+            this.ips.push({
+                insumo: '',
+                identificador: 'ingrediente' + String(this.ingredientes.length),
+            });
+            setTimeout(()=>{
+                $('select').select2();
+            },150);
+        },
+        agregarInsumo(event){
+            id = event.target.value;
+            index = event.target.getAttribute('data-index');
+            ingrediente = this.insumos.filter(insumo => insumo.id == id)[0];
+            this.insumos_seleccionados[index] = ingrediente;
+            setTimeout(()=>{
+                $('select').select2();
+            },150);
+        },
+        eliminarIngrediente(event,index){
+            this.ingredientes.splice(index,1);
+        },
+        eliminarIPS(event,index){
+            this.ips.splice(index,1);
+        },
+        agregarEtapa(){
+            this.etapas.push({
+                nombre: '',
+                instrucciones: [
+                {
+                    instruccion: '',
+                    identificador: 'instruccion0',
+                    columnas: [],
+                }],
+            })
+            setTimeout(()=>{
+                activarTooltip();
+                $('select').select2();
+            },500);
+            
+        },
+        eliminarEtapa(index){
+            this.etapas.splice(index,1);
+        },
+        agregarInstruccion(index){
+            this.etapas[index].instrucciones.push({
+                instruccion: '',
+                identificador: 'instruccion' + String(this.etapas[index].instrucciones.length),
+                columnas: [],
+            });
+            setTimeout(()=>{
+                activarTooltip();
+                $('select').select2();
+            },500);
+            
+        },
+        eliminarInstruccion(eindex,index){
+            this.etapas[eindex].instrucciones.splice(index,1);
+            setTimeout(()=>{
+                activarTooltip();
+            },500);
+            
+        },
+        obtenerNombreInput(eindex){
+            return 'ietapa' + String(eindex) + "[]";
+        },
+        obtenerIdentificadorInput(eindex){
+            return 'ietapai' + String(eindex) + "[]";
+        },
+    },
+    mounted(){
+        this.obtenerInsumos('no');
+        this.productos = document.querySelector('#id_productos').parentNode.parentNode;
+        this.rendimiento = document.querySelector('#id_rendimiento').parentNode.parentNode;
+        this.esconder();
+        $('#id_rama').select2();
+        
+    },
+    delimiters: ['{$', '$}'],
+}).mount('#app');
+</script>
+{%endblock scripts%}

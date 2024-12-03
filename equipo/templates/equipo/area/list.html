@@ -1,0 +1,181 @@
+{% extends 'nucleo/base.html' %}
+{%block title%}Áreas{%endblock%}
+{%load static%}
+{%block head%}
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/tables/datatable/dataTables.bootstrap5.min.css'%}">
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/tables/datatable/responsive.bootstrap4.min.css'%}">
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/tables/datatable/buttons.bootstrap5.min.css'%}">
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/tables/datatable/rowGroup.bootstrap4.min.css'%}">
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/pickers/flatpickr/flatpickr.min.css'%}">
+{%endblock%}
+{%block content%}
+<!-- BEGIN: Content-->
+    <div class="app-content content ">
+        <div class="content-overlay"></div>
+        <div class="header-navbar-shadow"></div>
+        <div class="content-wrapper container-fluid p-0">
+            <div class="content-header row">
+                <div class="content-header-left col-md-9 col-12 mb-2">
+                    <div class="row breadcrumbs-top">
+                        <div class="col-12">
+                            <h2 class="content-header-title float-start mb-0">Administrador</h2>
+                            <div class="breadcrumb-wrapper">
+                                <ol class="breadcrumb">
+                                    <li class="breadcrumb-item"><a href="#">Áreas</a>
+                                    </li>
+                                    <li class="breadcrumb-item active">Lista
+                                    </li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="content-header-right text-md-end col-md-3 col-12 d-md-block d-none">
+
+                    <div class="mb-1 breadcrumb-right">
+                        {%if 'equipo.listar' in perms %}
+                            <a class="" href="{% url 'administrador:equipo:lista' %}"><button class="btn btn-primary">Equipos</button></a>
+                            {%endif%}
+                        {%if 'equipo.area.crear' in perms %}
+                        <a class="" href="{% url 'administrador:equipo:area:crear' %}"><button class="btn btn-primary">Añadir Área</button></a>
+                        {%endif%}
+                    </div>
+                </div>
+            </div>
+                <section id="basic-datatable">
+                    <div class="row">
+                            <div class="col-12">
+                                <div class="card">
+                                    <table id="areas" class="datatables-basic table text-center">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Lugar</th>
+                                                <th>Área</th>
+                                                {%if 'equipo.area.actualizar' in perms or 'equipo.area.eliminar' in perms%}
+                                                <th>Opciones</th>
+                                                {%endif%}
+                                            </tr>
+                                        </thead>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                </section>
+                <!--/ Dashboard -->
+
+            </div>
+        </div>
+    </div>
+{%endblock%}
+
+{%block scripts%}
+<!-- BEGIN: Page Vendor JS-->
+<script src="{% static 'nucleo/vendors/js/tables/datatable/jquery.dataTables.min.js'%}"></script>
+<script src="{% static 'nucleo/vendors/js/tables/datatable/dataTables.bootstrap5.min.js'%}"></script>
+<script src="{% static 'nucleo/vendors/js/tables/datatable/dataTables.responsive.min.js'%}"></script>
+<script src="{% static 'nucleo/vendors/js/tables/datatable/responsive.bootstrap4.js'%}"></script>
+<script src="{% static 'nucleo/vendors/js/pickers/flatpickr/flatpickr.min.js'%}"></script>
+<!-- END: Page Vendor JS-->
+<script>
+$( function() {
+   $('#areas').DataTable( {
+        responsive: true,
+        autoWidth: true,
+        destroy: true,
+        deferRender: true,
+        pageLength: 10,
+        serverSide: true,
+        rowReorder: true,
+        order: [[0,'desc']],
+        dom: '<"card-header border-bottom p-1"<"head-label"><"dt-action-buttons text-end"B>><"d-flex justify-content-between align-items-center mx-0 row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>t<"d-flex justify-content-between mx-0 row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
+        ajax: '{%url "areaequipo-list" %}?format=datatables',
+        language: {
+            "lengthMenu": "Mostrar _MENU_ equipos por página",
+            "zeroRecords": "Lo sentimos, no hay equipos",
+            "info": "Mostrando página _PAGE_ de _PAGES_",
+            "infoEmpty": "No hay equipos",
+            "infoFiltered": "(filtrados de un total de _MAX_ equipos)",
+            "loadingRecords": "Cargando...",
+            "processing":     "Procesando...",
+            "search":         "Buscar:",
+            "paginate": {
+                "first":      "Primera",
+                "last":       "Ultima",
+                "next":       "Siguiente",
+                "previous":   "Anterior"
+            },
+        },
+        columns: [
+            {data : 'id'},
+            {data: 'nombre',render:function(data,type,row,meta){
+                return data.toUpperCase();
+            }},
+            {data: 'lugar_nombre',name:'lugar.nombre',render:function(data,type,row,meta){
+                return data.toUpperCase();
+            }},
+            {%if 'equipo.area.actualizar' in perms or 'equipo.area.eliminar' in perms%}
+            {mData: 'id',searchable: false,
+            mRender: (data,type,row)=>{
+                let botones ="";
+                {%if 'equipo.area.actualizar' in perms %} 
+                botones+= boton1 = `<a style="margin-right:20px;" href="{%url 'administrador:equipo:area:actualizar' 1 %}"><button data-bs-tooltip="tooltip" data-bs-placement="top" title="Modificar Área" type="button" class="btn btn-icon btn-success waves-effect"><i data-feather="settings"></i></button></a>`.replace('1',data);
+                {%endif%}
+                {%if 'equipo.area.eliminar' in perms %} 
+                botones+= `<button onclick="eliminar(event,${data})" type="button" data-bs-tooltip="tooltip" data-bs-placement="top" title="Eliminar Área" class="btn btn-icon btn-danger waves-effect"><i data-feather="trash"></i></button>`.replace('1',data);
+                {%endif%}
+                return botones;
+            }}
+            {%endif%}
+        ],
+        "drawCallback": function(){
+            feather.replace();
+            activarTooltip();
+        },
+        "initComplete": function () {
+            feather.replace();
+            activarTooltip();
+        },
+    } );
+$('div.head-label').html('<h6 class="mb-0">Equipos</h6>');
+});
+</script>
+
+{%if 'equipo.area.eliminar' in perms %}
+<script src="{%static 'nucleo/vendors/js/extensions/sweetalert2.all.min.js'%}"></script>
+<script>
+function eliminar(event,id){
+    let url = "{% url 'administrador:equipo:area:eliminar' 1%}".replace('1',id);
+    Swal.fire({
+        title: '¿Estas Seguro?',
+        html:"El Área sera <b style='color:red'>eliminada</b> permanentemente del sistema.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        cancelButtonText: 'Cancelar',
+        confirmButtonText: 'Si, Eliminar!'
+        }).then(result=>{
+            if (result.isConfirmed) {
+                axios.get(url).then(response => {
+                    if (response.data.estado == 'ok'){
+                        Swal.fire(
+                        'Eliminada!',
+                        'El área ha sido eliminada.',
+                        'success'
+                        );
+                        let tbody = document.querySelector('#areas tbody');
+                        let totalEquipos = tbody.querySelectorAll('tr').length;
+                        let tr = event.target.closest('tr').remove();
+                        if (totalEquipos -1 <= 0){
+                            document.querySelector('#areas').remove();
+                        }
+                    }
+                });
+            }
+        });               
+}
+</script>
+{%endif%}
+{%endblock%}
+

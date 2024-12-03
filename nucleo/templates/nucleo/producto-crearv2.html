@@ -1,0 +1,444 @@
+{% extends 'nucleo/base.html'%}
+{%block title%}Añadir Producto{%endblock%}
+{%load static%}
+{%block head%}
+<link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/pickers/pickadate/pickadate.css'%}">
+<link rel="stylesheet" type="text/css" href="{%static 'nucleo/css/plugins/forms/pickers/form-pickadate.css'%}">
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+{%endblock%}
+{%block content%}
+<style>
+.errorlist{
+    color:red;
+    list-style:none;
+    padding-left:0;
+}
+</style>
+<!-- BEGIN: Content-->
+    <div class="app-content content ">
+        <div class="content-overlay"></div>
+        <div class="header-navbar-shadow"></div>
+        <div class="content-wrapper container-fluid p-0">
+            <div class="content-header row">
+                <div class="content-header-left col-md-9 col-12 mb-2">
+                    <div class="row breadcrumbs-top">
+                        <div class="col-12">
+                            <h2 class="content-header-title float-start mb-0">Administrador</h2>
+                            <div class="breadcrumb-wrapper">
+                                <ol class="breadcrumb">
+                                    <li class="breadcrumb-item"><a href="{% url 'administrador:producto:lista' %}">Productos</a>
+                                    </li>
+                                    <li class="breadcrumb-item active">Añadir
+                                    </li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="content-body">
+                <!-- Dashboard -->
+                <div class="card">
+
+                    <div class="card-body">
+                        <h2>1.- Información Comercial</h2>
+                        <div class="card-text">
+                            <form class="form form-horizontal" id="app" method="post" enctype="multipart/form-data">{% csrf_token %}
+                                <div class="row">
+                                    <div class="col-12" id="app">
+                                    {%for field in form %}
+                                        {%if field.id_for_label not in 'id_conjunto,id_cantidadpip,id_maduracion'%}
+                                        <div class="mb-1 row">
+                                        <div class="col-sm-3">{{field.label_tag}} {%if field.field.required %}<span style="color:red">*</span>{%endif%}</div>
+                                       
+                                        <div class="col-sm-6 position-relative">{{field}}
+                                        {% if field.help_text %}
+                                        <small class="">{{field.help_text|safe}}</small>
+                                        {%endif%}
+                                        
+                                        {%if field.errors %}
+                                        <div class="invalid-feedback" style="display:block;">{{field.errors.as_text}}</div>
+                                        {%endif%}
+                                        </div>
+                                        </div>
+                                        {%endif%}
+                                    {%endfor%}
+                                    <div class="col-sm-12 mb-1">
+                                        <h2>2.- Información de Pautas de Elaboración</h2>
+                                    </div>
+                                    <div class="col-sm-12 mb-1">
+                                        <h4>2.1.- Seleccione Pauta de elaboración PIP</h4>
+                                        <select onchange="vue.obtenerPauta()" id="pauta" name="pauta_pip">
+                                            <option value="">----</option>
+                                            {%for pauta in pautas%}
+                                            {%if pauta.tipo == 'PIP'%}
+                                            <option value="{{pauta.id}}">{{pauta.nombre}}</option>
+                                            {%endif%}
+                                            {%endfor%}
+                                        </select>
+                                    <table v-if="ingredientes && ingredientes.length > 0" class="table table-striped table-bordered mb-1 mt-1">
+                                        <thead>
+                                            <tr>
+                                                <th>Insumo</th>
+                                                <th>Cantidad</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="ingrediente in ingredientes">
+                                                <td>{$ingrediente.insumo.nombre$}</td>
+                                                <td><p v-if="ingrediente.unidad == 'unidad'">{$ ((ingrediente.cantidad / ingrediente.lider ) * 100 ).toFixed(5).replace(/\.?0+$/, '')$} {$ingrediente.unidad$}es</p><p v-else>{$((ingrediente.cantidad / ingrediente.lider ) * 100 ).toFixed(5).replace(/\.?0+$/, '')$} {$ingrediente.unidad$}s</p></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <p v-if="ingredientes && ingredientes.length > 0">La pauta de elaboración esta en proporción a <strong> {$  ( ingredientes[0].lider /ingredientes[0].lider) * 100 $} litros</strong> de leche.</p>
+                                    <!--<p v-if="ingredientes && ingredientes.length > 0" class="mb-1"><strong>Nota:</strong>La cantidad de cada insumo esta calculada por 100 litros de leche.</p> -->   
+                                    </div>
+                                    <div class="col-sm-12 mb-1">
+                                        <h4>2.2 - Seleccione Pauta de elaboración de Linea</h4>
+                                            <select onchange="vue.obtenerPautav2()" id="pautav2" name="pauta_linea">
+                                                <option value="">----</option>
+                                                {%for pauta in pautas%}
+                                                {%if pauta.tipo == 'Linea'%}
+                                                <option value="{{pauta.id}}">{{pauta.nombre}}</option>
+                                                {%endif%}
+                                                {%endfor%}
+                                            </select>
+                                        <table v-if="ingredientesv2 && ingredientesv2.length > 0" class="table table-striped table-bordered mb-1 mt-1">
+                                            <thead>
+                                                <tr>
+                                                    <th>Insumo</th>
+                                                    <th>Cantidad</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr v-for="ingrediente in ingredientesv2">
+                                                    <td>{$ingrediente.insumo.nombre$}</td>
+                                                    <td><p v-if="ingrediente.unidad == 'unidad'">{$ ((ingrediente.cantidad / ingrediente.lider ) * 100 ).toFixed(5).replace(/\.?0+$/, '')$} {$ingrediente.unidad$}es</p><p v-else>{$ ((ingrediente.cantidad / ingrediente.lider ) * 100 ).toFixed(5).replace(/\.?0+$/, '')$} {$ingrediente.unidad$}s</p></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                        <p v-if="ingredientesv2 && ingredientesv2.length > 0">La pauta de elaboración esta en proporción a <strong> {$ (ingredientesv2[0].lider / ingredientesv2[0].lider ) * 100  $} litros</strong> de leche.</p>
+                                    </div> 
+                                    
+                                    <div class="col-sm-12 mb-1">
+                                        <h4>2.3 - Pautas de Valor Agregado</h4>
+                                        <div class="mt-1 mb-1 row">
+                                            <div class="col-sm-3">2.3.1 - Indicar Conjunto de Valor Agregado {%if form.conjunto.required %}<span style="color:red">*</span>{%endif%}</div>
+                                            <div class="col-sm-6">{{form.conjunto}}{% if form.conjunto.help_text %}
+                                                <small class="">{{form.conjunto.help_text|safe}}</small>
+                                                {%endif%}
+                                            </div>
+                                        </div>
+                                        <div class="mt-1 mb-1 row">
+                                            <div class="col-sm-3">2.3.2 - Indicar Periodo de Maduración {%if form.maduracion.required %}<span style="color:red">*</span>{%endif%}</div>
+                                            <div class="col-sm-6">{{form.maduracion}}{% if form.maduracion.help_text %}
+                                                <small class="">{{form.maduracion.help_text|safe}}</small>
+                                                {%endif%}
+                                            </div>
+                                        </div> 
+                                    </div>
+                                    <div class="col-sm-12 mb-1">
+                                        <h2>3. - Ingredientes e Insumos</h2>
+                                    </div>
+                                    <div class="col-sm-12 mt-1 mb-1">
+                                        <h4>3.1 - Insumos de Elaboración ($ {$ ce.toFixed(2) $})</h4>
+                                        <p>Seleccione los insumos para elaborar este producto</p>
+                                        <table id="ice" class="table table-bordered table-striped mb-2">
+                                            <thead>
+                                                <tr>
+                                                    <th>Insumo</th>
+                                                    <th>Cantidad</th>
+                                                    <th>Precio</th>
+                                                    <th><button class="btn btn-primary" type="button" @click="agregarCampo('insumo')">Agregar</button></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr v-for="(numero,index) in numerose">
+                                                    <td><select onchange="vue.cambiarInsumoe(event)" required class="form-select" name="insumoe[]">
+                                                        <option v-for="insumo in insumos" :value="insumo.id">{$ insumo.nombre $} ({$insumo.unidad$})</option>
+                                                    </select></td>
+                                                   <td><input onkeyup="vue.calcularCe(event)" type="number" required name="insumoe_c[]" placeholder="Cantidad" class="form-control" step="0.00001" min="0" max="9999"/></td>
+                                                    <td><input type="text" disabled class="form-control"></td>
+                                                   <td><button class="btn btn-danger" type="button" @click="eliminarCampo($event,index)">Eliminar</button></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                        </div>
+                                    <div class="col-sm-12">
+                                    <h4>3.2 - Insumos de costo seco ($ {$cis.toFixed(2)$})</h4>
+                                    <table id="ics" class="table table-bordered table-striped mb-2">
+                                        <thead>
+                                            <tr>
+                                                <th>Insumo</th>
+                                                <th>Cantidad</th>
+                                                <th>% Consumo</th>
+                                                <th>Precio</th>
+                                                <th><button class="btn btn-primary" type="button" @click="agregarCampo('descriptor')">Agregar</button></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="(numero,index) in numeros">
+                                                <td><select onchange="vue.cambiarInsumo(event)" required class="form-select" name="descriptores[]">
+                                                    <option v-for="insumo in insumos" :value="insumo.id">{$ insumo.nombre $} ({$insumo.unidad$})</option>
+                                                </select></td>
+                                                <td><input onkeyup="vue.calcularCis()" type="number" required name="descriptores_c[]" placeholder="Cantidad" class="form-control" min="0" step="any" max="999"/></td>
+                                                <td><input onkeyup="vue.calcularCis()" type="number" required name="descriptores_consumo[]" placeholder="Porcentaje Uso" class="form-control" step="any" min="0" max="100"/></td>
+                                                <td><textarea class="form-control" name="descriptores_d[]"></textarea></td>
+                                                <td><button class="btn btn-danger" type="button" @click="eliminarCampo($event,index)">Eliminar</button></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    </div>
+                                    <div class="col-sm-12 mb-1">
+                                        <h2>4.- Resumen</h2>
+                                    </div>
+                                    <div class="col-sm-12 mt-1 mb-1">
+                                        <table class="table table-bordered">
+                                            <thead>
+                                                <tr>
+                                                    <th>Tipo</th>
+                                                    <th>Costo</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>Costo Elaboración Directo</td>
+                                                    <td>$ {$ce.toFixed(0)$}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Costo Seco Directo</td>
+                                                    <td>$ {$cis.toFixed(0)$}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Total Costo Directo Unidad</td>
+                                                    <td>$ {$ (cis +ce).toFixed(0)$}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Total Costo Directo Kilogramo</td>
+                                                    <td>$ {$ calcularKilo() $}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    
+                                    <div class="col-sm-12">
+                                        <button type="submit" class="btn btn-primary me-1 waves-effect waves-float waves-light">Crear Producto</button>
+                                    </div>
+                                    
+                                
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <!--/ Dashboard -->
+            </div>
+        </div>
+    </div>
+    <!-- END: Content-->
+{%endblock%}
+{%block scripts%}
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+let vue = Vue.createApp({
+    data(){
+        return {
+            insumos:[],
+            cis: 0,
+            ingredientes:[],
+            presentacion: 0,
+            unidad: 0,
+            ingredientesv2:[],
+            pauta:0,
+            ce:0,
+            seleccionados:[],
+            numeros:[],
+            numerose: [],
+            url_base: '{%url "insumo-list" %}?format=json&precio=si',
+            insumose: [ {%for insumo in object.insumoelaboracionproducto_set.all %}{{insumo.insumo.id}},{%endfor%}],
+        };
+    },
+    methods:{
+        calcularKilo(){
+            let unidades = {'gr':1000,'kg':1,'lt':1,'cc':1000}
+            let multiplicador = 1 / (parseFloat(this.presentacion.value) / unidades[this.unidad.value]);
+            return ((this.ce + this.cis)* multiplicador).toFixed(2);
+        },
+        obtenerInsumos(url){
+            url = url.replace('127.0.0.1','127.0.0.1:71')
+                    axios
+                    .get(url)
+                    .then(response => {
+                        this.insumos = this.insumos.concat(response.data.results);
+                        next = response.data.next;
+                        if (next != null){
+                            this.obtenerInsumos(next);
+                        }
+                    });
+                },
+        buscarPrecio(id){
+            let insumo = this.insumos.filter(insumo=>insumo.id==parseInt(id));
+            if (insumo.length > 0){
+                precio = insumo[0].precio_oc;
+            }else{
+                precio = 0;
+            }
+            return precio;
+        },
+        calcularCis(){
+            total=0;
+            selects = document.querySelector('#ics').querySelectorAll('select');
+            for (select of selects){
+                precio = this.buscarPrecio(select.value);
+                cantidad = select.closest('tr').querySelectorAll('input')[0].value;
+                porcentaje = select.closest('tr').querySelectorAll('input')[1].value;
+                select.closest('tr').querySelectorAll('textarea')[0].value = precio;
+                precio = precio * cantidad * porcentaje/100;
+                total+=precio;
+            }
+            this.cis = total;
+        },
+        calcularCe(){
+            total=0;
+            selects = document.querySelector('#ice').querySelectorAll('select');
+            for (select of selects){
+                precio = this.buscarPrecio(select.value);
+                console.log(precio);
+                cantidad = select.closest('tr').querySelectorAll('input')[0].value;
+                precio = precio * cantidad;
+                total+=precio;
+            }
+            this.ce = total;
+        },
+        cambiarInsumoe(event){
+            event.target.closest('tr').querySelectorAll('input')[1].value = this.buscarPrecio(event.target.value).toFixed(2);
+            this.calcularCis();
+        },
+        cambiarInsumo(event){
+            event.target.closest('tr').querySelector('textarea').value = this.buscarPrecio(event.target.value).toFixed(2);
+            this.calcularCe();
+            
+        },
+        colocarPrecios(){
+            selects = document.querySelector('#ice').querySelectorAll('select');
+            for (select of selects){
+                precio = this.buscarPrecio(select.value);
+                select.closest('tr').querySelectorAll('input')[1].value = precio
+            }
+            selects = document.querySelector('#ics').querySelectorAll('select');
+            for (select of selects){
+                precio = this.buscarPrecio(select.value);
+                select.closest('tr').querySelector('textarea').value = precio
+            }
+            this.calcularCis();
+            this.calcularCe();
+        },
+        obtenerPauta(){
+            let pauta = document.querySelector('#pauta');
+            let pauta_id = pauta.options[pauta.selectedIndex].value;
+            let lugar_id = "{{request.user.perfil.lugar.pk}}";
+            let url = '{%url "api-pauta-detalle" 1 1 %}'.split('/');
+            url[4] = String(pauta_id);
+            url[5] = String(lugar_id);
+            if (pauta_id != '' && lugar_id != ''){
+                this.mensaje = false;
+                let url = '{%url "api-pauta-detalle" 1 1 %}'.split('/');
+                url[4] = String(pauta_id);
+                url[5] = String(lugar_id);
+                url = url.join('/');
+                axios.get(url).then(response=>{
+                    let data = response.data;
+                    this.ingredientes = data.ingredientes;
+                    this.nombre = data.nombre;
+                    for(ingrediente of this.ingredientes){
+                        if(ingrediente.original){
+                            ingrediente.ingrediente = true;
+                            ingrediente.lider = data.lider;
+                        }
+                    }
+                });
+            }else{
+                this.mensaje = true;
+                this.columnas = [];
+                this.etapas = [];
+                this.id = pauta_id;
+                this.ingredientes = [];
+                this.nombre = "";
+                this.productos = [];
+                this.grupos = [];
+            }
+        },
+        obtenerPautav2(){
+            let pauta = document.querySelector('#pautav2');
+            let pauta_id = pauta.options[pauta.selectedIndex].value;
+            let lugar_id = "{{request.user.perfil.lugar.pk}}";
+            let url = '{%url "api-pauta-detalle" 1 1 %}'.split('/');
+            url[4] = String(pauta_id);
+            url[5] = String(lugar_id);
+            if (pauta_id != '' && lugar_id != ''){
+                this.mensaje = false;
+                let url = '{%url "api-pauta-detalle" 1 1 %}'.split('/');
+                url[4] = String(pauta_id);
+                url[5] = String(lugar_id);
+                url = url.join('/');
+                axios.get(url).then(response=>{
+                    let data = response.data;
+                    this.ingredientesv2 = data.ingredientes;
+                    this.nombre = data.nombre;
+                    for(ingrediente of this.ingredientesv2){
+                        ingrediente.lider = data.lider;
+                        if(ingrediente.original){
+                            ingrediente.ingrediente = true;
+                        }
+                    }
+                });
+            }else{
+                this.mensaje = true;
+                this.columnas = [];
+                this.etapas = [];
+                this.id = pauta_id;
+                this.ingredientesv2 = [];
+                this.nombre = "";
+                this.productos = [];
+                this.grupos = [];
+            }
+        },
+        agregarCampo(descriptor){
+            if (descriptor == 'descriptor'){
+                this.numeros.push(1);
+            }else{
+                this.numerose.push(1);
+            }
+            setTimeout(()=>{
+                $('select').select2();
+                this.colocarPrecios();
+            },500);
+        },
+        seleccionar(insumo,index){
+            if (insumo.id == this.insumose[index]){
+                return true;
+            }else{
+                return false;
+            }
+        },
+        eliminarCampo(event,index){
+            event.target.parentNode.parentNode.remove();
+            this.calcularCis();
+        },
+    },
+    mounted(){
+        this.obtenerInsumos(this.url_base);
+        this.obtenerPauta();
+        this.obtenerPautav2();
+        this.presentacion = document.getElementById('id_presentacion');
+        this.unidad = document.getElementById('id_unidad');
+        this.calcularCis();
+    },
+    delimiters: ['{$', '$}'],
+}).mount('#app');
+</script>
+<script>
+ $(document).ready(function () {
+    $('select').select2();
+  });
+</script>
+{%endblock scripts%}

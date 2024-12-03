@@ -1,0 +1,5 @@
+Ver el tema de actulizar pauta de elaboración al utilizar insumos PIP
+Crear Productos PIP
+poder utilizar productos PIP en las elaboraciones
+Agregar ficha tecnica a los productos
+Crear ordenes de compra dinamicas

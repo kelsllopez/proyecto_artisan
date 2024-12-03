@@ -1,0 +1,63 @@
+<div class="row">
+    <div class="col-md-3 col-12">
+        <div class="card card-congratulation-medal">
+            <div class="card-body">
+                <h5>Elaboraciones PIP</h5>
+                <div class="text-center">
+                    <div class="mb-1">
+                        <button onclick="location.href='{% url 'produccion:pauta:listapip' %}'" type="button" class="btn {% if request.path == '/produccion/listapip/' %}btn-primary{% else %}btn-outline-primary{% endif %} waves-effect waves-float waves-light">
+                            <i class="far fa-list-alt"></i> Lista de Elaboraciones PIP
+                        </button>
+                        
+                                            </div>
+                    {%if 'produccion.pauta.crear_pip' in perms %}
+                    <div class="mb-1">
+                        <button onclick="location.href='{% url 'produccion:pauta:crear_pip' %}'" type="button" class="btn {%if '/produccion/pauta/fabricar' == request.path%}btn-primary{%else%}btn-outline-primary{%endif%} waves-effect waves-float waves-light"><i class="fas fa-plus-circle"></i> Ingresar Elaboración PIP</button>
+                    </div>
+                    {%endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 col-12">
+        <div class="card card-congratulation-medal">
+            <div class="card-body">
+                <h5>Elaboraciones Linea</h5>
+                <div class="text-center">
+                    <div class="mb-1">
+                        <button onclick="location.href='{% url 'produccion:pauta:listalinea' %}'" type="button" class="btn {% if request.path == '/produccion/listapip/' %}btn-primary{% else %}btn-outline-primary{% endif %} waves-effect waves-float waves-light">
+                            <i class="far fa-list-alt"></i> Lista de Elaboraciones Linea
+                        </button>
+                        
+                                            </div>
+                    {%if 'produccion.pauta.crear_linea' in perms %}
+                    <div class="mb-1">
+                        <button onclick="location.href='{% url 'produccion:pauta:crear_linea' %}'" type="button" class="btn {%if '/produccion/pauta/fabricar' == request.path%}btn-primary{%else%}btn-outline-primary{%endif%} waves-effect waves-float waves-light"><i class="fas fa-plus-circle"></i> Ingresar Elaboración Linea</button>
+                    </div>
+                    {%endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="col-md-6  col-12"> <!-- Cambiado a col-md-4 -->
+        <div class="card card-congratulation-medal">
+            <div class="card-body">
+                <h5>Lotes</h5>
+                <div class="row text-center">
+                    <div class="col-4 mb-1">
+                        <button onclick="location.href='{% url 'produccion:lote:lista' %}'" type="button" class="btn btn-block btn-md {%if '/produccion/lote/' == request.path%}btn-primary{%else%}btn-outline-primary{%endif%} waves-effect waves-float waves-light"><i class="fas fa-recycle"></i> Lista Estado de Maduración</button>
+                    </div> 
+                    <div class="col-4 mb-1">
+                        <button onclick="location.href='{% url 'produccion:lote:nivel' %}'" type="button" class="btn btn-block btn-md {%if '/produccion/lote/nivel/' == request.path%}btn-primary{%else%}btn-outline-primary{%endif%} waves-effect waves-float waves-light"><i class="fas fa-recycle"></i> Nivel de Produccion </button>
+                    </div>
+                    <div class="col-4">
+                        <button onclick="location.href='{% url 'produccion:lote:maduracion' %}'" type="button" class="btn btn-block btn-md {%if '/produccion/lote/maduracion/' == request.path%}btn-primary{%else%}btn-outline-primary{%endif%} waves-effect waves-float waves-light"><i class="fas fa-thermometer-three-quarters"></i> Stock y Estado de Maduración</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

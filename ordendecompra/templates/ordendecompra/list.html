@@ -1,0 +1,413 @@
+{% extends 'nucleo/base.html'%}
+{%block title%}Ordenes de compra{%endblock%}
+{%load static%}
+{%block head%}
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/pickers/flatpickr/flatpickr.min.css'%}">
+{%endblock%}
+{%block content%}
+<!-- BEGIN: Content-->
+    <div class="app-content content ">
+        <div class="content-overlay"></div>
+        <div class="header-navbar-shadow"></div>
+        <div class="content-wrapper container-fluid p-0">
+            <div class="content-header row">
+                <div class="content-header-left col-md-9 col-12 mb-2">
+                    <div class="row breadcrumbs-top">
+                        <div class="col-12">
+                            <h2 class="content-header-title float-start mb-0">Ordenes de compra</h2>
+                            <div class="breadcrumb-wrapper">
+                                <ol class="breadcrumb">
+                                    <li class="breadcrumb-item"><a href="{% url 'ordendecompra:lista' %}">Ordenes de compra</a>
+                                    </li>
+                                    <li class="breadcrumb-item active">Lista
+                                    </li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="content-header-right text-md-end col-md-3 col-12 d-md-block">
+                    {% if 'ordendecompra.crear' in perms %}
+                    <div class="mb-1 breadcrumb-right">
+                        <a href="{% url 'ordendecompra:create' %}"><button class="btn btn-primary">Crear Orden de Compra</button></a>
+                    </div>
+                    {%endif%}
+                </div>
+            </div>
+            <div class="content-body">
+                <!-- Dashboard -->
+                <div id="app">
+                <div class="modal fade text-start"id="default" tabindex="-1" aria-labelledby="myModalLabel1" aria-hidden="true">
+                    <div class="modal-dialog modal-xl">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h4 class="modal-title" id="myModalLabel1">{$ titulo $}</h4>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Información</th>
+                                            <th>Dato</th>
+                                        </tr>
+                                    </thead>
+                                        <tbody>
+                                            <tr>
+                                                <th>Fecha de emisión</th>
+                                                <td>{$ fecha $}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Solicita</th>
+                                                <td>{$ solicita $}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Estado</th>
+                                                <td>{$ estado $}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Pagada</th>
+                                                <td>{$ transformar(pagada) $}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Proveedor</th>
+                                                <td>{$ proveedor $}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Condiciones Comerciales Y Especificaciones Técnicas:</th>
+                                                <td style="word-break: break-all;white-space: normal;overflow: hidden;">{$ condiciones $}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Insumos</th>
+                                                <td><table class="table table-bordered">
+                                                    <tr>
+                                                        <th>Insumo</th>
+                                                        <th>Cantidad</th>
+                                                        <th>Precio</th>
+                                                        <th>Valor Neto</th>
+                                                    </tr>
+                                                    <tr v-for="insumo in insumos">
+                                                        <td>{$ upperCase(insumo.insumo_nombre) $} ({$insumo.formato $} {$insumo.unidad$})</td>
+                                                        <td>{$ insumo.cantidad $}</td>
+                                                        <td>{$ formatoCLP(insumo.neto) $}</td>
+                                                        <td>{$ formatoCLP(insumo.cantidad * insumo.neto) $}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <th>NETO</th>
+                                                        <td>{$ formatoCLP(neto) $}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <th>IVA</th>
+                                                        <td>{$ formatoCLP(iva) $}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <th class="bg-primary text-white">TOTAL</th>
+                                                        <th class="bg-primary text-white">{$ formatoCLP(total) $}</th>
+                                                    </tr>
+                                                </table></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <button style="margin-right:10px;" class="btn btn-success" v-if="pagada == false" @click="pagar($event,id)">Pagar</button>
+                                    {%if 'ordendecompra.pdf' in perms %}
+                                    <button style="margin-right:10px;" v-if="estado != 'Inicial'" @click="verPDF" class="btn btn-primary">Ver Pdf</button>
+                                    {%endif%}
+                                    <button style="margin-right:10px;" class="btn btn-info" v-if="estado == 'Inicial'" @click="editarOrden">Editar</button>
+                                    <button style="margin-right:10px;" v-if="estado == 'Etiquetada'" @click="verEtiquetas" class="btn btn-info">Ver Etiquetas</button>
+                                    {%if 'ordendecompra.listar' in perms %}
+                                    <button style="margin-right:10px;" @click="verDetalle" class="btn btn-secondary">Ver Detalle</button>
+                                    {%endif%}
+                                    {%if 'ordendecompra.eliminar' in perms %}
+                                    <button style="margin-right:10px;" @click="eliminar" v-if="estado == 'Inicial'" class="btn btn-danger">Eliminar</button>
+                                    {%endif%}
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cerrar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </div>
+                <!-- Modal -->
+                
+                <section id="basic-datatable">
+                    <div class="row">
+                            <div class="col-12">
+                                <div class="card">
+                                    <table id="ordendecompra" class="dt-responsive table">
+                                        <thead>
+                                            <tr>
+                                                <th>N°</th>
+                                                <th>Fecha de emisión</th>
+                                                <th>Proveedor</th>
+                                                <th>Insumos</th>
+                                                <th>Total Neto</th>
+                                                <th>Estado</th>
+                                                <th>Opciones</th>
+                                            </tr>
+                                        </thead>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                </section>
+                <!--/ Dashboard -->
+
+            </div>
+        </div>
+    </div>
+{%endblock%}
+
+{%block scripts%}
+<!-- BEGIN: Page Vendor JS-->
+<!-- END: Page Vendor JS-->
+
+<!-- BEGIN: Page JS-->
+<script>
+$( function() {
+   let tabla = $('#ordendecompra').DataTable( {
+       responsive: true,
+        autoWidth: true,
+        destroy: true,
+        deferRender: true,
+        pageLength: 10,
+        serverSide: true,
+        rowReorder: true,
+        order: [[0,'desc']],
+        dom: '<"card-header border-bottom p-1"<"head-label"><"dt-action-buttons text-end"B>><"d-flex justify-content-between align-items-center mx-0 row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>t<"d-flex justify-content-between mx-0 row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
+        ajax: '{%url "ordendecompra-list" %}?format=datatables',
+        language: {
+            "lengthMenu": "Mostrar _MENU_ ordenes por página",
+            "zeroRecords": "Ups - no hay ordenes",
+            "info": "Mostrando página _PAGE_ de _PAGES_",
+            "infoEmpty": "No hay ordenes",
+            "infoFiltered": "(filtradas de un total de _MAX_ ordenes)",
+            "loadingRecords": "Cargando...",
+            "processing":     "Procesando...",
+            "search":         "Buscar:",
+            "paginate": {
+                "first":      "Primera",
+                "last":       "Ultima",
+                "next":       "Siguiente",
+                "previous":   "Anterior"
+            },
+        },
+        columns: [
+            {data : 'numero','className':"toggle-btn-add"},
+            {data : 'fecha'},
+            {data: 'nombre_proveedor', name: 'proveedor.empresa_nombre'},
+            {mData: 'insumos',searchable:false,
+            mRender: (data,type,row)=>{
+                let mensaje = '<ul>';
+                data.forEach(dato => mensaje+=`<li style="font-size:10px;">${dato.insumo_nombre.toUpperCase()} (${dato.cantidad})</li>`);
+                mensaje+='</ul>';
+                return mensaje;
+            }},
+            {data: 'total_neto',render:function(data,type,row,meta){
+                return formatter.format(data);
+            }},
+            {data: 'estado',name:'estado',searchable:true},
+            {mData: 'id',searchable: false,
+            mRender: (data,type,row)=>{
+                let boton1 = `<button data-bs-tooltip="tooltip" data-bs-placement="top" title="Detalle OC" style="margin-right:10px;" type="button" onclick="vue.remplazarModal(${data})"  data-bs-toggle="modal" data-bs-target="#default" class="btn btn-icon btn-info waves-effect"><i data-feather="book"></i></button>`
+                let boton2 = `<a href="{%url 'ordendecompra:paso' 1 %}"><button data-bs-tooltip="tooltip" data-bs-placement="top" title="Siguiente Paso" type="button" class="btn btn-icon btn-success waves-effect"><i data-feather="settings"></i></button></a>`;
+                let boton3 = `<a href="{%url 'ordendecompra:retroceder' 1%}"><button data-bs-tooltip="tooltip" data-bs-placement="top" title="Deshacer OC" type="button" class="btn btn-icon btn-primary waves-effect"><i data-feather="rotate-ccw"></i></button></a>`;
+                let boton4 = '';
+                if (row['pagada']){
+                    boton4 = `<button data-bs-tooltip="tooltip" data-bs-placement="top" title="Pagada" style="margin-left:10px;" type="button" class="btn btn-icon btn-success waves-effect"><i class="fas fa-dollar-sign"></i></button>`;
+                }
+                else{
+                    boton4 = `<button data-bs-tooltip="tooltip" data-bs-placement="top" title="Pagar OC" style="margin-left:10px;" type="button" onclick="vue.pagar(event,${data})" class="btn btn-icon btn-danger waves-effect"><i class="fas fa-dollar-sign"></i></button>`;
+                }
+                
+                boton2 = boton2.replace('1',data);
+                boton3 = boton3.replace('1',data);
+                return boton1 + boton2 + '<span style="margin-left:10px;"></span>' + boton3 + boton4;
+                
+            }}
+            
+        ],
+        
+        "drawCallback": function(){
+            let td = document.querySelectorAll('td');
+            td.forEach(t => {
+                if(t.outerText == 'Inicial')
+                {
+                    t.style.backgroundColor = '#ea5455';
+                    t.style.color = 'white';
+                    t.style.fontWeight = "700";
+                }
+                else if(t.outerText == 'Validada'){
+                    t.style.backgroundColor = '#ff9f43';
+                    t.style.color = 'white';
+                    t.style.fontWeight = "700";
+                }
+                else if( (t.outerText == 'Recepcionada') || (t.outerText == 'Semi-Recepcionada') ){
+                    t.style.backgroundColor = '#00cfe8';
+                    t.style.color = 'white';
+                    t.style.fontWeight = '700';
+                }
+                else if(t.outerText == 'Pagada'){
+                    t.style.backgroundColor = '#28c76f';
+                    t.style.color = 'white';
+                    t.style.fontWeight = "700";
+                }
+                else if(t.outerText == 'Etiquetada'){
+                    t.style.backgroundColor = '#28c76f';
+                    t.style.color = 'white';
+                    t.style.fontWeight = "700";
+                }
+            });
+            feather.replace();
+            activarTooltip();
+        },
+        "initComplete": function () {
+            feather.replace();
+            activarTooltip();
+        },
+    } );
+tabla.on('responsive-display',function(){
+    feather.replace();
+});
+$('div.head-label').html('<h6 class="mb-0">Ordenes de Compra</h6>');
+});
+</script>
+<script src="{%static 'nucleo/vendors/js/extensions/sweetalert2.all.min.js'%}"></script>
+<script>
+let vue = Vue.createApp({
+            data() {
+                return {
+                    titulo: 'Hola',
+                    id: 0,
+                    fecha: '11-11-2021',
+                    pagada: false,
+                    insumos: [],
+                    proveedor: 'Artisan',
+                    estado: 'inicial',
+                    solicita: 'Artisan',
+                    condiciones: '',
+                    url: '{% url "ordendecompra:pdf" 1%}',
+                    url_detalle: '{% url "ordendecompra:detalle" 1%}',
+                    url_etiquetas: '{% url "ordendecompra:etiquetas" 1%}',
+                    url_editar: '{% url "ordendecompra:editar" 1%}',
+                };
+            },
+            computed:{
+                neto(){
+                    let total = 0;
+                    this.insumos.forEach(insumo => {
+                        total+=(insumo.cantidad*insumo.neto)
+                    });
+                    return total;
+                },
+                iva(){
+                    let valor_iva = parseFloat('{{valorIVA}}'.replace(',','.'));
+                    let total = this.neto;
+                    return total * valor_iva;
+                },
+                total(){
+                    return this.neto + this.iva;
+                }
+            },
+            methods: {
+                verPDF(){
+                    window.open(this.url.replace('1',this.id));
+                },
+                eliminar(){
+                    let url = "{% url 'ordendecompra:eliminar' 1%}".replace('1',this.id);
+                    Swal.fire({
+                            title: 'Estas Seguro?',
+                            text: "La orden de compra sera eliminada permanentemente del sistema",
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#3085d6',
+                            cancelButtonColor: '#d33',
+                            confirmButtonText: 'Si, Eliminar!'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    location.href = url;
+                                                        }
+                                                }
+                                    );},
+                pagar(event,id){
+                    let url = "{% url 'ordendecompra:pagar' 1%}".replace('1',id);
+                    Swal.fire({
+                        title: '¿Estas Seguro?',
+                        html:"La Orden de compra sera <b style='color:green'>pagada</b>.",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        cancelButtonText: 'Cancelar',
+                        confirmButtonText: 'Si, Pagar!'
+                        }).then(result=>{
+                            if (result.isConfirmed) {
+                                axios.get(url).then(response => {
+                                    if (response.data.estado == 'ok'){
+                                        Swal.fire(
+                                        'Pagada!',
+                                        'La orden de compra ha sido pagada.',
+                                        'success'
+                                        );
+                                        event.target.className = 'btn btn-icon btn-success waves-effect';
+                                        this.pagada = true;
+                                    }
+                                });
+                            }
+                        });              
+                },
+                transformar(dato){
+                    if(dato){
+                        return 'Sí'
+                    }
+                    return 'No'
+                },
+                verEtiquetas(){
+                    window.open(this.url_etiquetas.replace('1',this.id));
+                },
+                editarOrden(){
+                    window.open(this.url_editar.replace('1',this.id));
+                },
+                verDetalle(){
+                    location.href = this.url_detalle.replace('1',this.id);
+                },
+                upperCase(string){
+                    return string.toUpperCase();
+                },
+                formatoCLP(numero){
+                    return formatter.format(numero);
+                },
+                remplazarModal(numero){;
+                    let url = '{%url "ordendecompra-detail" 1%}';
+                    axios
+                    .get(url.replace('1',numero))
+                    .then(response => {
+                        this.titulo = "Orden de compra: " + response.data.numero;
+                        this.insumos = response.data.insumos;
+                        this.fecha = response.data.fecha;
+                        this.solicita = response.data.solicita;
+                        this.id = response.data.id;
+                        this.pagada = response.data.pagada;
+                        this.proveedor = response.data.nombre_proveedor;
+                        this.condiciones = response.data.condiciones;
+                        this.estado = response.data.estado;
+                    })
+                }
+            },
+            mounted() {
+            },
+            delimiters: ['{$', '$}']
+        }).mount('#app');
+</script>
+
+<!-- END: Page JS-->
+
+{%endblock%}

@@ -1,0 +1,108 @@
+{% extends 'nucleo/base.html'%}
+{%block title%}Modificar Área del negocio{%endblock%}
+{%load static%}
+{%block head%}
+<link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/pickers/pickadate/pickadate.css'%}">
+<link rel="stylesheet" type="text/css" href="{%static 'nucleo/css/plugins/forms/pickers/form-pickadate.css'%}">
+{%endblock%}
+{%block content%}
+<style>
+.errorlist{
+    color:red;
+    list-style:none;
+    padding-left:0;
+}
+</style>
+<!-- BEGIN: Content-->
+    <div class="app-content content ">
+        <div class="content-overlay"></div>
+        <div class="header-navbar-shadow"></div>
+        <div class="content-wrapper container-fluid p-0">
+            <div class="content-header row">
+                <div class="content-header-left col-md-9 col-12 mb-2">
+                    <div class="row breadcrumbs-top">
+                        <div class="col-12">
+                            <h2 class="content-header-title float-start mb-0">Administrador</h2>
+                            <div class="breadcrumb-wrapper">
+                                <ol class="breadcrumb">
+                                    <li class="breadcrumb-item"><a href="{% url 'administrador:area:lista' %}">Áreas</a>
+                                    </li>
+                                    <li class="breadcrumb-item active">Modificar
+                                    </li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="content-body">
+                <!-- Dashboard -->
+                <div class="card">
+
+                    <div class="card-body">
+                        <div class="card-text">
+                            <form class="form form-horizontal" method="post" enctype="multipart/form-data">{% csrf_token %}
+                                <div class="row">
+                                    <div class="col-12" id="app">
+                                    {%for field in form %}
+                                        <div class="mb-1 row">
+                                        <div class="col-sm-3">{{field.label_tag}} {%if field.field.required %}<span style="color:red">*</span>{%endif%}</div>
+                                       
+                                        <div class="col-sm-6 position-relative">{{field}}
+                                        {% if field.help_text %}
+                                        <small class="">{{field.help_text|safe}}</small>
+                                        {%endif%}
+                                        
+                                        {%if field.errors %}
+                                        <div class="invalid-feedback" style="display:block;">{{field.errors.as_text}}</div>
+                                        {%endif%}
+                                        </div>
+                                        </div>
+                                    {%endfor%}
+                                    <table class="table table-striped mt-1 mb-1">
+                                        <thead>
+                                            <tr>
+                                                <th>Linea</th>
+                                                <th><button @click="agregarLinea" type="button" class="btn btn-success">Agregar Linea</button></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="linea in lineas">
+                                                <td><input type="text" name="linea" v-model="linea.linea" class="form-control" placeholder="Nombre de Linea"/><input type="hidden" name="idlinea" v-model="linea.id"></td>
+                                                <td><button @click="eliminarLinea(linea)" type="button" class="btn btn-danger"><i class="fas fa-trash"></i></button></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <div class="col-sm-12">
+                                            <button type="submit" class="btn btn-primary me-1 waves-effect waves-float waves-light">Actualizar Área de negocio</button>
+                                        </div>
+                                
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <!--/ Dashboard -->
+            </div>
+        </div>
+    </div>
+    <!-- END: Content-->
+{%endblock%}
+{%block scripts%}
+<script>
+    let vue = Vue.createApp({
+    data(){
+        return {
+            lineas: [{%for linea in object.linea_set.all%}{'linea':'{{linea.nombre}}','id':parseInt('{{linea.id}}')},{%endfor%}],
+        };
+    },
+    methods:{
+        agregarLinea(){
+            this.lineas.push({'linea':'','id':0});
+        },
+        eliminarLinea(lineaa){
+            this.lineas = this.lineas.filter(linea => linea != lineaa);
+        }
+    }
+    }).mount('#app');
+</script>
+{%endblock%}

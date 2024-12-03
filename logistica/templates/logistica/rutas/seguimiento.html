@@ -1,0 +1,263 @@
+{%extends 'nucleo/base.html'%}
+{%block title%}Seguimiento {{object.nombre}}{%endblock%}
+{%load static%}
+{%block head%}
+<link rel="stylesheet" type="text/css" href="{%static 'nucleo/css/ol.css'%}">
+{%endblock%}
+{%block content%}
+{%load static%}
+<!-- BEGIN: Content-->
+    <div class="app-content content " id="app">
+        <div class="content-overlay"></div>
+        <div class="header-navbar-shadow"></div>
+        <div class="content-wrapper container-fluid p-0">
+            <div class="content-header row">
+                <div class="content-header-left col-md-9 col-12 mb-2">
+                    <div class="row breadcrumbs-top">
+                        <div class="col-12">
+                            <h2 class="content-header-title float-start mb-0">Logística</h2>
+                            <div class="breadcrumb-wrapper">
+                                <ol class="breadcrumb">
+                                    <li class="breadcrumb-item"><a href="{% url 'logistica:rutas:lista' %}">Rutas</a>
+                                    </li>
+                                    <li class="breadcrumb-item">{{object.nombre}}
+                                    </li>
+                                    <li class="breadcrumb-item">Seguimiento
+                                    </li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="content-header-right text-md-end col-md-3 col-12 d-md-block d-none">
+
+                    {%if object.patente != ""%}<div class="mb-1 breadcrumb-right">
+                            <button @click="agrandarMapa" class="btn btn-primary">{$texto$}</button>
+                    </div>{%endif%}
+                </div>
+            </div>
+            <div class="content-body">
+                <!-- Dashboard -->
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">Ruta: {{object.nombre}} 🚛</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-text">
+                            <div class="row">
+                                {%if object.patente != ""%}
+                                <div id="mapacontainer" class="col-lg-6">
+                                    <div style="width:100%; height:400px;" id="map"></div>
+                                </div>
+                                {%endif%}
+                                <div id="ordencontainer" class="{%if object.patente != ""%}col-lg-6{%else%}col-lg-12{%endif%}">
+                                    <h3 class="mt-1">Ordenes</h3>
+                                    <div v-if="total_o > 0" class="accordion" id="acordionordenes" data-toggle-hover="true">
+                                        <div v-for="orden in ordenes" class="accordion-item">
+                                            <h2 class="accordion-header" id="headingOne">
+                                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" :data-bs-target="`#orden`+orden.orden.id" aria-expanded="false" :aria-controls="`orden`+orden.orden.id">
+                                                {$ transformar(orden) $}
+                                            </button>
+                                            </h2>
+                                            <div :id="`orden`+orden.orden.id" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#acordionordenes" style="">
+                                            <div class="accordion-body">
+                                                <div class="row">
+                                                    <div class="col-md-6 col-sm-12 mb-1">
+                                                        <table style="font-size:12px" class="table table-bordered table-striped">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>Dato</th>
+                                                                    <th>Información</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr>
+                                                                    <td>Cliente</td>
+                                                                    <td>{$ orden.orden.cliente.nombre $}</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>Local</td>
+                                                                    <td>{$ orden.orden.local.local $}</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>Dirección</td>
+                                                                    <td>{$ orden.orden.local.direccion $}</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>Contacto</td>
+                                                                    <td>{$ orden.orden.local.contacto $}</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>Télefono</td>
+                                                                    <td>{$ orden.orden.local.telefono $}</td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                    <div class="col-md-6 col-sm-12 mb-1">
+                                                        
+                                                        <table style="font-size:12px;" class="table table-bordered table-striped">
+                                                    <thead>
+                                                        <tr>
+                        
+                                                            <th>Producto</th>
+                                                            <th>Unidades</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                        
+                                                            <td>Total Productos</td>
+                                                            <td>{$ orden.orden.total_productos $}</td>
+                                                        </tr>
+                                                        <tr v-for="producto in orden.orden.productos">
+                        
+                                                            <td>{$producto.producto.nombre$} ({$producto.producto.presentacion$} {$producto.producto.unidad$})</td>
+                                                            <td>{$ producto.cantidad_fc $}</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                                    </div>
+                                                
+                                                </div>
+                                            </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div id="geo-marker"></div>
+                        </div>
+                    </div>
+                </div>
+                <!--/ Dashboard -->
+
+            </div>
+        </div>
+    </div>
+    <!-- END: Content-->
+{%endblock%}
+{%block scripts%}
+<script src="{%static 'nucleo/js/ol.js'%}"></script>
+<script>
+    let vue = Vue.createApp({
+        data(){
+            return{
+                id:0,
+                persona: [],
+                ordenes: [],
+                nombre_ruta: "",
+                marcadores: [],
+                total_o: 0,
+                mapa: false,
+                texto: 'Agrandar',
+                viaje: [],
+                layer: false,
+                marcador: false,
+            }
+        },
+        methods:{
+            remplazarModal(){
+                let numero = '{{object.id}}';
+                let url = '{%url "ruta-list" %}' + `${numero}?extra=1&locacion=1`;
+                axios
+                .get(url)
+                .then(response => {
+                    this.id = response.data.id;
+                    this.viaje = response.data.locacion;
+                    this.total_o = response.data.total_ordenes;
+                    this.nombre_ruta = response.data.nombre;
+                    this.persona = response.data.persona;
+                    this.ordenes = response.data.ordenes;
+                    {%if object.patente != ""%}
+                    this.agregarMarcador(this.viaje.longitude,this.viaje.latitude);
+                    this.moverMarcador(this.viaje.longitude,this.viaje.latitude);
+                    {%endif%}
+                });
+            },
+            moverMarcador(latitud,longitud){
+                this.mapa.getView().setCenter(ol.proj.transform([latitud,longitud],'EPSG:4326', 'EPSG:3857'));
+                return true;
+            },
+            agrandarMapa(){
+                ordencontainer = document.getElementById('ordencontainer');
+                mapacontainer = document.getElementById('mapacontainer');
+                if (ordencontainer.className == 'col-lg-12'){
+                    ordencontainer.className = 'col-lg-6';
+                    mapacontainer.className = 'col-lg-6';
+                    setTimeout(()=>{
+                        this.mapa.updateSize();
+                    },300);
+                    this.texto = 'Agrandar';
+                }else{
+                    ordencontainer.className = 'col-lg-12';
+                    mapacontainer.className = 'col-lg-12';
+                    setTimeout(()=>{
+                        this.mapa.updateSize();
+                    },300);
+                    this.texto = 'Achicar';
+                }
+            },
+            transformar(orden){
+                estado = orden.orden.estado;
+                if (estado == 'Asignado'){
+                    estado = 'En Ruta';
+                }
+                return `Orden ${orden.orden.id} - ${orden.orden.cliente.nombre} - ${estado}` ;
+            },
+            eliminarCapa(){
+                this.mapa.removeLayer(this.layer);
+            },
+            agregarMarcador(latitud,longitud){
+                if(this.layer != false){
+                    this.eliminarCapa();
+                }
+                let marcador = new ol.Feature({
+                    geometry: new ol.geom.Point(
+                        ol.proj.fromLonLat([latitud,longitud])// En dónde se va a ubicar
+                    ),
+                });
+                marcador.setStyle(new ol.style.Style({
+                    image: new ol.style.Icon({
+                        src: "{% static 'nucleo/images/truck.png' %}",
+                        scale: 0.1
+                    })
+                }));
+                this.marcadores = [];
+                this.marcadores.push(marcador);// Agregamos el marcador al arreglo
+                
+                this.layer = new ol.layer.Vector({
+                    source: new ol.source.Vector({
+                        features: this.marcadores, // A la capa le ponemos los marcadores
+                    }),
+                });
+                // Y agregamos la capa al mapa
+                this.mapa.addLayer(this.layer);
+            },
+        },
+        delimiters: ['{$', '$}'],
+        mounted(){
+            this.mapa = new ol.Map({ 
+                layers: [ 
+                  new ol.layer.Tile({ 
+                     source: new ol.source.OSM() 
+                     }) 
+                  ], 
+                  target: 'map',
+                  renderer: 'canvas',
+                  view: new ol.View({
+                      center: ol.proj.fromLonLat([-70.7205882,-33.3273022]),
+                      zoom: 16,
+                      minZoom: 2,
+                      maxZoom: 20
+                  })
+              });
+              setInterval(()=>{
+                this.remplazarModal();
+            },10000)
+            this.remplazarModal();
+        },
+    }).mount('#app');
+</script>
+{%endblock%}

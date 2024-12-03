@@ -1,0 +1,101 @@
+{% extends 'nucleo/base.html'%}
+{%block title%}Lote: {{lote.numero}}{%endblock%}
+{%load static%}
+{%block head%}
+<link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/pickers/pickadate/pickadate.css'%}">
+<link rel="stylesheet" type="text/css" href="{%static 'nucleo/css/plugins/forms/pickers/form-pickadate.css'%}">
+{%endblock%}
+{%block content%}
+<style>
+.errorlist{
+    color:red;
+    list-style:none;
+    padding-left:0;
+}
+</style>
+<!-- BEGIN: Content-->
+    <div class="app-content content ">
+        <div class="content-overlay"></div>
+        <div class="header-navbar-shadow"></div>
+        <div class="content-wrapper container-fluid p-0">
+            <div class="content-header row">
+                <div class="content-header-left col-md-9 col-12 mb-2">
+                    <div class="row breadcrumbs-top">
+                        <div class="col-12">
+                            <h2 class="content-header-title float-start mb-0">Producción</h2>
+                            <div class="breadcrumb-wrapper">
+                                <ol class="breadcrumb">
+                                    <li class="breadcrumb-item"><a href="{% url 'produccion:lote:lista' %}">Lotes</a>
+                                    </li>
+                                    <li class="breadcrumb-item active">{{lote.numero}}
+                                    </li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="content-body">
+                <!-- Dashboard -->
+                <div class="card">
+
+                    <div class="card-body">
+                        <div class="card-text">
+                           <h3>Información Lote</h3>
+                           <div class="row">
+                            <div class="table-responsive">
+                                <table class="table table-striped table-bordered">
+                                    <thead>
+                                        <th>Información</th>
+                                        <th>Dato</th>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <th>Fecha de elaboración</th>
+                                            <td>{{lote.fecha}}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Codigo de Lote</th>
+                                            <td>{{lote.numero}}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Estado</th>
+                                            <td>{{lote.estadolote_set.last.nombre}}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Producto</th>
+                                            <td>{{lote.producto.nombre}}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Cantidad Elaborada</th>
+                                            <td>{{lote.cantidad}}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Cantidad Actual</th>
+                                            <td>{{lote.cantidadactual}}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <h3 class="mt-1">Imprimir Etiquetas</h3>
+                                <form action="#" method="get">
+                                <div class="mb-1 row">
+                                        
+                                       
+                                        <div class="col-sm-6 position-relative"><input type="number" class="form-control" name="unidad" placeholder="Productos por caja"/>
+                                        <small class="">La cantidad de productos que se empaquetaran en cada caja.</small></div>
+                                        <div class="col-sm-3">
+                                        <input class="btn btn-primary" type="submit" value="Generar Etiquetas">
+                                        </div>
+                                    
+                                    
+                                </form>
+                        </div>
+                    </div>
+                </div>
+                <!--/ Dashboard -->
+            </div>
+        </div>
+    </div>
+    <!-- END: Content-->
+{%endblock%}

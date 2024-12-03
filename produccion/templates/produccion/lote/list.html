@@ -1,0 +1,207 @@
+{% extends 'nucleo/base.html' %}
+{%block title%}Elaboraciones{%endblock%}
+{%load static%}
+{%block head%}
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/tables/datatable/dataTables.bootstrap5.min.css'%}">
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/tables/datatable/responsive.bootstrap4.min.css'%}">
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/tables/datatable/buttons.bootstrap5.min.css'%}">
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/tables/datatable/rowGroup.bootstrap4.min.css'%}">
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/pickers/flatpickr/flatpickr.min.css'%}">
+{%endblock%}
+{%block content%}
+<!-- BEGIN: Content-->
+    <div class="app-content content ">
+        <div class="content-overlay"></div>
+        <div class="header-navbar-shadow"></div>
+        <div class="content-wrapper container-fluid p-0">
+            <div class="content-header row">
+                <div class="content-header-left col-md-9 col-12 mb-2">
+                    <div class="row breadcrumbs-top">
+                        <div class="col-12">
+                            <h2 class="content-header-title float-start mb-0">Producción</h2>
+                            <div class="breadcrumb-wrapper">
+                                <ol class="breadcrumb">
+                                    <li class="breadcrumb-item"><a href="#">Lotes</a>
+                                    </li>
+                                    <li class="breadcrumb-item active">Lista
+                                    </li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="content-header-right text-md-end col-md-3 col-12 d-md-block d-none">
+
+                    <div class="mb-1 breadcrumb-right">
+                        
+                    </div>
+                </div>
+            </div>
+            <!-- MENU -->
+            {% include 'produccion/common/menu.html' %}
+            <!-- FIN MENU -->
+                <section id="basic-datatable">
+                    <div class="row">
+                            <div class="col-12">
+                                <div class="card">
+                                    <table id="lotes" class="datatables-basic table text-center">
+                                        <thead>
+                                            <tr>
+                                                <th>N° Lote</th>
+                                                <th>Fecha de Elaboración</th>
+                                                <th>N° Elaboración</th>
+                                                <th>Producto</th>
+                                                <th>Cantidad</th>
+                                                <th>Estado</th>
+                                                {%if 'produccion.pauta.detalle' in perms or 'produccion.pauta.actualizar' in perms or 'produccion.pauta.eliminar' in perms%}
+                                                <th>Opciones</th>
+                                                {%endif%}
+                                            </tr>
+                                        </thead>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                </section>
+                <!--/ Dashboard -->
+
+            </div>
+        </div>
+    </div>
+{%endblock%}
+
+{%block scripts%}
+<!-- BEGIN: Page Vendor JS-->
+<script src="{% static 'nucleo/vendors/js/tables/datatable/jquery.dataTables.min.js'%}"></script>
+<script src="{% static 'nucleo/vendors/js/tables/datatable/dataTables.bootstrap5.min.js'%}"></script>
+<script src="{% static 'nucleo/vendors/js/tables/datatable/dataTables.responsive.min.js'%}"></script>
+<script src="{% static 'nucleo/vendors/js/tables/datatable/responsive.bootstrap4.js'%}"></script>
+<script src="{% static 'nucleo/vendors/js/pickers/flatpickr/flatpickr.min.js'%}"></script>
+<!-- END: Page Vendor JS-->
+<script>
+$( function() {
+   let tabla = $('#lotes').DataTable( {
+        responsive: true,
+        autoWidth: false,
+        destroy: false,
+        deferRender: false,
+        pageLength: 10,
+        serverSide: true,
+        rowReorder: true,
+        order: [[1,'desc']],
+        dom: '<"card-header border-bottom p-1"<"head-label"><"dt-action-buttons text-end"B>><"d-flex justify-content-between align-items-center mx-0 row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>t<"d-flex justify-content-between mx-0 row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
+        ajax: '{%url "lote-list" %}?format=datatables',
+        language: {
+            "lengthMenu": "Mostrar _MENU_ lotes por página",
+            "zeroRecords": "Lo Sentimos, por el momento no hay lotes.",
+            "info": "Mostrando página _PAGE_ de _PAGES_",
+            "infoEmpty": "No hay lotes",
+            "infoFiltered": "(filtrados de un total de _MAX_ lotes)",
+            "loadingRecords": "Cargando...",
+            "processing":     "Procesando...",
+            "search":         "Buscar:",
+            "paginate": {
+                "first":      "Primera",
+                "last":       "Ultima",
+                "next":       "Siguiente",
+                "previous":   "Anterior"
+            },
+        },
+        columns: [
+            {data : 'numero'},
+            {data : 'fecha',render:function(data,type,row){
+                return data.split(' ')[0];
+            }},
+            {data: 'pauta_produccion.id'},
+            {data: 'numero',name: 'numero, linea.nombre',render:function(data,type,row){
+                if(row.producto != null){
+                    return row.producto.nombre + ` (${row.producto.presentacion} ${row.producto.unidad})`;
+                }else if(row.linea != null){
+                    return `${row.linea.nombre} (Kilogramos)`;
+                }else{
+                    return data;
+                }
+                
+            }},
+            {data: 'cantidad',render:function(data,type,row){
+                return "Cantidad Inicial:" + data + "<br>Cantidad Actual:" + row['cantidad_actual'];
+            }},
+            {data: 'estado.nombre',name:'estadolote.nombre'},
+            {%if 'produccion.pauta.detalle' in perms or 'produccion.pauta.actualizar' in perms or 'produccion.pauta.eliminar' in perms%}
+            {mData: 'id',searchable: false,
+            mRender: (data,type,row)=>{
+                let botones ="";
+                {%if 'produccion.pauta.detalle' in perms%}
+                botones+= `<a style="margin-right:20px;" href="{%url 'produccion:lote:detalle' 1 %}"><button data-bs-tooltip="tooltip" data-bs-placement="top" title="Ver Lote" type="button" class="btn btn-icon btn-info waves-effect"><i data-feather="book"></i></button></a>`.replace('1',data);
+                {%endif%}
+                
+                {%if 'produccion.pauta.actualizar' in perms %}
+                    if (row['proximo_estado'] != 'No'){
+                    botones+= `<a style="margin-right:20px;" href="{%url 'produccion:lote:actualizar' 1 %}"><button data-bs-tooltip="tooltip" data-bs-placement="top" title="${row['proximo_estado']}" type="button" class="btn btn-icon btn-success waves-effect"><i data-feather="arrow-up"></i></button></a>`.replace('1',data);
+                }
+                else{
+                    botones+= `<a style="margin-right:20px;" href="#"><button disabled data-bs-tooltip="tooltip" data-bs-placement="top" title="" type="button" class="btn btn-icon btn-success waves-effect"><i data-feather="arrow-up"></i></button></a>`;
+
+                }
+                {%endif%}
+                {%if 'produccion.pauta.eliminar' in perms %} 
+                botones+= `<button onclick="eliminar(event,${data})" type="button" data-bs-tooltip="tooltip" data-bs-placement="top" title="Eliminar Lote" class="btn btn-icon btn-danger waves-effect"><i data-feather="trash"></i></button>`;
+                {%endif%}
+                return botones;
+            }}
+            {%endif%}
+        ],
+        "drawCallback": function(){
+            feather.replace();
+            activarTooltip();
+        },
+        "initComplete": function () {
+            feather.replace();
+            activarTooltip();
+        },
+    } );
+tabla.on('responsive-display',function(){
+    feather.replace();
+});
+$('div.head-label').html('<h6 class="mb-0">Lotes</h6>');
+});
+</script>
+
+{%if 'produccion.pauta.eliminar' in perms %}
+<script src="{%static 'nucleo/vendors/js/extensions/sweetalert2.all.min.js'%}"></script>
+<script>
+function eliminar(event,id){
+    let url = "{% url 'produccion:lote:eliminar' 1%}".replace('1',id);
+    Swal.fire({
+        title: '¿Estas Seguro?',
+        html:"La Elaboración sera <b style='color:red'>eliminada</b> permanentemente del sistema.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        cancelButtonText: 'Cancelar',
+        confirmButtonText: 'Si, Eliminar!'
+        }).then(result=>{
+            if (result.isConfirmed) {
+                axios.get(url).then(response => {
+                    if (response.data.estado == 'ok'){
+                        Swal.fire(
+                        'Eliminada!',
+                        'La elaboración ha sido eliminada',
+                        'success'
+                        );
+                        let tbody = document.querySelector('#lotes tbody');
+                        let totalLotes = tbody.querySelectorAll('tr').length;
+                        let tr = event.target.closest('tr').remove();
+                        if (totalLotes -1 <= 0){
+                            document.querySelector('#lotes').remove();
+                        }
+                    }
+                });
+            }
+        });               
+}
+</script>
+{%endif%}
+{%endblock%}
+

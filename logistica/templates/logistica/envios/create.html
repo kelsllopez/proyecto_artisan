@@ -1,0 +1,396 @@
+{% extends 'nucleo/base.html'%}
+{%block title%}Logística{%endblock%}
+{%load static%}
+{%block head%}
+<link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/pickers/pickadate/pickadate.css'%}">
+<link rel="stylesheet" type="text/css" href="{%static 'nucleo/css/plugins/forms/pickers/form-pickadate.css'%}">
+{%endblock%}
+{%block content%}
+<style>
+.errorlist{
+    color:red;
+    list-style:none;
+    padding-left:0;
+}
+</style>
+<!-- BEGIN: Content-->
+    <div class="app-content content ">
+        <div class="content-overlay"></div>
+        <div class="header-navbar-shadow"></div>
+        <div class="content-wrapper container-fluid p-0">
+            <div class="content-header row">
+                <div class="content-header-left col-md-9 col-12 mb-2">
+                    <div class="row breadcrumbs-top">
+                        <div class="col-12">
+                            <h2 class="content-header-title float-start mb-0">Logística</h2>
+                            <div class="breadcrumb-wrapper">
+                                <ol class="breadcrumb">
+                                    <li class="breadcrumb-item"><a href="{% url 'logistica:envios:lista' %}">Envios</a>
+                                    </li>
+                                    <li class="breadcrumb-item active">Crear Envio
+                                    </li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="content-body">
+                <!-- Dashboard -->
+                <div class="card" id="app">
+
+                    <div class="card-body">
+                        <div class="card-text">
+                            <form @submit.prevent="" id="formulario" class="form form-horizontal" action="#" method="post" enctype="multipart/form-data">{% csrf_token %}
+                                <div class="row">
+                                    {%for field in form %}
+                                            <div class="mb-1 row">
+                                            <div class="col-sm-3">{{field.label_tag}} {%if field.field.required %}<span style="color:red">*</span>{%endif%}</div>
+
+                                            <div class="col-sm-6 position-relative">{{field}}
+                                            
+                                            {%if field.errors %}
+                                            <div class="invalid-feedback" style="display:block;">{{field.errors.as_text}}</div>
+                                            {%endif%}
+                                            </div>
+                                            </div>
+                                    {%endfor%}
+                                    <div class="col-sm-12">
+                                        <input class="form-control" placeholder="Escanear" autocomplete="off" id="lote" autofocus="autofocus" type="text" v-on:keyup.enter.prevent="agregarLote($event)">
+                                    </div>
+                                </div>
+                                <div class="table-responsive mt-2 mb-2" v-if="resumend">
+                                    <h3>Resumen</h3>
+                                    <table class="table mt-1 table-striped table-bordered">
+                                        <thead  v-if="Object.keys(resumenl).length > 0">
+                                            <tr>
+                                                <th>Producto</th>
+                                                <th>Cajas</th>
+                                                <th>Unidades</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="r in resumenl">
+                                                <td>{$r.producto$} ({$r.presentacion$} {$r.unidad$})</td>
+                                                <td>{$r.cajas$}</td>
+                                                <td>{$r.unidades$}</td>
+                                            </tr>
+                                        <thead v-if="Object.keys(resumeni).length > 0">
+                                            <tr>
+                                                <th>Insumo</th>
+                                                <th>Bultos</th>
+                                                <th>Unidades</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                        
+                                        <tr v-for="i in resumeni">
+                                                <td>{$i.nombre$} ({$i.unidad$})</td>
+                                                <td>{$i.cajas$}
+                                                <td>{$i.cantidad$}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="table-responsive mt-2 mb-2" v-if="pallet">
+                                    <h3>Pallets</h3>
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Codigo Pallete</th>
+                                                <th>Nombre</th>
+                                                <th>Ubicación</th>
+                                                <th>Opción</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="(palle,index) in pallets">
+                                                <input type="hidden" name="pallet[]" :value="palle.id"/>
+                                                <td style="background:#7367f0 !important;color:white;font-weight:bold;" v-if="index == palletselect">{$ palle.id $}</td>
+                                                <td v-else>{$ palle.id $}</td>
+                                                <td>{$ palle.nombre $}</td>
+                                                <td>{$ palle.lugar.nombre $}</td>
+                                                <td><button type="button" @click="eliminarPallete(palle.id)" class="btn btn-danger"><i class="fas fa-trash"></i></button></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="table-responsive mt-2 mb-2" v-if="datos">
+                                    <h3>Lotes para enviar</h3>
+                                    <table class="table table-striped table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Codigo Lote</th>
+                                                <th>Producto</th>
+                                                <th>Caja</th>
+                                                <th>Unidades</th>
+                                                <th>Opción</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="lote in lotes">
+                                                <input type="hidden" name="lotes[]" :value="lote.id+' '+lote.caja+' '+lote.unidades"/>
+                                                <td>{$ lote.numero $}</td>
+                                                <td>{$ lote.producto.nombre $}</td>
+                                                <td>{$ lote.caja $}</td>
+                                                <td>{$ lote.unidades $}</td>
+                                                <td><button type="button" @click="eliminarLote(lote.numero,lote.caja)" class="btn btn-danger"><i class="fas fa-trash"></i></button></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="table-responsive mt-2 mb-2" v-if="insumo">
+                                    <h3>Insumos para enviar</h3>
+                                    <table class="table table-striped table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Insumo</th>
+                                                <th>Cantidad</th>
+                                                <th>Opción</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="insumo in insumos">
+                                                <input type="hidden" name="insumos[]" :value="insumo.id"/>
+                                                <td>{$ insumo.insumo.nombre $}</td>
+                                                <td>{$ insumo.cantidad $}  ({$ insumo.insumo.unidad $}<p style="display:inline-block" v-if="insumo.cantidad > 1"><span v-if="insumo.insumo.unidad != 'Unidad'">s</span><span v-else>es</span></p>)</td>
+                                                <td><button type="button" @click="eliminarInsumo(insumo.id)" class="btn btn-danger"><i class="fas fa-trash"></i></button></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                                <div class="col-sm-12 mt-1">
+                                    <button type="button" class="btn btn-primary" @click="enviar">Generar Envio</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <!--/ Dashboard -->
+            </div>
+        </div>
+    </div>
+    <!-- END: Content-->
+{%endblock%}
+{%block scripts%}
+<script src="{%static 'nucleo/vendors/js/pickers/pickadate/picker.js'%}"></script>
+<script src="{%static 'nucleo/vendors/js/pickers/pickadate/picker.date.js'%}"></script>
+<script>
+if(typeof(String.prototype.trim) === "undefined")
+{
+    String.prototype.trim = function() 
+    {
+        return String(this).replace(/^\s+|\s+$/g, '');
+    };
+}
+</script>
+<script>
+var audio = new Audio('{%static "nucleo/sounds/error.mp3" %}');
+</script>
+<script>
+let vue = Vue.createApp({
+    data(){
+        return {
+            lotes: [],
+            insumos: [],
+            pallets: [],
+            resumeni: [],
+            resumenl: [],
+            pallet: false,
+            datos: false,
+            insumo: false,
+            resumend:false,
+        }
+    },
+    methods:{
+        resumir(){
+            resumenl = {};
+            for (lote of this.lotes){
+                
+                if (lote.numero in resumenl){
+                    resumenl[lote.numero].cajas+=1;
+                    resumenl[lote.numero].unidades+=parseInt(lote.unidades);
+                }
+                else{
+                    resumenl[lote.numero] = {};
+                    resumenl[lote.numero].producto = lote.producto.nombre;
+                    resumenl[lote.numero].cajas = 1;
+                    resumenl[lote.numero].numero = lote.numero;
+                    resumenl[lote.numero].presentacion = lote.producto.presentacion;
+                    resumenl[lote.numero].unidad = lote.producto.unidad;
+                    resumenl[lote.numero].unidades = parseInt(lote.unidades);
+                }
+            }
+            resumeni = {}
+            for (insumo of this.insumos){
+                if (insumo.insumo.id in resumeni){
+                    resumeni[insumo.insumo.id].cantidad += insumo.cantidad;
+                    resumeni[insumo.insumo.id].cajas += 1;
+                }else{
+                    resumeni[insumo.insumo.id] = {};
+                    resumeni[insumo.insumo.id].nombre = insumo.insumo.nombre;
+                    resumeni[insumo.insumo.id].cantidad = insumo.cantidad;
+                    resumeni[insumo.insumo.id].cajas = 1
+                    resumeni[insumo.insumo.id].unidad = insumo.insumo.unidad;
+                }
+            }
+
+            if (Object.keys(resumeni).length > 0 || Object.keys(resumenl).length > 0){
+                this.resumend = true;
+            }
+            this.resumeni = resumeni;
+            this.resumenl = resumenl;
+        },
+        enviar(){
+            let formulario = document.getElementById('formulario');
+            let valido = formulario.reportValidity();
+            if (valido){
+                formulario.submit();
+            }
+            else{
+                alert("Debes completar todos los campos solicitados.");
+            }
+            document.getElementById("lote").focus();
+                
+        },
+        eliminarPallete(id){
+            this.pallets = this.pallets.filter(pallet => pallet.id != id);
+            if(this.pallets.length <= 0){
+                this.pallet = false;
+            }else{
+                this.resumir();
+            }
+        },
+        eliminarInsumo(id){
+            this.insumos = this.insumos.filter(insumo => insumo.id != id);
+            if(this.insumos.length <= 0){
+                this.insumo = false;
+            }else{
+                this.resumir();
+            }
+            this.resumir();
+        },
+        eliminarLote(numero,caja){
+            this.lotes = this.lotes.filter(lote => !(lote.numero == numero && lote.caja == caja));
+            if(this.lotes.length <= 0){
+                this.datos = false;
+            }else{
+                this.resumir();
+            }
+            document.getElementById("lote").focus();
+        },
+        agregarPallet(e){
+            let info = procesarScan(e.target.value);
+            let id_lote = info[1].trim();
+            let contador = 0;
+            let check = true;
+            for (pallet of this.pallets){
+                if (pallet.id == parseInt(id_lote)){
+                        e.target.value = "";
+                        check = false;
+                        this.palletselect = contador;
+                        return;
+                }
+                contador+=1;
+            }
+            let url = '{%url "api-pallet-scan" 1 %}'.replace(1,id_lote);
+            axios.get(url).then(response => {
+                pallete = response.data;
+                this.pallets.push(pallete);
+                if (this.pallets.length > 0){
+                    this.pallet = true;
+                }
+            }).catch((error)=>{console.log('error')});
+            e.target.value = "";
+            if (this.pallets.length > 0){
+                this.pallet = true;
+            }
+            
+        },
+        agregarInsumo(e){
+            let info = procesarScan(e.target.value);
+            let id_oc = info[1].trim();
+            let id_bulto = info[2].trim()
+            for (insumo of this.insumos){
+                if (id_bulto == insumo.id){
+                    audio.play();
+                    e.target.value = "";
+                    return;
+                }
+            }
+            let url = '{%url "api-bulto-scan" 1 %}'.replace(1,parseInt(id_bulto));
+            axios.get(url).then(response => {
+                insumo = response.data;
+                insumo.cantidad = insumo.cantidad * insumo.formato;
+                this.insumos.push(insumo);
+                this.insumo = true;
+                this.resumir();
+            }).catch((error)=>{
+                console.log('error');
+                audio.play();});
+            e.target.value = "";
+            if (this.insumos.length > 0){
+                this.insumo = true;
+            }
+
+        },
+        agregarLote(e){
+            e.preventDefault();
+            let info = procesarScan(e.target.value);
+            console.log(info);
+            id_lote = info[0];
+            if (id_lote === "P"){
+                return this.agregarPallet(e);
+            }
+            else if(id_lote == "I"){
+                return this.agregarInsumo(e);
+            }
+            
+            for (lote of this.lotes){
+                if (lote.id == parseInt(id_lote)){
+                    if(lote.caja == parseInt(info[1])){
+                        audio.play();
+                        e.target.value = "";
+                        return;
+                    }
+                }
+            }
+            let url = '{%url "api-lote-scan" 1 %}'.replace(1,parseInt(id_lote)) + `?caja=${parseInt(info[1])}&unidades=${parseInt(info[2])}`;
+            axios.get(url).then(response => {
+                lote = response.data;
+                lote.unidades = info[2]
+                lote.caja = info[1]
+                this.lotes.push(lote);
+                this.datos= true;
+                this.resumir();
+            }).catch((error)=>{
+                console.log('error');
+                audio.play();});
+            e.target.value = "";
+        }
+    },
+    delimiters: ['{$', '$}'],
+    mounted(){
+        document.getElementById("lote").focus();
+        $('#fechaenvio').pickadate({
+        monthsFull: [ 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre' ],
+        monthsShort: [ 'ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic' ],
+        weekdaysFull: [ 'Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado' ],
+        weekdaysShort: [ 'dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb' ],
+        today: 'Hoy',
+        clear: 'Borrar',
+        close: 'Cerrar',
+        firstDay: 1,
+        format: 'yyyy-mm-dd',
+        formatSubmit: 'yyyy-mm-dd',
+        onStart: function ()
+                {
+                    var date = new Date();
+                    this.set('select', [date.getFullYear(), date.getMonth(), date.getDate()]);
+                },
+            });
+    }
+}).mount("#app");
+</script>
+{%endblock%}

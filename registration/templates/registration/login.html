@@ -1,0 +1,38 @@
+{%extends 'registration/base.html' %}
+
+{%block title%}Ingresar{%endblock%}
+
+{%block content%}
+<!-- Login-->
+<div class="d-flex col-lg-4 align-items-center auth-bg px-2 p-lg-5">
+    <div class="col-12 col-sm-8 col-md-6 col-lg-12 px-xl-2 mx-auto">
+        <h2 class="card-title fw-bold mb-1">Bienvenido a Artisan 👋</h2>
+        <p class="card-text mb-2">Porfavor ingresa sesión para continuar.</p>
+        <form class="auth-login-form mt-2" action="" method="post">{% csrf_token %}
+            {% if form.non_field_errors %}
+                <p style="color:red">Usuario o contraseña incorrectos, prueba de nuevo.</p>
+            {% endif %}
+            <div class="mb-1">
+                <label class="form-label" for="login-email">Usuario</label>
+                <input class="form-control" id="login-email" type="text" name="username" required placeholder="Nombre de usuario" aria-describedby="login-email" autofocus="" tabindex="1" />
+            </div>
+            <div class="mb-1">
+                <div class="d-flex justify-content-between">
+                    <label class="form-label" for="login-password">Contraseña</label><a href="{% url 'password_reset' %}"><small>Olvidaste la contraseña?</small></a>
+                </div>
+                <div class="input-group input-group-merge form-password-toggle">
+                    <input class="form-control form-control-merge" id="login-password" type="password" required name="password" placeholder="············" aria-describedby="login-password" tabindex="2" /><span class="input-group-text cursor-pointer"><i data-feather="eye"></i></span>
+                </div>
+            </div>
+            <div class="mb-1">
+                <div class="form-check">
+                    <input class="form-check-input" id="remember-me" type="checkbox" tabindex="3" />
+                    <label class="form-check-label" for="remember-me"> Recordarme</label>
+                </div>
+            </div>
+            <button class="btn btn-primary w-100" tabindex="4">Ingresar</button>
+        </form>
+    </div>
+</div>
+<!-- /Login-->
+{%endblock%}

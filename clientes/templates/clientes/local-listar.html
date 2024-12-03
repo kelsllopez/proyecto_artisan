@@ -1,0 +1,309 @@
+{% extends 'nucleo/base.html' %}
+{%block title%}Locales{%endblock%}
+{%load static%}
+{%block head%}
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/tables/datatable/dataTables.bootstrap5.min.css'%}">
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/tables/datatable/responsive.bootstrap4.min.css'%}">
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/tables/datatable/buttons.bootstrap5.min.css'%}">
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/tables/datatable/rowGroup.bootstrap4.min.css'%}">
+    <link rel="stylesheet" type="text/css" href="{%static 'nucleo/vendors/css/pickers/flatpickr/flatpickr.min.css'%}">
+{%endblock%}
+{%block content%}
+<!-- BEGIN: Content-->
+    <div class="app-content content ">
+        <div class="content-overlay"></div>
+        <div class="header-navbar-shadow"></div>
+        <div class="content-wrapper container-fluid p-0">
+            <div class="content-header row">
+                <div class="content-header-left col-md-9 col-12 mb-2">
+                    <div class="row breadcrumbs-top">
+                        <div class="col-12">
+                            <h2 class="content-header-title float-start mb-0">Locales</h2>
+                            <div class="breadcrumb-wrapper">
+                                <ol class="breadcrumb">
+                                    <li class="breadcrumb-item"><a href="#">Locales</a>
+                                    </li>
+                                    <li class="breadcrumb-item active">Lista
+                                    </li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="content-header-right text-md-end col-md-3 col-12 d-md-block d-none">
+                    <div class="mb-1 breadcrumb-right d-flex">
+                        {%if 'clientes.local.crear' in perms %}
+                        <a class="me-2" href="{% url 'administrador:local:crear' %}">
+                            <button class="btn btn-primary">Añadir Local</button>
+                        </a>
+                        {%endif%}
+                        {%if 'clientes.cliente.crear' in perms %}
+                        <a href="{% url 'administrador:cliente:crear' %}">
+                            <button class="btn btn-primary">Añadir Cliente</button>
+                        </a>
+                        {%endif%}
+                    </div>
+                    
+                </div>
+            </div>
+            <div id="app">
+                <div class="modal fade text-start"id="default" tabindex="-1" aria-labelledby="myModalLabel1" aria-hidden="true">
+                    <div class="modal-dialog modal-xl">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h4 class="modal-title" id="myModalLabel1">{$ titulo $}</h4>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Información</th>
+                                            <th>Dato</th>
+                                        </tr>
+                                    </thead>
+                                        <tbody>
+                                            <tr>
+                                                <th>Cliente</th>
+                                                <td>{$ cliente_nombre $}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Local</th>
+                                                <td>{$ local $}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Teléfono</th>
+                                                <td>{$ telefono $}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Contacto</th>
+                                                <td>{$ contacto $}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Correo Electrónico</th>
+                                                <td>{$ email $}</td>
+                                            </tr>
+                                           <tr>
+                                                <th>Región</th>
+                                                <td>{$ region $}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Comuna</th>
+                                                <td>{$ comuna $}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Dirección</th>
+                                                <td>{$ direccion $}</td>
+                                            </tr>
+
+                                            
+                                            
+                                            
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cerrar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </div>
+                <section id="basic-datatable">
+                    <div class="row">
+                            <div class="col-12">
+                                <div class="card">
+                                    <table id="locales" class="datatables-basic table text-center">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Cliente</th>
+                                                <th>Local</th>
+                                                <th>Dirección</th>
+                                                <th>Contacto</th>
+                                                <th>Teléfono</th>
+                                                <th>Email</th>
+                                                <th>Opciones</th>
+                                            </tr>
+                                        </thead>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                </section>
+                <!--/ Dashboard -->
+
+            </div>
+        </div>
+    </div>
+{%endblock%}
+
+{%block scripts%}
+<!-- BEGIN: Page Vendor JS-->
+<script src="{% static 'nucleo/vendors/js/tables/datatable/jquery.dataTables.min.js'%}"></script>
+<script src="{% static 'nucleo/vendors/js/tables/datatable/dataTables.bootstrap5.min.js'%}"></script>
+<script src="{% static 'nucleo/vendors/js/tables/datatable/dataTables.responsive.min.js'%}"></script>
+<script src="{% static 'nucleo/vendors/js/tables/datatable/responsive.bootstrap4.js'%}"></script>
+<script src="{% static 'nucleo/vendors/js/pickers/flatpickr/flatpickr.min.js'%}"></script>
+<!-- END: Page Vendor JS-->
+<script>
+$( function() {
+   $('#locales').DataTable( {
+        responsive: true,
+        autoWidth: true,
+        destroy: true,
+        deferRender: true,
+        pageLength: 10,
+        serverSide: true,
+        rowReorder: true,
+        order: [[0,'desc']],
+        dom: '<"card-header border-bottom p-1"<"head-label"><"dt-action-buttons text-end"B>><"d-flex justify-content-between align-items-center mx-0 row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>t<"d-flex justify-content-between mx-0 row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
+        ajax: '{%url "clientelocal-list" %}?format=datatables',
+        language: {
+            "lengthMenu": "Mostrar _MENU_ locales por página",
+            "zeroRecords": "Ups - no hay locales",
+            "info": "Mostrando página _PAGE_ de _PAGES_",
+            "infoEmpty": "No hay locales",
+            "infoFiltered": "(filtrados de un total de _MAX_ locales)",
+            "loadingRecords": "Cargando...",
+            "processing":     "Procesando...",
+            "search":         "Buscar:",
+            "paginate": {
+                "first":      "Primera",
+                "last":       "Ultima",
+                "next":       "Siguiente",
+                "previous":   "Anterior"
+            },
+        },
+        columns: [
+            {data : 'id'},
+            {data: 'cliente_nombre', name:'cliente.nombre',render:function(data,type,row,meta){
+                return data.toUpperCase();
+            }},
+            {data: 'local',render:function(data,type,row,meta){
+                return data.toUpperCase();
+            }},
+            {data: 'direccion'},
+            {data: 'contacto'},
+            {data: 'telefono'},
+            {data: 'email'},
+            {mData: 'id',searchable: false,
+            mRender: (data,type,row)=>{
+                let botones ="";
+                {%if 'clientes.local.detalle' in perms %} 
+                let boton1 = `<button style="margin-right:20px;" type="button" onclick="vue.remplazarModal(${data})"  data-bs-toggle="modal" data-bs-target="#default" class="btn btn-icon btn-info waves-effect"><i data-feather="book"></i></button>`;
+                boton1 = boton1.replace('1',data);
+                botones+= boton1;
+                {%endif%}
+                {%if 'clientes.local.actualizar' in perms %} 
+                let boton2 = `<a style="margin-right:20px;" href="{%url 'administrador:local:actualizar' 1 %}"><button type="button" class="btn btn-icon btn-success waves-effect"><i data-feather="settings"></i></button></a>`;
+                boton2 = boton2.replace('1',data);
+                botones+= boton2;
+                {%endif%}
+                {%if 'clientes.local.eliminar' in perms %} 
+                let boton3 = `<button onclick="eliminar(event,${data})" type="button" class="btn btn-icon btn-danger waves-effect"><i data-feather="trash"></i></button>`;
+                boton3 = boton3.replace('1',data);
+                botones+= boton3;
+                {%endif%}
+                return botones;
+            }}
+        ],
+        "drawCallback": function(){
+            feather.replace();
+        },
+        "initComplete": function () {
+            feather.replace();
+        },
+    } );
+$('div.head-label').html('<h6 class="mb-0">Locales</h6>');
+});
+</script>
+
+{%if 'clientes.local.eliminar' in perms %}
+<script src="{%static 'nucleo/vendors/js/extensions/sweetalert2.all.min.js'%}"></script>
+<script>
+function eliminar(event,id){
+    let url = "{% url 'administrador:local:eliminar' 1%}".replace('1',id);
+    Swal.fire({
+        title: '¿Estas Seguro?',
+        html:"El Local sera <b style='color:red'>eliminado</b> permanentemente del sistema, y <b>sus ordenes de venta</b>",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        cancelButtonText: 'Cancelar',
+        confirmButtonText: 'Si, Eliminar!'
+        }).then(result=>{
+            if (result.isConfirmed) {
+                axios.get(url).then(response => {
+                    if (response.data.estado == 'ok'){
+                        Swal.fire(
+                        'Eliminada!',
+                        'El local ha sido eliminado',
+                        'success'
+                        );
+                        let tbody = document.querySelector('#locales tbody');
+                        let totalInsumos = tbody.querySelectorAll('tr').length;
+                        let tr = event.target.closest('tr').remove();
+                        if (totalInsumos -1 <= 0){
+                            document.querySelector('#locales').remove();
+                        }
+                    }
+                });
+            }
+        });               
+}
+</script>
+{%endif%}
+{%if 'clientes.local.detalle' in perms%}
+<script>
+let vue = Vue.createApp({
+    data(){
+        return {
+            cliente: [],
+            cliente_nombre:'Artisan',
+            local: 'Local',
+            tipo: "Horeca",
+            giro: "Artisan",
+            razon_social: "Artisan",
+            rut: "rut",
+            titulo: "hola",
+            telefono: '+569',
+            region: 'region',
+            comuna: 'comuna',
+            direccion: 'direccion',
+            contacto: 'contacto',
+            email: 'email@email.cl',
+            url_detalle: '{% url "administrador:proveedor:detalle" 1%}',
+        };
+    },
+    methods: {
+        remplazarModal(numero){
+            let url = '{%url "clientelocal-detail" 1%}';
+            axios.get(url.replace('1',numero))
+            .then(response => {
+                let data = response.data;
+                this.titulo = "Cliente: " + data.cliente_nombre + " - " + data.local;
+                this.local = data.local;
+                this.cliente_nombre = data.cliente_nombre;
+                this.rut = data.rut;
+                this.giro = data.giro;
+                this.telefono = data.telefono;
+                this.region = data.region;
+                this.comuna = data.comuna;
+                this.contacto = data.contacto;
+                this.email = data.email;
+                this.direccion = data.direccion;
+                this.url_detalle = this.url_detalle.replace('1',data.id);
+            });
+            },
+    },
+    delimiters: ['{$', '$}'],
+}).mount('#app');
+</script>
+{%endif%}
+{%endblock%}
+
