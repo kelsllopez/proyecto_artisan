@@ -120,7 +120,7 @@ WSGI_APPLICATION = 'proyecto_artisan.wsgi.application'
 DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'uwu',
+            'NAME': 'artisan',
             'USER': 'root',
             'PASSWORD': 'admin',
             'HOST': '127.0.0.1',
