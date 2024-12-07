@@ -4,10 +4,33 @@
 {% load static %}
 
 {% block head %}
+    <!-- Meta tag para viewport (responsividad) -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Estilos de la tabla y otros -->
     <link rel="stylesheet" type="text/css" href="{% static 'nucleo/vendors/css/tables/datatable/dataTables.bootstrap5.min.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'nucleo/vendors/css/tables/datatable/responsive.bootstrap4.min.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'nucleo/vendors/css/tables/datatable/buttons.bootstrap5.min.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'nucleo/vendors/css/tables/datatable/rowGroup.bootstrap4.min.css' %}">
+
+    <!-- Estilos personalizados para la responsividad -->
+    <style>
+        /* Asegurar que la tabla sea completamente responsiva */
+        @media (max-width: 767px) {
+            .table-responsive {
+                -webkit-overflow-scrolling: touch;
+            }
+            /* Ajustar el tamaño de los botones en pantallas pequeñas */
+            .btn-sm {
+                font-size: 12px;
+                padding: 4px 8px;
+            }
+            /* Asegurar que el texto en la tabla se ajuste en pantallas pequeñas */
+            .table td, .table th {
+                font-size: 12px;
+            }
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
@@ -32,7 +55,6 @@
             </div>
         </div>
 
-
         <!-- Card para la Tabla de Producción -->
         <div class="card">
             <div class="card-header">
@@ -41,7 +63,7 @@
             </div>
             <div class="card-body">
                 <div class="table-responsive">
-                    <table id="produccion-table" class="table mx-auto text-center">
+                    <table id="produccion-table" class="table table-striped table-bordered table-sm mx-auto text-center">
                         <thead>
                             <tr>
                                 <th>ID</th>
@@ -88,7 +110,8 @@
                                                 {% endif %}
                                             {% endfor %}
                                         {% endwith %}
-                                    </td>                                    <td>
+                                    </td>
+                                    <td>
                                         {% with produccion_id=produccion.id %}
                                             {% for calidad in calidad_producciones %}
                                                 {% if calidad.pauta_produccion.id == produccion_id %}
@@ -107,6 +130,7 @@
                                             {% endfor %}
                                         {% endwith %}
                                     </td>                                    
+    
                                     <td>
                                         {% with produccion_id=produccion.id %}
                                             {% for calidad in calidad_producciones %}
@@ -122,19 +146,20 @@
                                             {% endfor %}
                                         {% endwith %}
                                     </td>
+    
                                     <td>
                                         <!-- Acciones -->
-                                        <a href="{% url 'calidad:elaboraciones:agregar' produccion.id %}" class="btn btn-icon btn-info waves-effect mr-2" title="Agregar">
+                                        <a href="{% url 'calidad:elaboraciones:agregar' produccion.id %}" class="btn btn-icon btn-info waves-effect mr-2 btn-sm" title="Agregar">
                                             <i data-feather="plus-circle"></i>
                                         </a>
-                                        <a href="{% url 'calidad:elaboraciones:detalle' produccion.id %}" class="btn btn-icon btn-warning waves-effect mr-2" title="Ver Detalle">
+                                        <a href="{% url 'calidad:elaboraciones:detalle' produccion.id %}" class="btn btn-icon btn-warning waves-effect mr-2 btn-sm" title="Ver Detalle">
                                             <i data-feather="book"></i>
                                         </a>
-                                        <a href="{% url 'calidad:elaboraciones:modificar' produccion.id %}" class="btn btn-icon btn-success waves-effect" title="Modificar">
+                                        <a href="{% url 'calidad:elaboraciones:modificar' produccion.id %}" class="btn btn-icon btn-success waves-effect btn-sm" title="Modificar">
                                             <i data-feather="settings"></i>
                                         </a>
                                     </td>
-                                    
+                                  
                                 </tr>
                             {% endfor %}
                         </tbody>
@@ -143,21 +168,19 @@
             </div>
         </div>
         <!-- Fin de la Card -->
-        
+
     </div>
 </div>
-<!-- END: Content -->
 <!-- END: Content -->
 {% endblock %}
 
 {% block scripts %}
-
     <script src="{% static 'nucleo/vendors/js/tables/datatable/jquery.dataTables.min.js' %}"></script>
     <script src="{% static 'nucleo/vendors/js/tables/datatable/dataTables.bootstrap5.min.js' %}"></script>
     <script src="{% static 'nucleo/vendors/js/tables/datatable/dataTables.responsive.min.js' %}"></script>
     <script src="{% static 'nucleo/vendors/js/tables/datatable/responsive.bootstrap4.min.js' %}"></script>
     <script>
-                feather.replace();
+        feather.replace();
 
         $(document).ready(function() {
             $('#produccion-table').DataTable({

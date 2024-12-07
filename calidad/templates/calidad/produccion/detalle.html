@@ -4,10 +4,44 @@
 {% load static %}
 
 {% block head %}
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="{% static 'nucleo/vendors/css/tables/datatable/dataTables.bootstrap5.min.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'nucleo/vendors/css/tables/datatable/responsive.bootstrap4.min.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'nucleo/vendors/css/tables/datatable/buttons.bootstrap5.min.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'nucleo/vendors/css/tables/datatable/rowGroup.bootstrap4.min.css' %}">
+    <style>
+        /* Asegurando la responsividad de los formularios y tablas */
+        @media (max-width: 767px) {
+            .form-control {
+                font-size: 14px;
+                padding: 8px;
+            }
+            .row {
+                margin-bottom: 15px;
+            }
+            h4, h3 {
+                font-size: 1.2rem;
+            }
+            .card-body {
+                padding: 10px;
+            }
+            .card-text {
+                padding: 10px 0;
+            }
+            .table {
+                font-size: 12px;
+            }
+            .card {
+                margin-bottom: 15px;
+            }
+            .card-header {
+                font-size: 1.2rem;
+            }
+            .breadcrumb {
+                font-size: 12px;
+            }
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
@@ -48,6 +82,7 @@
                         <form method="post" id="produccion-form">
                             {% csrf_token %}
                             
+
                             <div class="card-text">
                                 <!-- Pauta Producción -->
                                 <section id="detalle-produccion" class="card shadow-sm mb-4">
@@ -66,29 +101,30 @@
                                     </div>
                                 </section>
 
-                                        <!-- Instrucciones -->
-                                        {% if instrucciones %}
-                                        <section id="instrucciones" class="mb-4">
-                                            <h4>Instrucciones de Producción</h4>
-                                            <table class="table table-bordered table-striped table-hover">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Instrucción</th>
-                                                        <th>Valor</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {% for instruccion in instrucciones %}
-                                                    <tr>
-                                                        <td>{{ instruccion.plantilla_instruccion }}</td>
-                                                        <td>{{ instruccion.valor }}</td>
-                                                    </tr>
-                                                    {% endfor %}
-                                                </tbody>
-                                            </table>
-                                        </section>
-                                        {% endif %}
-                                                                <!-- PCC2 - Filtrado de Producto Final -->
+                                <!-- Instrucciones -->
+                                {% if instrucciones %}
+                                <section id="instrucciones" class="mb-4">
+                                    <h4>Instrucciones de Producción</h4>
+                                    <table class="table table-bordered table-striped table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Instrucción</th>
+                                                <th>Valor</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for instruccion in instrucciones %}
+                                            <tr>
+                                                <td>{{ instruccion.plantilla_instruccion }}</td>
+                                                <td>{{ instruccion.valor }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </section>
+                                {% endif %}
+
+                                <!-- PCC2 - Filtrado de Producto Final -->
                                 <section id="pcc2-filtrado" class="card shadow-sm mb-4">
                                     <h4>PCC2 - Filtrado de Producto Final</h4>
                                     <p><strong>Porosidad máxima de 2.5 mm se constata con R-AC-010</strong>
@@ -215,7 +251,7 @@
                                         <option value="Aprobado">Aprobado</option>
                                     </select>
                                 </div>
-                                
+
                                 <!-- Botón Guardar -->
                                 <button type="submit" class="btn btn-success">Guardar</button>
                             </div>
