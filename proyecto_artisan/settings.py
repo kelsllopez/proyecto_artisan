@@ -24,9 +24,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-5#vo*1=u-v*5i@4@5q_ei)+!*=qoh5+@&ut-sr2d!*av6i(glf'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['170.187.146.155']
 
 
 # Application definition
@@ -82,9 +82,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
     'simple_history.middleware.HistoryRequestMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',  # Asegúrate de que esto esté presente
-
-
+    'django.contrib.messages.middleware.MessageMiddleware',  # Asegúrate de que esto esté presenteZGHJK
 ]
 
 AUTHENTICATION_BACKENDS = (
@@ -118,15 +116,16 @@ WSGI_APPLICATION = 'proyecto_artisan.wsgi.application'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
 DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'artisan',
-            'USER': 'root',
-            'PASSWORD': 'admin',
-            'HOST': '127.0.0.1',
-            'PORT': '3306',
-        }
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',  # Motor de la base de datos
+        'NAME': 'artisan',  # Nombre de la base de datos
+        'USER': 'root',  # Usuario de MySQL
+        'PASSWORD': '12389138sadjsadhKFHSH#!',  # Contraseña del usuario
+        'HOST': 'localhost',  # Dirección de la base de datos
+        'PORT': '3306',  # Puerto por defecto de MySQL
     }
+}
+
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators

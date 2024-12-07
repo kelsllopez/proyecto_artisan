@@ -461,10 +461,10 @@ class CalidadProduccion(models.Model):
     # Envasado y Almacenamiento
     inicio_envasado = models.CharField(max_length=255, verbose_name="Inicio Envasado")
     fin_envasado = models.CharField(max_length=255, verbose_name="Fin Envasado")
-    unidades_botellas_lt = models.PositiveIntegerField(verbose_name="Unidades Botellas (lt)")
-    unidades_360gr = models.PositiveIntegerField(verbose_name="Unidades 360gr")
-    unidades_150gr = models.PositiveIntegerField(verbose_name="Unidades 150gr")
-    merma_kg = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Merma (kg)")
+    unidades_botellas_lt = models.CharField(max_length=255,verbose_name="Unidades Botellas (lt)")
+    unidades_360gr = models.CharField(max_length=255,verbose_name="Unidades 360gr")
+    unidades_150gr = models.CharField(max_length=255,verbose_name="Unidades 150gr")
+    merma_kg = models.CharField(max_length=10, verbose_name="Merma (kg)")
 
     # Evaluación Sensorial
     ph = models.CharField(max_length=50, verbose_name="pH")
@@ -480,7 +480,7 @@ class CalidadProduccion(models.Model):
     verificacion = models.CharField(max_length=255, verbose_name="Responsable Verificación")
 
     # Observaciones
-    observaciones = models.TextField(verbose_name="Observaciones", blank=True, null=True)
+    observaciones = models.CharField(max_length=255,verbose_name="Observaciones")
 
     # Historial (si lo deseas)
     history = HistoricalRecords()

@@ -68,22 +68,16 @@
         .table-6 th {
             text-align: center;
 
-            background-color: #ffeaea; /* Un tono más oscuro para los encabezados */
-        }
-
-        .table-6 td {
-            background-color: #ffeaea; /* Un tono más claro para las celdas */
-            text-align: center;
-
+            background-color: #ddd; /* Un tono más oscuro para los encabezados */
         }
 
         .table-6 th[colspan="2"] {
             text-align: center;
             font-size: 1.2em;
-            background-color: #ffeaea; /* Fondo más oscuro para el título */
+            background-color: #ddd; /* Fondo más oscuro para el título */
         }
         .uwu {
-            background-color: #ffeaea; /* Azul pastel claro */
+            background-color: #ddd; /* Azul pastel claro */
         }
 
         /* table 4 */
@@ -91,56 +85,38 @@
         .table-2 th {
             text-align: center;
 
-            background-color: #ffeaea; /* Un tono más oscuro para los encabezados */
-        }
-
-        .table-2 td {
-            background-color: #ffeaea; /* Un tono más claro para las celdas */
-            text-align: center;
-
+            background-color: #ddd; /* Un tono más oscuro para los encabezados */
         }
 
         .table-2 th[colspan="2"] {
             text-align: center;
             font-size: 1.2em;
-            background-color: #ffeaea; /* Fondo más oscuro para el título */
+            background-color: #ddd; /* Fondo más oscuro para el título */
         }
 
         /* TABLE 5 */
         .table-3 th {
             text-align: center;
 
-            background-color: #ffffff; /* Un tono más oscuro para los encabezados */
-        }
-
-        .table-3 td {
-            background-color: #ffffff; /* Un tono más claro para las celdas */
-            text-align: center;
-
+            background-color: #ddd; /* Un tono más oscuro para los encabezados */
         }
 
         .table-3 th[colspan="2"] {
             text-align: center;
             font-size: 1.2em;
-            background-color: #ffffff; /* Fondo más oscuro para el título */
+            background-color: #ddd; /* Fondo más oscuro para el título */
         }
         /* TABLE 5 */
         .table-4 th {
             text-align: center;
 
-            background-color: #ffeaea; /* Un tono más oscuro para los encabezados */
-        }
-
-        .table-4 td {
-            background-color: #ffffff; /* Un tono más claro para las celdas */
-            text-align: center;
-
+            background-color: #ddd; /* Un tono más oscuro para los encabezados */
         }
 
         .table-4 th[colspan="2"] {
             text-align: center;
             font-size: 1.2em;
-            background-color: #ffeaea; /* Fondo más oscuro para el título */
+            background-color: #ddd; /* Fondo más oscuro para el título */
         }
 
         /* TABLE 5 */  
@@ -148,19 +124,13 @@
         .table-1 th {
             text-align: center;
 
-            background-color: #ffeaea; /* Un tono más oscuro para los encabezados */
-        }
-
-        .table-1 td {
-            background-color: #ffffff; /* Un tono más claro para las celdas */
-            text-align: center;
-
+            background-color: #ddd; /* Un tono más oscuro para los encabezados */
         }
 
         .table-1 th[colspan="2"] {
             text-align: center;
             font-size: 1.2em;
-            background-color: #ffeaea; /* Fondo más oscuro para el título */
+            background-color: #ddd; /* Fondo más oscuro para el título */
         } 
         /* TABLE 5 */
 
@@ -168,25 +138,19 @@
         .table-7 th {
             text-align: center;
 
-            background-color: #ffeaea; /* Un tono más oscuro para los encabezados */
+            background-color: #ddd; /* Un tono más oscuro para los encabezados */
         }
 
-        .table-7 td {
-            background-color: #ffffff; /* Un tono más claro para las celdas */
-            text-align: center;
 
-        }
 
         .table-7 th[colspan="2"] {
             text-align: center;
             font-size: 1.2em;
-            background-color: #ffeaea; /* Fondo más oscuro para el título */
+            background-color: #ddd; /* Fondo más oscuro para el título */
         } 
 
         /**/
-        table tbody tr {
-            background-color: #ffffff;
-        }
+
         .percentage {
             text-align: right;
         }
@@ -208,9 +172,9 @@
                 <th colspan="3">Resumen de Información del Reporte</th>
             </tr>
             <tr>
-                <th style="background-color: #ffeaea;">Fecha Inicio</th>
-                <th style="background-color: #ffeaea;">Fecha Final</th>
-                <th style="background-color: #ffeaea;">Estado</th>
+                <th >Fecha Inicio</th>
+                <th >Fecha Final</th>
+                <th >Estado</th>
             </tr>
         </thead>
         <tbody>
@@ -243,14 +207,14 @@
         <tbody>
             {% if numero_ordenes_compra %}
             <tr>
-                <td style="background-color: #ffeaea;">Número de Órdenes de Compra</td>
+                <td >Número de Órdenes de Compra</td>
                 <td>{{ numero_ordenes_compra }}</td>
             </tr>
             {% endif %}
 
             {% if total_neto_insumos_por_estado %}
             <tr>
-                <td style="background-color: #ffeaea;">Total Neto de Insumos por Estado</td>
+                <td >Total Neto de Insumos por Estado</td>
                 <td>
                     {% for item in total_neto_insumos_por_estado %}
                         <p>{{ item.orden__estado }}: ${{ item.total_neto|floatformat:2 }}</p>
@@ -261,14 +225,14 @@
 
             {% if total_ventas %}
             <tr>
-                <td style="background-color: #ffeaea;">Total de Ventas de Productos</td>
+                <td>Total de Ventas de Productos</td>
                 <td>${{ total_ventas|floatformat:2 }}</td>
             </tr>
             {% endif %}
 
             {% if rentabilidad_insumos %}
             <tr>
-                <td style="background-color: #ffeaea;">Rentabilidad de Insumos</td>
+                <td>Rentabilidad de Insumos</td>
                 <td>
                     {% for insumo, rentabilidad in rentabilidad_insumos %}
                         {% if rentabilidad != 0 %}
@@ -290,13 +254,13 @@
                 <th colspan="2">KPIs de Desempeño - Porcentajes</th>
             </tr>
             <tr>
-                <th style="background-color: #fdf1f6;">Descripción</th>
-                <th style="background-color: #fdf1f6;">Valor</th>
+                <th >Descripción</th>
+                <th >Valor</th>
             </tr>
         </thead>
         <tbody>
             <tr>
-                <td style="background-color: #fdf1f6;">Total de Órdenes Pagadas</td>
+                <td >Total de Órdenes Pagadas</td>
                 <td>{{ porcentaje_ordenes_pagadas }}%</td>
             </tr>
         </tbody>
@@ -317,7 +281,7 @@
         </thead>
         <tbody>
             <tr>
-                <td style="background-color: #fdf1f6;">Rentabilidad de Insumos</td>
+                <td >Rentabilidad de Insumos</td>
                 <td>{{ porcentaje_rentabilidad_insumos }}%</td>
             </tr>
         </tbody>
@@ -339,7 +303,7 @@
         <tbody>
             {% for producto, porcentaje in porcentaje_ventas_por_producto %}
                 <tr>
-                    <td style="background-color: #fdf1f6;">{{ producto }}</td>
+                    <td >{{ producto }}</td>
                     <td class="percentage">{{ porcentaje }}%</td>
                 </tr>
             {% endfor %}
@@ -363,7 +327,7 @@
             <tbody>
                 {% for producto, value in productos %}
                     <tr>
-                        <td style="background-color: #fdf1f6;">{{ producto }}</td>
+                        <td >{{ producto }}</td>
                         <td>${{ value|floatformat:2 }}</td>
                     </tr>
                 {% endfor %}

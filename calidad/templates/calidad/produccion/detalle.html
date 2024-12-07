@@ -88,21 +88,21 @@
                                             </table>
                                         </section>
                                         {% endif %}
-                                <!-- PCC2 - Filtrado de Producto Final -->
+                                                                <!-- PCC2 - Filtrado de Producto Final -->
                                 <section id="pcc2-filtrado" class="card shadow-sm mb-4">
                                     <h4>PCC2 - Filtrado de Producto Final</h4>
                                     <p><strong>Porosidad máxima de 2.5 mm se constata con R-AC-010</strong>
-                                        <textarea class="form-control" rows="3" name="filtro_instalado">{{ calidad_form.filtro_instalado.value }}</textarea>
+                                        <textarea class="form-control" rows="3" name="filtro_instalado" placeholder="Ingrese la información sobre el filtro instalado">{{ calidad_form.filtro_instalado.value }}</textarea>
                                     </p>
                                     <div class="row">
                                         <div class="col-md-6">
                                             <p><strong>Filtro bien instalado (completar SI o NO):</strong>
-                                                <textarea class="form-control" rows="1" name="filtro_instalado">{{ calidad_form.filtro_instalado.value }}</textarea>
+                                                <textarea class="form-control" rows="1" name="filtro_instalado" placeholder="Indique si el filtro está bien instalado (SI/NO)">{{ calidad_form.filtro_instalado.value }}</textarea>
                                             </p>
                                         </div>
                                         <div class="col-md-6">
                                             <p><strong>Filtro integrado sin deterioro (completar SI o NO):</strong>
-                                                <textarea class="form-control" rows="1" name="filtro_integrado">{{ calidad_form.filtro_integrado.value }}</textarea>
+                                                <textarea class="form-control" rows="1" name="filtro_integrado" placeholder="Indique si el filtro está integrado sin deterioro (SI/NO)">{{ calidad_form.filtro_integrado.value }}</textarea>
                                             </p>
                                         </div>
                                     </div>
@@ -114,24 +114,24 @@
                                     <div class="row">
                                         <div class="col-md-6">
                                             <p><strong>Inicio envasado:</strong>
-                                                <textarea class="form-control" rows="1" name="inicio_envasado">{{ calidad_form.inicio_envasado.value }}</textarea>
+                                                <textarea class="form-control" rows="1" name="inicio_envasado" placeholder="Ingrese la fecha y hora de inicio del envasado">{{ calidad_form.inicio_envasado.value }}</textarea>
                                             </p>
                                             <p><strong>Termino envasado:</strong>
-                                                <textarea class="form-control" rows="1" name="fin_envasado">{{ calidad_form.fin_envasado.value }}</textarea>
+                                                <textarea class="form-control" rows="1" name="fin_envasado" placeholder="Ingrese la fecha y hora de finalización del envasado">{{ calidad_form.fin_envasado.value }}</textarea>
                                             </p>
                                             <p><strong>Unidades de botellas (lt):</strong>
-                                                <textarea class="form-control" rows="1" name="unidades_botellas_lt">{{ calidad_form.unidades_botellas_lt.value }}</textarea>
+                                                <textarea class="form-control" rows="1" name="unidades_botellas_lt" placeholder="Indique la cantidad de botellas en litros">{{ calidad_form.unidades_botellas_lt.value }}</textarea>
                                             </p>
                                         </div>
                                         <div class="col-md-6">
                                             <p><strong>Unidades de 360gr:</strong>
-                                                <textarea class="form-control" rows="1" name="unidades_360gr">{{ calidad_form.unidades_360gr.value }}</textarea>
+                                                <textarea class="form-control" rows="1" name="unidades_360gr" placeholder="Indique la cantidad de unidades de 360 gramos">{{ calidad_form.unidades_360gr.value }}</textarea>
                                             </p>
                                             <p><strong>Unidades de 150gr:</strong>
-                                                <textarea class="form-control" rows="1" name="unidades_150gr">{{ calidad_form.unidades_150gr.value }}</textarea>
+                                                <textarea class="form-control" rows="1" name="unidades_150gr" placeholder="Indique la cantidad de unidades de 150 gramos">{{ calidad_form.unidades_150gr.value }}</textarea>
                                             </p>
                                             <p><strong>Merma (kg):</strong>
-                                                <textarea class="form-control" rows="1" name="merma_kg">{{ calidad_form.merma_kg.value }}</textarea>
+                                                <textarea class="form-control" rows="1" name="merma_kg" placeholder="Indique la cantidad de merma en kilogramos">{{ calidad_form.merma_kg.value }}</textarea>
                                             </p>
                                         </div>
                                     </div>
@@ -144,34 +144,34 @@
                                     <div class="row">
                                         <div class="col-md-4">
                                             <p><strong>pH:</strong>
-                                                <textarea class="form-control" rows="1" name="ph">{{ calidad_form.ph.value }}</textarea>
+                                                <textarea class="form-control" rows="2" name="ph" placeholder="Indique si el pH cumple con los estándares (C/NC)">{{ calidad_form.ph.value }}</textarea>
                                             </p>
                                         </div>
                                         <div class="col-md-4">
                                             <p><strong>Textura:</strong>
-                                                <textarea class="form-control" rows="1" name="textura">{{ calidad_form.textura.value }}</textarea>
+                                                <textarea class="form-control" rows="2" name="textura" placeholder="Indique si la textura cumple con los estándares (C/NC)">{{ calidad_form.textura.value }}</textarea>
                                             </p>
                                         </div>
                                         <div class="col-md-4">
                                             <p><strong>Sabor:</strong>
-                                                <textarea class="form-control" rows="1" name="sabor">{{ calidad_form.sabor.value }}</textarea>
+                                                <textarea class="form-control" rows="2" name="sabor" placeholder="Indique si el sabor cumple con los estándares (C/NC)">{{ calidad_form.sabor.value }}</textarea>
                                             </p>
                                         </div>
                                     </div>
                                     <div class="row">
                                         <div class="col-md-4">
                                             <p><strong>Color:</strong>
-                                                <textarea class="form-control" rows="1" name="color">{{ calidad_form.color.value }}</textarea>
+                                                <textarea class="form-control" rows="2" name="color" placeholder="Indique si el color cumple con los estándares (C/NC)">{{ calidad_form.color.value }}</textarea>
                                             </p>
                                         </div>
                                         <div class="col-md-4">
                                             <p><strong>Olor:</strong>
-                                                <textarea class="form-control" rows="1" name="olor">{{ calidad_form.olor.value }}</textarea>
+                                                <textarea class="form-control" rows="2" name="olor" placeholder="Indique si el olor cumple con los estándares (C/NC)">{{ calidad_form.olor.value }}</textarea>
                                             </p>
                                         </div>
                                         <div class="col-md-4">
                                             <p><strong>Aspecto:</strong>
-                                                <textarea class="form-control" rows="1" name="aspecto">{{ calidad_form.aspecto.value }}</textarea>
+                                                <textarea class="form-control" rows="2" name="aspecto" placeholder="Indique si el aspecto cumple con los estándares (C/NC)">{{ calidad_form.aspecto.value }}</textarea>
                                             </p>
                                         </div>
                                     </div>
@@ -183,17 +183,17 @@
                                     <div class="row">
                                         <div class="col-md-4">
                                             <p><strong>Elaboración:</strong>
-                                                <textarea class="form-control" rows="1" name="elaboracion">{{ calidad_form.elaboracion.value }}</textarea>
+                                                <textarea class="form-control" rows="2" name="elaboracion" placeholder="Nombre de la persona encargada de la elaboración">{{ calidad_form.elaboracion.value }}</textarea>
                                             </p>
                                         </div>
                                         <div class="col-md-4">
                                             <p><strong>Envasado:</strong>
-                                                <textarea class="form-control" rows="1" name="envasado">{{ calidad_form.envasado.value }}</textarea>
+                                                <textarea class="form-control" rows="2" name="envasado" placeholder="Nombre de la persona encargada del envasado">{{ calidad_form.envasado.value }}</textarea>
                                             </p>
                                         </div>
                                         <div class="col-md-4">
                                             <p><strong>Verificación:</strong>
-                                                <textarea class="form-control" rows="1" name="verificacion">{{ calidad_form.verificacion.value }}</textarea>
+                                                <textarea class="form-control" rows="2" name="verificacion" placeholder="Nombre de la persona encargada de la verificación">{{ calidad_form.verificacion.value }}</textarea>
                                             </p>
                                         </div>
                                     </div>
@@ -206,6 +206,7 @@
                                         <textarea class="form-control" rows="4" name="observaciones" placeholder="Ingrese cualquier observación adicional aquí">{{ calidad_form.observaciones.value }}</textarea>
                                     </p>
                                 </section>
+
                                 <div class="mb-3">
                                     <label for="id_estado_aprobacion" class="form-label">Estado de Aprobación</label>
                                     <select name="estado_aprobacion" id="id_estado_aprobacion" class="form-select">

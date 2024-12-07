@@ -346,12 +346,17 @@ def generate_pdf(request):
     ]
 
     # Promedio de Pago por Orden de Compra
+    # Promedio de Pago por Orden de Compra
     ordenes_pagadas = ordenes.filter(pagada=True)
     if ordenes_pagadas.exists():
         tiempos_pago = [(orden.fecha_pago - orden.fecha).days for orden in ordenes_pagadas if orden.fecha_pago]
-        promedio_pago = sum(tiempos_pago) / len(tiempos_pago)
+        if len(tiempos_pago) > 0:
+            promedio_pago = sum(tiempos_pago) / len(tiempos_pago)
+        else:
+            promedio_pago = 0
     else:
         promedio_pago = 0
+
 
     # KPIs de porcentaje
     # Porcentaje de Órdenes Pagadas
